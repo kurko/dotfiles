@@ -1,0 +1,6 @@
+
+
+# Git
+alias g='git status'
+alias ga='git add . && git add . -u && git status'
+alias gb='git branch'
