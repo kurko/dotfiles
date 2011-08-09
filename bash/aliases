@@ -1,6 +1,20 @@
 
+# System
+alias ls='ls -G'
+alias ..='cd ..'
+
+# Processes
+alias tu='top -o cpu'
+alias tm='top -o cpu'
 
 # Git
 alias g='git status'
 alias ga='git add . && git add . -u && git status'
 alias gb='git branch'
+alias gd='git diff'
+alias gdm='git diff master'
+
+	# Commit pending changes and quote all args as message
+	function gc(){
+		git commit -v -a -m "$*"
+	}

@@ -1,4 +1,8 @@
 
+export GREP_OPTIONS="--color=auto"
+export GREP_COLOR="4;33"
+export CLICOLOR="auto"
+
 # Reset
 NO_COLOR='\e[0m'       # Text Reset
 
