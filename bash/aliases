@@ -12,8 +12,10 @@ alias g='git status'
 alias ga='git add . && git add . -u && git status'
 alias gb='git branch'
 alias gd='git diff'
-alias gp='echo "Pushing to origin HEAD..." && git push origin HEAD'
 alias gdm='git diff master'
+alias gp='echo "Pushing to origin HEAD..." && git push origin HEAD'
+alias gpul='echo "Pulling from origin HEAD..." && git pull origin HEAD'
+alias gpull=gpul
 
 	# Commit pending changes and quote all args as message
 	function gc(){
