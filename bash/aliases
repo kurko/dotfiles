@@ -14,7 +14,7 @@ alias gb='git branch'
 alias gd='git diff'
 alias gdm='git diff master'
 alias gp='echo "Pushing to origin HEAD..." && git push origin HEAD'
-alias gpul='echo "Pulling from origin HEAD..." && git pull origin HEAD'
+alias gpul='echo "git fetch origin && git merge origin/HEAD..." && git fetch origin && git merge origin/HEAD'
 alias gpull=gpul
 
 	# Commit pending changes and quote all args as message
