@@ -8,16 +8,30 @@ alias tu='top -o cpu'
 alias tm='top -o cpu'
 
 # Git
+
+	# Defines the current git branch
+	export GIT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
 alias g='git status'
 alias ga='git add . && git add . -u && git status'
 alias gb='git branch'
+alias gl='git log'
 alias gd='git diff'
 alias gdm='git diff master'
-alias gp='echo "Pushing to origin HEAD..." && git push origin HEAD'
-alias gpul='echo "Fetching origin and pulling origin HEAD..." && git fetch origin && git pull origin HEAD'
-alias gpull=gpul
 
 	# Commit pending changes and quote all args as message
 	function gc(){
 		git commit -v -a -m "$*"
 	}
+	
+	function gp(){
+		echo Pushing to origin $GIT_BRANCH...
+		git push origin $GIT_BRANCH
+	}
+
+	function gpul(){
+		echo Pulling from origin $GIT_BRANCH...
+		git pull origin $GIT_BRANCH
+	}
+	
+	alias gpull=gpul

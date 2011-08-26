@@ -1,6 +1,6 @@
 export DOTFILES=~/.dotfiles
-. $DOTFILES/bash/aliases
 . $DOTFILES/bash/config
 . $DOTFILES/bash/env
+. $DOTFILES/bash/aliases
 
 export PATH=$PATH:~/.dotfiles/bin
