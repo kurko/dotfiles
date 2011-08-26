@@ -14,6 +14,7 @@ alias ga='git add . && git add . -u && git status'
 alias gb='git branch'
 alias gl='git log'
 alias gd='git diff'
+alias gl='git log'
 alias gdm='git diff master'
 
 	# Commit pending changes and quote all args as message
