@@ -9,9 +9,6 @@ alias tm='top -o cpu'
 
 # Git
 
-	# Defines the current git branch
-	export GIT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
-
 alias g='git status'
 alias ga='git add . && git add . -u && git status'
 alias gb='git branch'
@@ -25,13 +22,19 @@ alias gdm='git diff master'
 	}
 	
 	function gp(){
-		echo Pushing to origin $GIT_BRANCH...
-		git push origin $GIT_BRANCH
+		# Defines the current git branch
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+		echo Pushing to origin $CURRENT_BRANCH...
+		git push origin $CURRENT_BRANCH
 	}
 
 	function gpul(){
-		echo Pulling from origin $GIT_BRANCH...
-		git pull origin $GIT_BRANCH
+		# Defines the current git branch
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+		echo Pulling from origin $CURRENT_BRANCH...
+		git pull origin $CURRENT_BRANCH
 	}
 	
 	alias gpull=gpul
