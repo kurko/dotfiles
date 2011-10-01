@@ -3,6 +3,8 @@
 alias ls='ls -G'
 alias ..='cd ..'
 
+alias update_bash='. ~/.bashrc && . ~/.bash_profile'
+
 # Processes
 alias tu='top -o cpu'
 alias tm='top -o cpu'
