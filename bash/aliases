@@ -20,7 +20,7 @@ alias gdm='git diff master'
 
 	# Commit pending changes and quote all args as message
 	function gc(){
-		git commit -v -a -m "$*"
+		git commit -v -m "$*"
 	}
 	
 	function gp(){
@@ -44,3 +44,4 @@ alias gdm='git diff master'
 # Development
 alias spna='rspec spec_no_rails/'
 function spn(){ rspec --colour $*; }
+function rspeca(){ rspec specs; }
