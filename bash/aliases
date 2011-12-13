@@ -1,3 +1,5 @@
+# Vim
+alias vim="/Applications/MacVim.app/Contents/MacOS/Vim"
 
 # System
 alias ls='ls -G'
