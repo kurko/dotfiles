@@ -44,7 +44,7 @@ alias gdm='git diff master'
 	alias gpull=gpul
 
 # Development
-function spn()		{ rspec $* }
-function spna()		{ rspec spec_no_rails/ $* }
-function be()			{ bundle exec $* }
-function ber()		{ bundle exec rspec spec/ $* }
+function spn(){ rspec $*; }
+function spna(){ rspec spec_no_rails/ $*; }
+function be(){ bundle exec $*; }
+function ber(){ bundle exec rspec spec/ $*; }
