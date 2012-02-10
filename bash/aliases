@@ -33,6 +33,14 @@ alias gdm='git diff master'
 		git push origin $CURRENT_BRANCH
 	}
 
+	function gpr(){
+		# Defines the current git branch
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+		echo Pulling origin/$CURRENT_BRANCH, rebasing on it and fetching origin...
+		git pull --rebase origin $CURRENT_BRANCH && git fetch origin
+	}
+
 	function gpul(){
 		# Defines the current git branch
 		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
