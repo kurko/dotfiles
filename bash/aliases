@@ -55,4 +55,4 @@ alias gdm='git diff master'
 function spn(){ time rspec $*; }
 function spna(){ time rspec spec_no_rails/ $*; }
 function be(){ time bundle exec $*; }
-function ber(){ time bundle exec rspec spec/ $*; }
+function ber(){ echo 'Running all tests in specs/' && time bundle exec rspec spec/ $*; }
