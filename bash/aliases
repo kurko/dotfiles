@@ -1,5 +1,10 @@
 # Vim
 alias vim="/Applications/MacVim.app/Contents/MacOS/Vim"
+function symlink_vim(){
+	ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
+	ln -nfs ~/.dotfiles/vim/gvimrc ~/.gvimrc
+#	ln -nfs ~/.dotfiles/vim/vim ~/.vim
+}
 
 # System
 alias ls='ls -G'
