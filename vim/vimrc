@@ -98,3 +98,5 @@ noremap   <Right>  <NOP>
   \    'extends' : 'html',
   \  },
   \}
+
+ autocmd vimenter * if !argc() | NERDTree | endif
