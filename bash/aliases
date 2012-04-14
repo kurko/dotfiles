@@ -1,5 +1,5 @@
 # Vim
-alias vim="~/bin/mvim"
+#alias vim="~/bin/mvim"
 function symlink_vim(){
 	ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
 	ln -nfs ~/.dotfiles/vim/gvimrc ~/.gvimrc

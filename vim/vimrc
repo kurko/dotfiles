@@ -2,6 +2,7 @@
 " Copy or symlink to ~/.vimrc or ~/_vimrc.
 call pathogen#infect()
 
+let g:CSApprox_verbose_level = 0
 set nocompatible                  " Must come first because it changes other options.
 
 syntax on                     " Turn on syntax highlighting.
