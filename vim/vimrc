@@ -2,7 +2,9 @@
 " Copy or symlink to ~/.vimrc or ~/_vimrc.
 call pathogen#infect()
 
+"avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
+
 set nocompatible                  " Must come first because it changes other options.
 
 syntax on                     " Turn on syntax highlighting.
@@ -48,6 +50,17 @@ set expandtab                    " Use spaces instead of tabs
 set laststatus=2                  " Show the status line all the time
 " Useful status information at bottom of screen
 set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c-%v\ %)%P
+
+set foldmethod=syntax
+set foldlevelstart=99
+set foldlevel=99
+
+" let mapleader = ","
+nnoremap <leader>1 :set foldlevel=1<cr>
+nnoremap <leader>2 :set foldlevel=2<cr>
+nnoremap <leader>3 :set foldlevel=3<cr>
+nnoremap <leader>4 :set foldlevel=4<cr>
+nnoremap <leader>5 :set foldlevel=5<cr>
 
 " Or use vividchalk
 colorscheme railscasts
