@@ -61,6 +61,10 @@ nnoremap <leader>2 :set foldlevel=2<cr>
 nnoremap <leader>3 :set foldlevel=3<cr>
 nnoremap <leader>4 :set foldlevel=4<cr>
 nnoremap <leader>5 :set foldlevel=5<cr>
+nnoremap <leader>6 :set foldlevel=6<cr>
+nnoremap <leader>7 :set foldlevel=7<cr>
+nnoremap <leader>8 :set foldlevel=8<cr>
+nnoremap <leader>9 :set foldlevel=9<cr>
 
 " Or use vividchalk
 colorscheme railscasts
@@ -78,7 +82,8 @@ map <leader>tm :tabmove
 
 
 map <Leader>n :NERDTreeToggle<CR>
-map <Leader>t :FuzzyFinderTextMate<Enter>
+"map <Leader>t :FuzzyFinderTextMate<Enter>
+map <Leader>t :w\|:call Send_to_Tmux("rspec spec/my_spec.rb\n")<CR>
 map ,t :FuzzyFinderTextMate<Enter>
 
 " Controversial...swap colon and semicolon for easier commands
@@ -115,3 +120,9 @@ noremap   <Right>  <NOP>
   \}
 
  autocmd vimenter * if !argc() | NERDTree | endif
+
+highlight ColorColumn ctermbg=8
+set colorcolumn=80
+
+highlight RedundantSpaces ctermbg=red guibg=red
+match RedundantSpaces /\s\+$\| \+\ze\t/

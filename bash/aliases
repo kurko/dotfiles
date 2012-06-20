@@ -1,9 +1,9 @@
 # Vim
 #alias vim="~/bin/mvim"
-function symlink_vim(){
+function symlink_config(){
 	ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
 	ln -nfs ~/.dotfiles/vim/gvimrc ~/.gvimrc
-#	ln -nfs ~/.dotfiles/vim/vim ~/.vim
+	ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
 }
 
 # System
