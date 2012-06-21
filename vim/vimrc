@@ -4,7 +4,7 @@ call pathogen#infect()
 
 "avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
-
+set clipboard=unnamed
 set nocompatible                  " Must come first because it changes other options.
 
 syntax on                     " Turn on syntax highlighting.
