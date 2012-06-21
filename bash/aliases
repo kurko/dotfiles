@@ -1,5 +1,4 @@
 # Vim
-#alias vim="~/bin/mvim"
 function symlink_config(){
 	ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
 	ln -nfs ~/.dotfiles/vim/gvimrc ~/.gvimrc
@@ -61,3 +60,8 @@ function spn(){ time rspec $*; }
 function spna(){ time rspec spec_no_rails/ $*; }
 function be(){ time bundle exec $*; }
 function ber(){ echo 'Running all tests in specs/' && time bundle exec rspec spec/ $*; }
+
+# General commands
+function grepp(){
+  grep -Rn "$*" ./
+}

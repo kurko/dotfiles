@@ -121,7 +121,7 @@ noremap   <Right>  <NOP>
 
  autocmd vimenter * if !argc() | NERDTree | endif
 
-highlight ColorColumn ctermbg=8
+"highlight ColorColumn ctermbg=7
 set colorcolumn=80
 
 highlight RedundantSpaces ctermbg=red guibg=red
