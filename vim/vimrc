@@ -55,7 +55,7 @@ set foldmethod=syntax
 set foldlevelstart=99
 set foldlevel=99
 
-" let mapleader = ","
+let mapleader = ","
 nnoremap <leader>1 :set foldlevel=1<cr>
 nnoremap <leader>2 :set foldlevel=2<cr>
 nnoremap <leader>3 :set foldlevel=3<cr>
@@ -67,7 +67,7 @@ nnoremap <leader>8 :set foldlevel=8<cr>
 nnoremap <leader>9 :set foldlevel=9<cr>
 
 " Or use vividchalk
-colorscheme railscasts
+colorscheme ir_black
 
 " Tab mappings.
 map <leader>tt :tabnew<cr>
@@ -84,7 +84,7 @@ map <leader>tm :tabmove
 map <Leader>n :NERDTreeToggle<CR>
 "map <Leader>t :FuzzyFinderTextMate<Enter>
 map <Leader>t :w\|:call Send_to_Tmux("rspec spec/my_spec.rb\n")<CR>
-map ,t :FuzzyFinderTextMate<Enter>
+"map ,t :FuzzyFinderTextMate<Enter>
 
 " Controversial...swap colon and semicolon for easier commands
 "nnoremap ; :
