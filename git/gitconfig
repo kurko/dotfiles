@@ -1,0 +1,40 @@
+[alias]
+  co = checkout
+  br = branch
+  ci = branch
+  st = status
+
+  # Divergence (commits we added and commits remote added)
+  div = divergence
+
+  # Goodness (summary of diff lines added/removed/total)
+  gn = goodness
+  gnc = goodness --cached
+
+  # Fancy logging.
+  #   h = head
+  #   hp = head with patch
+  #   r = recent commits, only current branch
+  #   ra = recent commits, all reachable refs
+  #   l = all commits, only current branch
+  #   la = all commits, all reachable refs
+  h = !git head
+  hp = "!source ~/.githelpers && show_git_head"
+  r = !git l -30
+  ra = !git r --all
+  l = "!source ~/.githelpers && pretty_git_log"
+  la = !git l --all
+
+[user]
+	name = kurko
+	email = chavedomundo@gmail.com
+
+[color]
+	ui = true
+
+[core]
+	excludesfile = /Users/kurko/.gitignore
+	editor = vim
+
+[merge]
+  tool = vimdiff
