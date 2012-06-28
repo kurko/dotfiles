@@ -81,6 +81,7 @@ nnoremap <leader>9 :set foldlevel=9<cr>
 
 " Or use vividchalk
 colorscheme ir_black
+"railscasts
 
 " Tab mappings.
 map <leader>tt :tabnew<cr>
