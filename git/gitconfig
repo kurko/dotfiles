@@ -26,7 +26,7 @@
   la = !git l --all
 
 [user]
-	name = kurko
+	name = Alexandre de Oliveira
 	email = chavedomundo@gmail.com
 
 [color]
