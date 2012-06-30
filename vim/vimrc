@@ -94,10 +94,11 @@ map <leader>tf :tabfirst<cr>
 map <leader>tl :tablast<cr>
 map <leader>tm :tabmove
 
-
-" Controversial...swap colon and semicolon for easier commands
-"nnoremap ; :
-"nnoremap : ;
+" Resizing windows
+map <C-h> <C-w><
+map <C-l> <C-w>>
+map <C-k> <C-w>-
+map <C-j> <C-w>+
 
 inoremap  <Up>     <NOP>
 inoremap  <Down>   <NOP>
@@ -107,13 +108,6 @@ noremap   <Up>     <NOP>
 noremap   <Down>   <NOP>
 noremap   <Left>   <NOP>
 noremap   <Right>  <NOP>
-
-"vnoremap ; :
-"vnoremap : ;
-
-" Automatic fold settings for specific files. Uncomment to use.
-" autocmd FileType ruby setlocal foldmethod=syntax
-" autocmd FileType css  setlocal foldmethod=indent shiftwidth=2 tabstop=2
 
  let g:user_zen_settings = {
   \  'php' : {
