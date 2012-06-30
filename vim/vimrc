@@ -137,8 +137,6 @@ map <leader>t :call RunTestFile()<cr>
 map <leader>tu :!rspec --color --no-drb spec/unit/<cr>
 map <leader>T :call RunNearestTest()<cr>
 "map <leader>a :call RunTests('')<cr>
-map <leader>c :w\|:!script/features<cr>
-map <leader>w :w\|:!script/features --profile wip<cr>
 
 function! RunTestFile(...)
     if a:0
