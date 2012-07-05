@@ -1,0 +1,21 @@
+# Download Vim 7.3 (latest at the time of writing)
+wget ftp://ftp.vim.org/pub/vim/unix/vim-7.3.tar.bz2
+
+# Unpack the archive
+tar jxvf vim-7.3.tar.bz2
+
+cd vim7.3
+
+# Configure (with Ruby support for plugins)
+./configure --prefix=/usr/local --enable-rubyinterp --enable-gui=no
+
+# Build and install
+make
+sudo make install
+
+cd ..
+
+# Remove the archive
+rm -rf vim-7.3.tar.bz2 vim7.3
+
+# Good to go!
