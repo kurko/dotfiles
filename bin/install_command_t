@@ -1,0 +1,13 @@
+# Switch to system default Ruby.
+rbenv global system
+
+# We'll assume here that we're dealing with the Command-T
+# plugin and you manage it using Pathogen. If you're not
+# using Pathogen, `cd` to ~/.vim/ruby/command-t instead.
+cd ~/.vim/bundle/command-t/ruby/command-t
+
+# Configure
+ruby extconf.rb
+
+# Install
+rake make

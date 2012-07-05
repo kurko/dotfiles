@@ -1,5 +1,6 @@
 " Example Vim configuration.
 " Copy or symlink to ~/.vimrc or ~/_vimrc.
+
 call pathogen#infect()
 
 "avoiding annoying CSApprox warning message
@@ -62,12 +63,8 @@ set foldlevel=99
 set timeoutlen=200
 let mapleader = ","
 
-map <Leader>n :NERDTreeToggle<CR>
 map <Leader>s :w<CR>
 map <Leader>b :BufExplorer<CR>
-"map <Leader>t :FuzzyFinderTextMate<Enter>
-map <Leader>t :w\|:call Send_to_Tmux("rspec spec/my_spec.rb\n")<CR>
-"map ,t :FuzzyFinderTextMate<Enter>
 
 nnoremap <leader>1 :set foldlevel=1<cr>
 nnoremap <leader>2 :set foldlevel=2<cr>
@@ -122,7 +119,37 @@ noremap   <Right>  <NOP>
   \  },
   \}
 
- autocmd vimenter * if !argc() | NERDTree | endif
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" MAPS TO JUMP TO SPECIFIC COMMAND-T TARGETS AND FILES
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+map <leader>gr :topleft :split config/routes.rb<cr>
+function! ShowRoutes()
+  " Requires 'scratch' plugin
+  :topleft 100 :split __Routes__
+  " Make sure Vim doesn't write __Routes__ as a file
+  :set buftype=nofile
+  " Delete everything
+  :normal 1GdG
+  " Put routes output in buffer
+  :0r! rake -s routes
+  " Size window to number of lines (1 plus rake output length)
+  :exec ":normal " . line("$") . "_ "
+  " Move cursor to bottom
+  :normal 1GG
+  " Delete empty trailing line
+  :normal dd
+endfunction
+map <leader>gR :call ShowRoutes()<cr>
+map <leader>gv :CommandTFlush<cr>\|:CommandT app/views<cr>
+map <leader>gc :CommandTFlush<cr>\|:CommandT app/controllers<cr>
+map <leader>gm :CommandTFlush<cr>\|:CommandT app/models<cr>
+map <leader>gh :CommandTFlush<cr>\|:CommandT app/helpers<cr>
+map <leader>gl :CommandTFlush<cr>\|:CommandT lib<cr>
+map <leader>ga :CommandTFlush<cr>\|:CommandT assets<cr>
+map <leader>gg :topleft 100 :split Gemfile<cr>
+map <leader>gt :CommandTFlush<cr>\|:CommandTTag<cr>
+map <leader>f :CommandTFlush<cr>\|:CommandT<cr>
+map <leader>F :CommandTFlush<cr>\|:CommandT %%<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
@@ -182,6 +209,8 @@ function! RunTests(filename)
         end
     end
 endfunction
+
+
 
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
