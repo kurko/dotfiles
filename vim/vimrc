@@ -143,7 +143,7 @@ endfunction
 " disables some plugin mappings
 " unmap! <leader>gl
 " unmap! <leader>gc
-unmap! <leader>ga
+" unmap! <leader>ga
 
 map <leader>gR :call ShowRoutes()<cr>
 map <leader>ga :CommandTFlush<cr>\|:CommandT app/assets<cr>
