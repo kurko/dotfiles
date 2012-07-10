@@ -6,11 +6,14 @@ tar jxvf vim-7.3.tar.bz2
 
 cd vim7.3
 
+rbenv global system
 # Configure (with Ruby support for plugins)
-./configure --prefix=/usr/local --enable-rubyinterp --enable-gui=no
+# --with-x
+./configure --prefix=/usr/local --enable-rubyinterp --enable-gui=no --enable-multibyte --enable-fontset --enable-xim --with-features=huge
 
 # Build and install
-make
+env ARCHFLAGS="-arch x86_64" make
+# make
 sudo make install
 
 cd ..
