@@ -143,8 +143,10 @@ endfunction
 " disables some plugin mappings
 " unmap! <leader>gl
 " unmap! <leader>gc
+unmap! <leader>ga
 
 map <leader>gR :call ShowRoutes()<cr>
+map <leader>ga :CommandTFlush<cr>\|:CommandT app/assets<cr>
 map <leader>gv :CommandTFlush<cr>\|:CommandT app/views<cr>
 map <leader>gc :CommandTFlush<cr>\|:CommandT app/controllers<cr>
 map <leader>gm :CommandTFlush<cr>\|:CommandT app/models<cr>
@@ -202,11 +204,11 @@ function! RunTests(filename)
     :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
     if match(a:filename, '\.feature$') != -1
         exec ":!script/features " . a:filename
+    elseif match(a:filename, '\(acceptance\|integration\)') != -1
+        exec ":!bundle exec rspec " . a:filename
     else
         if filereadable("script/test")
             exec ":!script/test " . a:filename
-        ""elseif filereadable("Gemfile")
-        ""    exec ":!bundle exec rspec --color " . a:filename
         ""elseif filereadable("Gemfile")
         ""    exec ":!bundle exec rspec --color " . a:filename
         else
