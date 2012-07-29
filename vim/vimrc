@@ -214,10 +214,24 @@ function! RunTests(filename)
         ""elseif filereadable("Gemfile")
         ""    exec ":!bundle exec rspec --color " . a:filename
         else
-            exec ":!rspec --color --no-drb " . a:filename
+            exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
         end
     end
 endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" RENAME CURRENT FILE
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! RenameFile()
+  let old_name = expand('%')
+  let new_name = input('New file name: ', expand('%'), 'file')
+  if new_name != '' && new_name != old_name
+    exec ':saveas ' . new_name
+    exec ':silent !rm ' . old_name
+    redraw!
+  endif
+endfunction
+map <leader>n :call RenameFile()<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " WRITING VARIABLES
