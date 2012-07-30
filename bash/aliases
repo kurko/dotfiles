@@ -9,6 +9,8 @@ function update_bash(){
   source ~/.bash_profile
 }
 
+alias update_hosts='dscacheutil -flushcache'
+
 # System
 alias ls='ls -G'
 alias ..='cd ..'
@@ -30,7 +32,7 @@ alias gdm='git diff master'
 	function gc(){
 		git commit -v -m "$*"
 	}
-	
+
 	function gp(){
 		# Defines the current git branch
 		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
@@ -54,7 +56,7 @@ alias gdm='git diff master'
 		echo Pulling from origin $CURRENT_BRANCH...
 		git pull origin $CURRENT_BRANCH
 	}
-	
+
 	alias gpull=gpul
 
 # Development
