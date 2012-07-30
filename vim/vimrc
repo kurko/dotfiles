@@ -147,17 +147,7 @@ endfunction
 " unmap! <leader>gc
 
 map <leader>gR :call ShowRoutes()<cr>
-map <leader>ga :CommandTFlush<cr>\|:CommandT app/assets<cr>
-map <leader>gv :CommandTFlush<cr>\|:CommandT app/views<cr>
-map <leader>gc :CommandTFlush<cr>\|:CommandT app/controllers<cr>
-map <leader>gm :CommandTFlush<cr>\|:CommandT app/models<cr>
-map <leader>gl :CommandTFlush<cr>\|:CommandT lib<cr>
-map <leader>gs :CommandTFlush<cr>\|:CommandT spec<cr>
-map <leader>gu :CommandTFlush<cr>\|:CommandT spec/unit<cr>
 map <leader>gg :topleft 100 :split Gemfile<cr>
-map <leader>gt :CommandTFlush<cr>\|:CommandTTag<cr>
-map <leader>f :CommandTFlush<cr>\|:CommandT<cr>
-map <leader>F :CommandTFlush<cr>\|:CommandT %%<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
@@ -234,12 +224,19 @@ endfunction
 map <leader>n :call RenameFile()<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" WRITING VARIABLES
+" CtrlP
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! WriteVariable(my_variable)
-  let current_value = a:my_variable
-  normal a a:my_variable^V<ESC>
-endfunction
+map <leader>ga :CtrlPClearCache<cr>\|:CtrlP app/assets<cr>
+map <leader>gv :CtrlPClearCache<cr>\|:CtrlP app/views<cr>
+map <leader>gc :CtrlPClearCache<cr>\|:CtrlP app/controllers<cr>
+map <leader>gm :CtrlPClearCache<cr>\|:CtrlP app/models<cr>
+map <leader>gl :CtrlPClearCache<cr>\|:CtrlP lib<cr>
+map <leader>gs :CtrlPClearCache<cr>\|:CtrlP spec<cr>
+map <leader>gu :CtrlPClearCache<cr>\|:CtrlP spec/unit<cr>
+map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
+map <leader>F :CtrlPClearCache<cr>\|:CtrlP %%<cr>
+
+set runtimepath^=~/.vim/bundle/ctrlp.vim
 
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
