@@ -55,6 +55,7 @@ set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLo
 set foldmethod=syntax
 set foldlevelstart=99
 set foldlevel=99
+au BufRead,BufNewFile *.scss set filetype=scss
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " SHORTCUTS

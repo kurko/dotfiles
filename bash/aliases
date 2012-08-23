@@ -11,6 +11,8 @@ function update_bash(){
 
 alias update_hosts='dscacheutil -flushcache'
 
+source ~/.dotfiles/bash/git-completion.bash
+
 # System
 alias ls='ls -G'
 alias ..='cd ..'
@@ -63,7 +65,13 @@ alias gdm='git diff master'
 function spn(){ time rspec $*; }
 function spna(){ time rspec spec_no_rails/ $*; }
 function be(){ time bundle exec $*; }
-function ber(){ echo 'Running all tests in specs/' && time bundle exec rspec spec/ $*; }
+function ber(){ echo 'Running all tests in spec/' && time bundle exec rspec spec/ $*; }
+function spr(){ echo 'Running all tests in spec/requests/' && time bundle exec rspec spec/requests/ $*; }
+function spa(){ echo 'Running all tests in spec/acceptance/' && time bundle exec rspec spec/acceptance/ $*; }
+function spu(){ echo 'Running all tests in spec/unit/' && time rspec spec/unit/ $*; }
+function spc(){ echo 'Running all tests in spec/controllers/' && time bundle exec rspec spec/controllers/ $*; }
+function spm(){ echo 'Running all tests in spec/models/' && time bundle exec rspec spec/models/ $*; }
+function spl(){ echo 'Running all tests in spec/lib/' && time bundle exec rspec spec/lib/ $*; }
 
 # General commands
 function grepp(){
