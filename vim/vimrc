@@ -94,6 +94,9 @@ map <leader>tm :tabmove
 
 nmap <CR> :nohlsearch<CR>
 
+inoremap - _
+inoremap _ -
+
 " Resizing windows
 map <C-h> <C-w><
 map <C-l> <C-w>>
