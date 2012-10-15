@@ -94,8 +94,8 @@ map <leader>tm :tabmove
 
 nmap <CR> :nohlsearch<CR>
 
-inoremap - _
-inoremap _ -
+"noremap - _
+"noremap _ -
 
 " Resizing windows
 map <C-h> <C-w><
@@ -153,12 +153,16 @@ endfunction
 map <leader>gR :call ShowRoutes()<cr>
 map <leader>gg :topleft 100 :split Gemfile<cr>
 
+cnoremap %% <C-R>=expand('%:h').'/'<cr>
+map <leader>e :edit %%
+map <leader>v :view %%
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 map <leader>t :call RunTestFile()<cr>
-map <leader>bt :!bundle exec rspec --color --no-drb %<cr>
-map <leader>tu :!rspec --color --no-drb spec/unit/<cr>
+map <leader>bt :w<CR>\|:!bundle exec rspec --color --no-drb %<cr>
+map <leader>tu :!rspec --color --no-drb spec/lib<cr>
 map <leader>T :call RunNearestTest()<cr>
 "map <leader>a :call RunTests('')<cr>
 
@@ -170,7 +174,7 @@ function! RunTestFile(...)
     endif
 
     " Run the tests for the previously-marked file.
-    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\)$') != -1
+    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\)$') != -1
     if in_test_file
         call SetTestFile()
     elseif !exists("t:grb_test_file")
@@ -202,6 +206,8 @@ function! RunTests(filename)
         exec ":!script/features " . a:filename
     elseif match(a:filename, '\(acceptance\|integration\)') != -1
         exec ":!bundle exec rspec " . a:filename
+    elseif match(a:filename, '\(_test\)') != -1
+        exec ":!ruby -Ilib/ " . a:filename
     else
         if filereadable("script/test")
             exec ":!script/test " . a:filename
@@ -218,14 +224,25 @@ endfunction
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! RenameFile()
   let old_name = expand('%')
-  let new_name = input('New file name: ', expand('%'), 'file')
+  let new_name = input('Renaming file. New file name: ', expand('%'), 'file')
   if new_name != '' && new_name != old_name
     exec ':saveas ' . new_name
     exec ':silent !rm ' . old_name
     redraw!
   endif
 endfunction
+
+function! CopyFile()
+  let old_name = expand('%')
+  let new_name = input('Copying file. New file name: ', expand('%'), 'file')
+  if new_name != '' && new_name != old_name
+    exec ':saveas ' . new_name
+    redraw!
+  endif
+endfunction
+
 map <leader>n :call RenameFile()<cr>
+map <leader>c :call CopyFile()<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CtrlP
