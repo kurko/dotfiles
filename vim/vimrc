@@ -8,6 +8,8 @@ let g:CSApprox_verbose_level = 0
 "set clipboard=unnamed
 set nocompatible                  " Must come first because it changes other options.
 
+set tags=tags
+
 syntax on                     " Turn on syntax highlighting.
 filetype plugin indent on         " Turn on file type detection.
 
@@ -64,8 +66,8 @@ au BufRead,BufNewFile *.scss set filetype=scss
 set timeoutlen=200
 let mapleader = ","
 
-map <Leader>s :w<CR>
-map <Leader>b :BufExplorer<CR>
+map <Leader>s <ESC>:w<CR>
+map <Leader>be :BufExplorer<CR>
 
 nnoremap <leader>1 :set foldlevel=1<cr>
 nnoremap <leader>2 :set foldlevel=2<cr>
@@ -93,15 +95,20 @@ map <leader>tl :tablast<cr>
 map <leader>tm :tabmove
 
 nmap <CR> :nohlsearch<CR>
+nmap 44 $
+vmap 44 $h
+nnoremap <Leader>a :A<CR>
+map <F5> :exec "!ctags -R --exclude=.git --exclude=vendor/bundle"<CR>
+map ,S :!echo\<CR>
 
 "noremap - _
 "noremap _ -
 
 " Resizing windows
-map <C-h> <C-w><
-map <C-l> <C-w>>
-map <C-k> <C-w>-
-map <C-j> <C-w>+
+map <C-h> <C-w><<C-w><<C-w><<C-w><<C-w><
+map <C-l> <C-w>><C-w>><C-w>><C-w>><C-w>>
+map <C-k> <C-w>-<C-w>-<C-w>-<C-w>-<C-w>-
+map <C-j> <C-w>+<C-w>+<C-w>+<C-w>+<C-w>+
 
 inoremap  <Up>     <NOP>
 inoremap  <Down>   <NOP>
@@ -118,6 +125,9 @@ noremap   <Right>  <NOP>
   \    'filters' : 'c',
   \  },
   \  'xml' : {
+  \    'extends' : 'html',
+  \  },
+  \  'erb' : {
   \    'extends' : 'html',
   \  },
   \  'haml' : {
@@ -154,16 +164,25 @@ map <leader>gR :call ShowRoutes()<cr>
 map <leader>gg :topleft 100 :split Gemfile<cr>
 
 cnoremap %% <C-R>=expand('%:h').'/'<cr>
+inoremap %% <C-R>=expand('%:h').'/'<cr>
 map <leader>e :edit %%
 map <leader>v :view %%
+map <leader>A :on<CR>\|:vsplit<CR>\|<c-w>l\|:A<CR>
+
+function! AddRailsLogger()
+  exec "normal aRails.logger.info \"\"\<Esc>\=\="
+endfunction
+command! Logger call AddRailsLogger()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 map <leader>t :call RunTestFile()<cr>
-map <leader>bt :w<CR>\|:!bundle exec rspec --color --no-drb %<cr>
-map <leader>tu :!rspec --color --no-drb spec/lib<cr>
-map <leader>T :call RunNearestTest()<cr>
+map <leader>bt <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb %<cr>
+map <leader>z <ESC>:w<CR>\|:!zeus rspec --color --no-drb %<cr>
+map <leader>tu <ESC>:w<CR>\|:!rspec --color --no-drb spec/lib<cr>
+map <leader>bu <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb spec/lib<cr>
+map <leader>r :call RunNearestTest()<cr>
 "map <leader>a :call RunTests('')<cr>
 
 function! RunTestFile(...)
@@ -174,7 +193,7 @@ function! RunTestFile(...)
     endif
 
     " Run the tests for the previously-marked file.
-    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\)$') != -1
+    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\)') != -1
     if in_test_file
         call SetTestFile()
     elseif !exists("t:grb_test_file")
@@ -185,7 +204,7 @@ endfunction
 
 function! RunNearestTest()
     let spec_line_number = line('.')
-    call RunTestFile(":" . spec_line_number . " -b")
+    call RunTestFile(":" . spec_line_number)
 endfunction
 
 function! SetTestFile()
@@ -204,16 +223,23 @@ function! RunTests(filename)
     :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
     if match(a:filename, '\.feature$') != -1
         exec ":!script/features " . a:filename
-    elseif match(a:filename, '\(acceptance\|integration\)') != -1
-        exec ":!bundle exec rspec " . a:filename
     elseif match(a:filename, '\(_test\)') != -1
         exec ":!ruby -Ilib/ " . a:filename
     else
-        if filereadable("script/test")
-            exec ":!script/test " . a:filename
-        ""elseif filereadable("Gemfile")
-        ""    exec ":!bundle exec rspec --color " . a:filename
+        if match(readfile(matchstr(a:filename, '.*\.rb')), '\(spec_helper\|capybara_helper\|acceptance_helper\)') >= 0
+
+          if filereadable("zeus.json") && filereadable("Gemfile")
+              :silent !echo "Using zeus"
+              exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+          elseif filereadable("Gemfile")
+              :silent !echo "Using bundle exec"
+              exec ":!bundle exec rspec --color " . a:filename
+          else
+            :silent !echo "Using vanilla rspec"
+            exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+          end
         else
+            :silent !echo "Using vanilla rspec"
             exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
         end
     end
@@ -255,9 +281,13 @@ map <leader>gl :CtrlPClearCache<cr>\|:CtrlP lib<cr>
 map <leader>gs :CtrlPClearCache<cr>\|:CtrlP spec<cr>
 map <leader>gu :CtrlPClearCache<cr>\|:CtrlP spec/unit<cr>
 map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
+map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
 map <leader>F :CtrlPClearCache<cr>\|:CtrlP %%<cr>
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
+set wildignore+=*/tmp/*,*/log/*,*/public/*
+set wildignore+=*/vendor/assets/*,*/vendor/bundle*/*,*/vendor/plugins/*
+set wildignore+=*/spec/cassett*,*/.git/*,*/app/assets/image*,*/coverage/*
 
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
