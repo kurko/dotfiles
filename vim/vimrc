@@ -178,28 +178,30 @@ command! Logger call AddRailsLogger()
 " RUNNING TESTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 map <leader>t :call RunTestFile()<cr>
+map <leader>r :call RunNearestTest()<cr>
 map <leader>bt <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb %<cr>
 map <leader>z <ESC>:w<CR>\|:!zeus rspec --color --no-drb %<cr>
 map <leader>tu <ESC>:w<CR>\|:!rspec --color --no-drb spec/lib<cr>
 map <leader>bu <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb spec/lib<cr>
-map <leader>r :call RunNearestTest()<cr>
 "map <leader>a :call RunTests('')<cr>
 
 function! RunTestFile(...)
-    if a:0
-        let command_suffix = a:1
-    else
-        let command_suffix = ""
-    endif
 
-    " Run the tests for the previously-marked file.
-    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\)') != -1
-    if in_test_file
-        call SetTestFile()
-    elseif !exists("t:grb_test_file")
-        return
-    end
-    call RunTests(t:grb_test_file . command_suffix)
+  if a:0
+    let command_suffix = a:1
+  else
+    let command_suffix = ""
+  endif
+
+  " Run the tests for the previously-marked file.
+  let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\|_test.js\)') != -1
+
+  if in_test_file >= 0
+    call SetTestFile()
+  elseif !exists("t:grb_test_file")
+    return
+  end
+  call RunTests(t:grb_test_file . command_suffix)
 endfunction
 
 function! RunNearestTest()
@@ -213,36 +215,40 @@ function! SetTestFile()
 endfunction
 
 function! RunTests(filename)
-    " Write the file and run tests for the given filename
-    :w
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    if match(a:filename, '\.feature$') != -1
-        exec ":!script/features " . a:filename
-    elseif match(a:filename, '\(_test\)') != -1
-        exec ":!ruby -Ilib/ " . a:filename
-    else
-        if match(readfile(matchstr(a:filename, '.*\.rb')), '\(spec_helper\|capybara_helper\|acceptance_helper\)') >= 0
+  " Write the file and run tests for the given filename
+  :w
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
 
-          if filereadable("zeus.json") && filereadable("Gemfile")
-              :silent !echo "Using zeus"
-              exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
-          elseif filereadable("Gemfile")
-              :silent !echo "Using bundle exec"
-              exec ":!bundle exec rspec --color " . a:filename
-          else
-            :silent !echo "Using vanilla rspec"
-            exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
-          end
-        else
-            :silent !echo "Using vanilla rspec"
-            exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
-        end
+  " Runs rake when in a Javascript test file
+  if match(expand("%"), '\(._test.js\|_spec.js\)') >= 0
+    exec ":!rake"
+  elseif match(a:filename, '\.feature$') != -1
+    exec ":!script/features " . a:filename
+  elseif match(a:filename, '\(_test\)') != -1
+    exec ":!ruby -Ilib/ " . a:filename
+  else
+    if match(readfile(matchstr(a:filename, '.*\.rb')), '\(spec_helper\|capybara_helper\|acceptance_helper\)') >= 0
+
+      if filereadable("zeus.json") && filereadable("Gemfile")
+        :silent !echo "Using zeus"
+        exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+      elseif filereadable("Gemfile")
+        :silent !echo "Using bundle exec"
+        exec ":!bundle exec rspec --color " . a:filename
+      else
+        :silent !echo "Using vanilla rspec"
+        exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+      end
+    else
+      :silent !echo "Using vanilla rspec"
+      exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
     end
+  end
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
