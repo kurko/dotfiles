@@ -194,11 +194,12 @@ function! RunTestFile(...)
   endif
 
   " Run the tests for the previously-marked file.
-  let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\|_test.js\)') != -1
+  let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\|_test.js\|_spec.js\)')
 
   if in_test_file >= 0
     call SetTestFile()
   elseif !exists("t:grb_test_file")
+    :echo "Vim: I don't know what file to test :("
     return
   end
   call RunTests(t:grb_test_file . command_suffix)
@@ -215,6 +216,7 @@ function! SetTestFile()
 endfunction
 
 function! RunTests(filename)
+
   " Write the file and run tests for the given filename
   :w
   :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
@@ -224,28 +226,60 @@ function! RunTests(filename)
   :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
   :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
 
-  " Runs rake when in a Javascript test file
+  " JAVASCRIPT
   if match(expand("%"), '\(._test.js\|_spec.js\)') >= 0
-    exec ":!rake"
-  elseif match(a:filename, '\.feature$') != -1
-    exec ":!script/features " . a:filename
-  elseif match(a:filename, '\(_test\)') != -1
-    exec ":!ruby -Ilib/ " . a:filename
-  else
-    if match(readfile(matchstr(a:filename, '.*\.rb')), '\(spec_helper\|capybara_helper\|acceptance_helper\)') >= 0
 
+    let filename_for_spec = substitute(expand("%"), "spec/javascripts/", "", "")
+    "Konacha
+    if filereadable("Gemfile") && match(readfile("Gemfile"), "konacha") >= 0
+
+      " Konacha with Zeus
+      if filereadable("zeus.json")
+        :silent !echo "Konacha with zeus"
+        exec ":!zeus rake konacha:run SPEC=" . filename_for_spec
+
+      " Konacha with bundle exec
+      else
+        :silent !echo "Konacha with bundle exec"
+        exec ":!bundle exec rake konacha:run SPEC=" . filename_for_spec
+      endif
+
+    " Everything else (QUnit)
+    else
+      "Rake
+      exec ":!rake"
+    endif
+
+  " RUBY
+  elseif match(a:filename, '\(._test.rb\|_spec.rb\)') >= 0
+
+    let filename_without_line_number = substitute(a:filename, ':\d\+$', '', '')
+    " Minitest
+    if match(a:filename, '\(_test\)') != -1
+      exec ":!ruby -Ilib/ " . a:filename
+
+    " Bundler
+    elseif match(readfile(filename_without_line_number), '\("spec_helper\|''spec_helper\|capybara_helper\|acceptance_helper\)') >= 0
+
+      " Zeus
       if filereadable("zeus.json") && filereadable("Gemfile")
         :silent !echo "Using zeus"
         exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+
+      " bundle exec
       elseif filereadable("Gemfile")
         :silent !echo "Using bundle exec"
         exec ":!bundle exec rspec --color " . a:filename
+
+      " pure rspec
       else
         :silent !echo "Using vanilla rspec"
         exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
       end
+
+    " Everything else
     else
-      :silent !echo "Using vanilla rspec"
+      :silent !echo "Using vanilla rspec outside Rails"
       exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
     end
   end
