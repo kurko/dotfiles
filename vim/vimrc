@@ -58,6 +58,7 @@ set foldmethod=syntax
 set foldlevelstart=99
 set foldlevel=99
 au BufRead,BufNewFile *.scss set filetype=scss
+au BufRead,BufNewFile *.ejs set filetype=html
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " SHORTCUTS
@@ -105,10 +106,10 @@ map ,S :!echo\<CR>
 "noremap _ -
 
 " Resizing windows
-map <C-h> <C-w><<C-w><<C-w><<C-w><<C-w><
-map <C-l> <C-w>><C-w>><C-w>><C-w>><C-w>>
-map <C-k> <C-w>-<C-w>-<C-w>-<C-w>-<C-w>-
-map <C-j> <C-w>+<C-w>+<C-w>+<C-w>+<C-w>+
+nnoremap <C-h> :vertical resize +5<cr>
+nnoremap <C-l> :vertical resize -5<cr>
+nnoremap <C-k> :resize +5<cr>
+nnoremap <C-j> :resize -5<cr>
 
 inoremap  <Up>     <NOP>
 inoremap  <Down>   <NOP>
@@ -164,7 +165,6 @@ map <leader>gR :call ShowRoutes()<cr>
 map <leader>gg :topleft 100 :split Gemfile<cr>
 
 cnoremap %% <C-R>=expand('%:h').'/'<cr>
-inoremap %% <C-R>=expand('%:h').'/'<cr>
 map <leader>e :edit %%
 map <leader>v :view %%
 map <leader>A :on<CR>\|:vsplit<CR>\|<c-w>l\|:A<CR>
@@ -173,6 +173,11 @@ function! AddRailsLogger()
   exec "normal aRails.logger.info \"\"\<Esc>\=\="
 endfunction
 command! Logger call AddRailsLogger()
+
+function! SetCtrlPPathTheSameAsVim()
+  let g:ctrlp_working_path_mode=''
+endfunction
+command! CtrlPVimPath call SetCtrlPPathTheSameAsVim()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
@@ -183,10 +188,8 @@ map <leader>bt <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb %<cr>
 map <leader>z <ESC>:w<CR>\|:!zeus rspec --color --no-drb %<cr>
 map <leader>tu <ESC>:w<CR>\|:!rspec --color --no-drb spec/lib<cr>
 map <leader>bu <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb spec/lib<cr>
-"map <leader>a :call RunTests('')<cr>
 
 function! RunTestFile(...)
-
   if a:0
     let command_suffix = a:1
   else
@@ -219,6 +222,9 @@ function! RunTests(filename)
 
   " Write the file and run tests for the given filename
   :w
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
+  :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
   :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
   :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
   :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
@@ -259,28 +265,28 @@ function! RunTests(filename)
       exec ":!ruby -Ilib/ " . a:filename
 
     " Bundler
-    elseif match(readfile(filename_without_line_number), '\("spec_helper\|''spec_helper\|capybara_helper\|acceptance_helper\)') >= 0
+    elseif match(readfile(filename_without_line_number), '\("spec_helper\|''spec_helper\|capybara_helper\|acceptance_spec_helper\|acceptance_helper\)') >= 0
 
       " Zeus
       if filereadable("zeus.json") && filereadable("Gemfile")
         :silent !echo "Using zeus"
-        exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+        exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
 
       " bundle exec
       elseif filereadable("Gemfile")
         :silent !echo "Using bundle exec"
-        exec ":!bundle exec rspec --color " . a:filename
+        exec ":!bundle exec rspec --color --order random " . a:filename
 
       " pure rspec
       else
         :silent !echo "Using vanilla rspec"
-        exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+        exec ":!rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
       end
 
     " Everything else
     else
       :silent !echo "Using vanilla rspec outside Rails"
-      exec ":!rspec -O ~/.rspec --color --format progress --no-drb " . a:filename
+      exec ":!rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
     end
   end
 endfunction
@@ -325,12 +331,15 @@ map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
 map <leader>F :CtrlPClearCache<cr>\|:CtrlP %%<cr>
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
-set wildignore+=*/tmp/*,*/log/*,*/public/*
-set wildignore+=*/vendor/assets/*,*/vendor/bundle*/*,*/vendor/plugins/*
-set wildignore+=*/spec/cassett*,*/.git/*,*/app/assets/image*,*/coverage/*
+let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage'
 
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
 
+" taken from http://vim.wikia.com/wiki/Highlight_unwanted_spaces
 highlight RedundantSpaces ctermbg=red guibg=red
-match RedundantSpaces /\s\+$\| \+\ze\t/
+match RedundantSpaces /\s\+$/
+autocmd BufWinEnter * match RedundantSpaces /\s\+$/
+autocmd InsertEnter * match RedundantSpaces /\s\+\%#\@<!$/
+autocmd InsertLeave * match RedundantSpaces /\s\+$/
+autocmd BufWinLeave * call clearmatches()

@@ -1,0 +1,46 @@
+# checks the complexity of a file in HEAD
+
+filepath=$1
+
+function calculate_complexity_difference() {
+    previous_complexity=$(git show HEAD:$filepath | flog | grep 'flog total' | awk '{print $1}' | sed 's/\://g')
+    current_complexity=$(flog $filepath | grep 'flog total' | awk '{print $1}' | sed 's/\://g')
+    difference=$(echo $previous_complexity - $current_complexity | bc)
+}
+
+function print_complexity_diff() {
+    calculate_complexity_difference
+    echo "Previous Complexity: $previous_complexity"
+    echo -e "Current Complexity: $current_complexity\n"
+    echo "You have reduced the total complexity by: $difference"
+}
+
+function invalid_filepath() {
+    [[ ! -f $filepath ]]
+}
+
+function missing_params() {
+    [[ -z $filepath ]]
+}
+
+function print_invalid_filepath_message() {
+    echo "File not found: $filepath"
+    exit 1
+}
+
+function print_usage_message() {
+    echo 'Usage: flogg <filepath>'
+    exit 1
+}
+
+function main() {
+    if missing_params; then
+        print_usage_message
+    elif invalid_filepath; then
+        print_invalid_filepath_message
+    fi
+
+    print_complexity_diff
+}
+
+main
