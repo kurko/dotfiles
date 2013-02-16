@@ -22,6 +22,14 @@ alias count_files='find ./ -maxdepth 1 -type d | while read -r dir; do printf "%
 alias tu='top -o cpu'
 alias tm='top -o cpu'
 
+# Rails helpers
+#
+# Redirects port 80 on a Mac to 3000, allowing to run the server without root
+alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
+
+# Removes the redirection from port 80 to 3000
+alias railsnoton80='sudo ipfw flush'
+
 # Git
 
 alias g='git status'
@@ -37,7 +45,15 @@ alias gdm='git diff master'
 		git commit -v -m "$*"
 	}
 
-	function gp(){
+	function gfacepunch(){
+		# Defines the current git branch
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+		echo Face punching to origin $CURRENT_BRANCH...
+		git push --force origin $CURRENT_BRANCH
+	}
+
+	function gpush(){
 		# Defines the current git branch
 		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
 
@@ -75,6 +91,13 @@ function spc(){ echo 'Running all tests in spec/controllers/' && time bundle exe
 function spm(){ echo 'Running all tests in spec/models/' && time bundle exec rspec spec/models/ $*; }
 function spl(){ echo 'Running all tests in spec/lib/' && time bundle exec rspec spec/lib/ $*; }
 
+# checks the complexity of a file in HEAD~1
+function floggg(){
+  echo "Before:" && git show HEAD:$* | cat > ~/.flog_tmp && flog ~/.flog_tmp | grep "flog total" && rm ~/.flog_tmp;
+  echo "";
+  echo "After:" && flog $* | grep "flog total";
+}
+
 # Zeus
 alias zst='zeus start'
 alias zse='zeus server'
@@ -92,5 +115,9 @@ alias zspr='time zeus rspec spec/request/'
 
 # General commands
 function grepp(){
-  grep "$*" -Rni --exclude=".//db/data*" --exclude=".//tmp*" --exclude=".//vendor*" --exclude=".//coverage*" --exclude=".//log*" --exclude=".//tag*" --exclude=".//spec*/cassett*" --exclude=".//public/*.js*" --exclude=".//.*" ./
+  grep -Rni --exclude=".//db/data*" --exclude=".//tmp*" --exclude=".//vendor*" --exclude=".//coverage*" --exclude=".//log*" --exclude=".//tag*" --exclude=".//spec*/cassett*" --exclude=".//public/*.js*" --exclude=".//.*" "$*" ./
+}
+
+function findd(){
+  find . -ipath "*$**"
 }

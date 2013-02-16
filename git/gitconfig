@@ -1,5 +1,6 @@
 [alias]
   co = checkout
+  co- = checkout @{-1}
   br = branch
   ci = branch
   st = status
@@ -38,3 +39,6 @@
 
 [merge]
   tool = vimdiff
+[github]
+	user = kurko
+	token = fe8439a9cdaca5f74e79879b121c64448065f9fd
