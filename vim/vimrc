@@ -267,8 +267,13 @@ function! RunTests(filename)
     " Bundler
     elseif match(readfile(filename_without_line_number), '\("spec_helper\|''spec_helper\|capybara_helper\|acceptance_spec_helper\|acceptance_helper\)') >= 0
 
+      " Spring (gem like Zeus, to make things faster)
+      if match(system('spring status'), 'Spring is running') >= 0
+        :silent !echo "Using Spring"
+        exec ":!spring rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
+
       " Zeus
-      if filereadable("zeus.json") && filereadable("Gemfile")
+      elseif filereadable("zeus.json") && filereadable("Gemfile")
         :silent !echo "Using zeus"
         exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
 
