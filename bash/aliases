@@ -4,6 +4,7 @@ function update_bash(){
 	ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
 	ln -nfs ~/.dotfiles/vim/gvimrc ~/.gvimrc
 	ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
+	ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
 
   source ~/.bashrc
   source ~/.bash_profile
@@ -100,6 +101,7 @@ function floggg(){
 
 # Zeus
 alias zst='zeus start'
+alias zsts='(tmux send-keys -t 8 "zse" C-m &) && zst'
 alias zse='zeus server'
 alias zco='zeus console'
 function zra(){ zeus rake $*; }

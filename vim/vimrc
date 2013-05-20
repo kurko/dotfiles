@@ -61,6 +61,12 @@ au BufRead,BufNewFile *.scss set filetype=scss
 au BufRead,BufNewFile *.ejs set filetype=html
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" PLUGINS
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" git gutter
+let g:gitgutter_enabled = 1
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " SHORTCUTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -98,6 +104,7 @@ map <leader>tm :tabmove
 nmap <CR> :nohlsearch<CR>
 nmap 44 $
 vmap 44 $h
+" inoremap <Tab> <Esc>
 nnoremap <Leader>a :A<CR>
 map <F5> :exec "!ctags -R --exclude=.git --exclude=vendor/bundle"<CR>
 map ,S :!echo\<CR>
@@ -253,6 +260,7 @@ function! RunTests(filename)
     " Everything else (QUnit)
     else
       "Rake
+      :silent !echo "Javascript test, running rake"
       exec ":!rake"
     endif
 
@@ -340,6 +348,19 @@ let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|ven
 
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Macopy - Copies the current selection to the Mac pasteboard
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! s:macopyfn()
+  let [lnum1, col1] = getpos("'<")[1:2]
+  let [lnum2, col2] = getpos("'>")[1:2]
+
+  exec ":silent !sed -n " . lnum1 . "," . lnum2 . "p % | pbcopy"
+  redraw!
+endfunction
+
+command! -range Macopy call s:macopyfn()
 
 " taken from http://vim.wikia.com/wiki/Highlight_unwanted_spaces
 highlight RedundantSpaces ctermbg=red guibg=red
