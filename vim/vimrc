@@ -212,22 +212,29 @@ function! RunTestFile(...)
   let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\|_test.js\|_spec.js\)')
 
   if in_test_file >= 0
-    call SetTestFile()
+    call SetTestFile(command_suffix)
   elseif !exists("t:grb_test_file")
     :echo "Vim: I don't know what file to test :("
     return
   end
-  call RunTests(t:grb_test_file . command_suffix)
+
+  call RunTests(t:grb_test_file . t:grb_test_line)
 endfunction
 
 function! RunNearestTest()
-    let spec_line_number = line('.')
-    call RunTestFile(":" . spec_line_number)
+  let spec_line_number = line('.')
+  call RunTestFile(":" . spec_line_number)
 endfunction
 
-function! SetTestFile()
-    " Set the spec file that tests will be run for.
-    let t:grb_test_file=@%
+function! SetTestFile(...)
+  " Set the spec file that tests will be run for.
+  if a:0 && a:1 != ""
+    let t:grb_test_line = a:1
+  else
+    let t:grb_test_line = ""
+  endif
+
+  let t:grb_test_file = @%
 endfunction
 
 function! RunTests(filename)
