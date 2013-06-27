@@ -47,6 +47,18 @@ alias gdm='git diff master'
 		git commit -v -m "$*"
 	}
 
+  # rmr = Rebase Master Rebase
+	function rmr(){
+		# Defines the current git branch
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+    echo Checking out master, rebasing and returning to $CURRENT_BRANCH...
+		git checkout master
+    git pull --rebase origin master
+		git checkout $CURRENT_BRANCH
+    git rebase master
+	}
+
 	function gfacepunch(){
 		# Defines the current git branch
 		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
@@ -123,4 +135,8 @@ function grepp(){
 
 function findd(){
   find . -ipath "*$**"
+}
+
+function superkill(){
+  kill -9 `ps aux | grep $* | awk '{print $2}'`
 }
