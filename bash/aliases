@@ -31,6 +31,7 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
+alias dbmigrate='echo "Running rake db:migrate db:test:prepare" && be rake db:migrate db:test:prepare'
 
 # Git
 
