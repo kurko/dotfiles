@@ -1,11 +1,69 @@
-" Copy or symlink to ~/.vimrc or ~/_vimrc.
-
-call pathogen#infect()
+" Copy or symlink this file to ~/.vimrc
 
 " avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
-set nocompatible                  " Must come first because it changes other options.
 
+set nocompatible               " be iMproved
+filetype off                   " required!
+
+" Vundle
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+
+Bundle 'gmarik/vundle'
+
+Bundle 'vim-scripts/CSApprox'
+Bundle 'vim-scripts/EasyGrep'
+Bundle 'kurko/autocoder.vim'
+Bundle 'thisivan/vim-bufexplorer'
+
+Bundle 'bkad/CamelCaseMotion'
+Bundle 'tsaleh/vim-matchit'
+" To use CTags
+Bundle 'vim-scripts/taglist.vim'
+" Multiline editing
+Bundle 'coderifous/textobj-word-column'
+
+Bundle 'kien/ctrlp.vim.git'
+Bundle 'tpope/vim-cucumber.git'
+Bundle 'tpope/vim-endwise.git'
+Bundle 'tpope/vim-fugitive.git'
+Bundle 'sjl/gundo.vim.git'
+Bundle 'tpope/vim-haml.git'
+Bundle 'nono/vim-handlebars.git'
+Bundle 'othree/html5.vim.git'
+Bundle 'digitaltoad/vim-jade.git'
+Bundle 'tpope/vim-markdown.git'
+Bundle 'tpope/vim-ragtag.git'
+Bundle 'tpope/vim-rails.git'
+Bundle 'cakebaker/scss-syntax.vim.git'
+Bundle 'cakebaker/scss-syntax.vim.git'
+Bundle 'ciaranm/securemodelines.git'
+Bundle 'ervandew/supertab.git'
+Bundle 'tpope/vim-surround.git'
+Bundle 'scrooloose/syntastic.git'
+Bundle 'timcharper/textile.vim.git'
+Bundle 'tomtom/tlib_vim.git'
+Bundle 'MarcWeber/vim-addon-mw-utils.git'
+Bundle 'asux/vim-capybara.git'
+Bundle 'kchmck/vim-coffee-script.git'
+Bundle 'altercation/vim-colors-solarized.git'
+Bundle 'pangloss/vim-javascript.git'
+Bundle 'itspriddle/vim-jquery.git'
+Bundle 'greyblake/vim-preview.git'
+Bundle 'tpope/vim-rails.git'
+Bundle 'tpope/vim-rake.git'
+Bundle 'vim-ruby/vim-ruby.git'
+Bundle 'garbas/vim-snipmate.git'
+Bundle 'honza/vim-snippets.git'
+Bundle 'chrismetcalf/vim-yankring.git'
+Bundle 'tpope/vim-vividchalk.git'
+Bundle 'gmarik/vundle.git'
+Bundle 'mattn/zencoding-vim.git'
+
+" Bundle 'mileszs/ack.vim.git'
+
+" Configuration
 set tags=tags                     " ctags
 
 syntax on                         " Turn on syntax highlighting.
