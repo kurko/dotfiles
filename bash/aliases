@@ -129,6 +129,10 @@ alias zspm='time zeus rspec spec/models/'
 alias zspa='time zeus rspec spec/acceptance/'
 alias zspr='time zeus rspec spec/request/'
 
+# Tmux
+#
+# execute_in_all_panes "echo OH HAI"
+
 # General commands
 function grepp(){
   grep -Rni --exclude=".//db/data*" --exclude=".//tmp*" --exclude=".//vendor*" --exclude=".//coverage*" --exclude=".//log*" --exclude=".//tag*" --exclude=".//spec*/cassett*" --exclude=".//public/*.js*" --exclude=".//.*" "$*" ./

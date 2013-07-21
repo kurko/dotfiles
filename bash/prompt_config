@@ -1,0 +1,100 @@
+export GREP_OPTIONS="--color=auto"
+export GREP_COLOR="4;33"
+export CLICOLOR="auto"
+
+# Reset
+NO_COLOR='\e[0m'       # Text Reset
+
+# Regular Colors
+BLACK='\e[0;30m'        # Black
+RED='\e[0;31m'          # Red
+GREEN='\e[0;32m'        # Green
+YELLOW='\e[0;33m'       # Yellow
+BLUE='\e[0;34m'         # Blue
+PURPLE='\e[0;35m'       # Purple
+CYAN='\e[0;36m'         # Cyan
+WHITE='\e[0;37m'        # White
+
+# Bold
+BBLACK='\e[1;30m'       # Black
+BRED='\e[1;31m'         # Red
+BGREEN='\e[1;32m'       # Green
+BYELLOW='\e[1;33m'      # Yellow
+BBLUE='\e[1;34m'        # Blue
+BPURPLE='\e[1;35m'      # Purple
+BCYAN='\e[1;36m'        # Cyan
+BWhite='\e[1;37m'       # Whit
+
+USER='\u'
+
+################################
+# FUNCTIONS
+################################
+
+function __ruby_version {
+   ruby -v | cut -d " " -f2
+}
+
+# some colors
+c_cyan=`tput setaf 6`
+c_red=`tput setaf 1`
+c_green=`tput setaf 2`
+c_sgr0=`tput sgr0`
+c_pink=`tput setaf 5`
+parse_git_branch () {
+  git rev-parse -git-dir >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    remote=""
+    git_status="$(git status 2> /dev/null)"
+    if [ $? -eq 128 ]; then
+      echo " (!GIT_DIR!)"
+    else
+      branch=`git rev-parse --symbolic-full-name --abbrev-ref HEAD`
+      git config --get branch.$branch.remote >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+
+        # it's a tracking branch
+        behind=`git log ..@{u} --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
+        ahead=`git log @{u}.. --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
+        diverged=`git log @{u}... --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
+
+        if [ $diverged -ne 0 ]; then
+
+          if [ "$behind" == "$diverged" ]; then
+            #remote=" [$behind]↓"
+            remote="↓"
+          elif [ "$ahead" == "$diverged" ]; then
+            #remote=" [$ahead]
+            remote="↑"
+          else
+            remote="↕"
+            #remote=" [$behind]↓ [$ahead]↑"
+          fi
+        fi
+      fi
+      echo "(${branch}${remote})"
+    fi
+  else
+    return 0
+  fi
+}
+
+branch_color () {
+  color=""
+  git rev-parse -git-dir >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    git status --untracked-files=no --porcelain >/dev/null 2>&1
+    if [ $? -eq 128 ]; then
+      color=${c_pink}
+    elif [ -z "$(git status --untracked-files=no --porcelain)" ]; then
+      color="${c_green}"
+    else
+      color=${c_red}
+    fi
+  else
+    return 0
+  fi
+  echo -ne $color
+}
+
+export PS1="\n\[$YELLOW\](\$(__ruby_version)) \[${NO_COLOR}\]\w \[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] \n\[$NO_COLOR\]→\[$NO_COLOR\] "

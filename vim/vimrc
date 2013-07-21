@@ -95,7 +95,8 @@ let g:gitgutter_enabled = 1
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
-let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage'
+let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
+let g:ctrlp_map = '<c-p>'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS
@@ -134,6 +135,12 @@ let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|ven
   nmap 44 $
   vmap 44 $h
 
+  function! SearchCurrentPath()
+    let l:word = expand("<cword>")
+    call feedkeys(":CtrlP\<CR>".l:word, "t")
+  endfunction
+  nnoremap <leader>g :call SearchCurrentPath()<cr>
+
   " Tab becomes Esc
   " inoremap <Tab> <Esc>
 
@@ -161,13 +168,19 @@ let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|ven
   map <leader>e :edit %%
   map <leader>v :view %%
 
-  " RAILS
+  " RUBY & RAILS
     " Keeps current file in on side, and its test file in the other
     " (depends on Rails.vim)
     map <leader>A :on<CR>\|:vsplit<CR>\|<c-w>l\|:A<CR>
+    " adds <%= %> in the current line
+    inoremap <leader>e <%=  %><ESC>==lllli
+    nnoremap <leader>e i<%=  %><ESC>==lllli
 
     " :A is from rails.vim plugin
     nnoremap <Leader>a :A<CR>
+
+    " deletes the remaining chars from a string
+    nnoremap <Leader>ds vf"hd
 
   " CTRLP
     map <leader>ga :CtrlPClearCache<cr>\|:CtrlP app/assets<cr>
