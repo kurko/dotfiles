@@ -31,7 +31,14 @@
 	email = chavedomundo@gmail.com
 
 [color]
-	ui = true
+  diff = auto
+  status = auto
+  branch = auto
+  interactive = auto
+  ui = auto
+
+[gc]
+  auto = 1
 
 [core]
 	excludesfile = /Users/kurko/.gitignore
