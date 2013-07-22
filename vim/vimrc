@@ -24,6 +24,7 @@ Bundle 'vim-scripts/taglist.vim'
 " Multiline editing
 Bundle 'coderifous/textobj-word-column'
 
+Bundle 'airblade/vim-gitgutter'
 Bundle 'kien/ctrlp.vim.git'
 Bundle 'tpope/vim-cucumber.git'
 Bundle 'tpope/vim-endwise.git'
@@ -36,7 +37,6 @@ Bundle 'digitaltoad/vim-jade.git'
 Bundle 'tpope/vim-markdown.git'
 Bundle 'tpope/vim-ragtag.git'
 Bundle 'tpope/vim-rails.git'
-Bundle 'cakebaker/scss-syntax.vim.git'
 Bundle 'cakebaker/scss-syntax.vim.git'
 Bundle 'ciaranm/securemodelines.git'
 Bundle 'ervandew/supertab.git'
@@ -58,7 +58,6 @@ Bundle 'garbas/vim-snipmate.git'
 Bundle 'honza/vim-snippets.git'
 Bundle 'chrismetcalf/vim-yankring.git'
 Bundle 'tpope/vim-vividchalk.git'
-Bundle 'gmarik/vundle.git'
 Bundle 'mattn/zencoding-vim.git'
 
 " Bundle 'mileszs/ack.vim.git'
@@ -129,7 +128,7 @@ colorscheme ir_black
 " PLUGINS CONFIGURATIONS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " git gutter plugin
-let g:gitgutter_enabled = 1
+let g:gitgutter_enabled = 0
 
 " zencoding plugin
  let g:user_zen_settings = {
