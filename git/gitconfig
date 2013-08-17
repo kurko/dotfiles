@@ -49,3 +49,5 @@
 [github]
 	user = kurko
 	token = fe8439a9cdaca5f74e79879b121c64448065f9fd
+[push]
+	default = simple

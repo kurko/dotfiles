@@ -5,13 +5,16 @@ function update_bash(){
 	ln -nfs ~/.dotfiles/vim/gvimrc ~/.gvimrc
 	ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
 	ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
+	ln -nfs ~/.dotfiles/ag/agignore ~/.agignore
 
-  source ~/.bashrc
+  if [ -f "~/.bashrc" ]; then
+    source ~/.bashrc
+  fi
   source ~/.bash_profile
 }
 
 alias update_hosts='dscacheutil -flushcache'
-alias ubp='echo "Updating ~/.bash_profile..." && source ~/.bash_profile'
+alias ubp='echo "Updating ~/.bash_profile..." && source ~/.bash_profile && update_bash'
 
 source ~/.dotfiles/bash/git-completion.bash
 
@@ -32,6 +35,9 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
 alias dbmigrate='echo "Running rake db:migrate db:test:prepare" && be rake db:migrate db:test:prepare'
+alias capst='echo "Running be cap staging deploy:migrations" && be cap staging deploy:migrations'
+alias capstaging='capst'
+alias capprod='echo "Running be cap production deploy:migrations" && be cap production deploy:migrations'
 
 # Git
 
@@ -143,7 +149,7 @@ function floggg(){
 
 # General commands
 function grepp(){
-  grep -Rni --exclude=".//db/data*" --exclude=".//tmp*" --exclude=".//vendor*" --exclude=".//coverage*" --exclude=".//log*" --exclude=".//tag*" --exclude=".//spec*/cassett*" --exclude=".//public/*.js*" --exclude=".//.*" --exclude="./db/data*" --exclude="./tmp*" --exclude="./vendor*" --exclude="./coverage*" --exclude="./log*" --exclude="./tag*" --exclude="./spec*/cassett*" --exclude="./public/*.js*" --exclude="./.*" "$*" ./
+  grep -Rni --exclude=".//db/data*" --exclude=".//tmp*" --exclude=".//vendor*" --exclude=".//coverage*" --exclude=".//log*" --exclude=".//tag*" --exclude=".//spec*/vcr*" --exclude=".//spec*/cassett*" --exclude=".//public/*.js*" --exclude=".//.*" --exclude="./db/data*" --exclude="./tmp*" --exclude="./vendor*" --exclude="./coverage*" --exclude="./log*" --exclude="./tag*" --exclude="./spec*/cassett*" --exclude="./public/*.js*" --exclude="./.*" "$*" ./
 }
 
 function findd(){
