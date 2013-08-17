@@ -1,5 +1,6 @@
 " Copy or symlink this file to ~/.vimrc
 
+
 " avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
 
@@ -21,8 +22,6 @@ Bundle 'bkad/CamelCaseMotion'
 Bundle 'tsaleh/vim-matchit'
 " To use CTags
 Bundle 'vim-scripts/taglist.vim'
-" Multiline editing
-Bundle 'coderifous/textobj-word-column'
 
 Bundle 'airblade/vim-gitgutter'
 Bundle 'kien/ctrlp.vim.git'
@@ -60,7 +59,6 @@ Bundle 'chrismetcalf/vim-yankring.git'
 Bundle 'tpope/vim-vividchalk.git'
 Bundle 'mattn/zencoding-vim.git'
 
-" Bundle 'mileszs/ack.vim.git'
 
 " Configuration
 set tags=tags                     " ctags
@@ -128,7 +126,7 @@ colorscheme ir_black
 " PLUGINS CONFIGURATIONS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " git gutter plugin
-let g:gitgutter_enabled = 0
+let g:gitgutter_enabled = 1
 
 " zencoding plugin
  let g:user_zen_settings = {
@@ -152,7 +150,7 @@ let g:gitgutter_enabled = 0
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
-let g:ctrlp_custom_ignore = 'tmp\|log\|public\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
+let g:ctrlp_custom_ignore = 'tmp\|logs\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
 let g:ctrlp_map = '<c-p>'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -173,6 +171,7 @@ let g:ctrlp_map = '<c-p>'
   nnoremap <leader>2 :set foldlevel=2<cr>
   nnoremap <leader>3 :set foldlevel=3<cr>
   nnoremap <leader>4 :set foldlevel=4<cr>
+  nnoremap <leader>9 :set foldlevel=9<cr>
 
   " Tab mappings.
     map <leader>tt :tabnew<cr>
@@ -187,6 +186,23 @@ let g:ctrlp_map = '<c-p>'
 
   " Enter clears search highlight
   nmap <CR> :nohlsearch<CR>
+
+  " When pasting in visual mode, doesn't replace current register
+  " vnoremap p "_dP
+  " I haven't found how to hide this function (yet)
+  function! RestoreRegister()
+    let @" = s:restore_reg
+    return ''
+  endfunction
+
+  function! s:Repl()
+      let s:restore_reg = @"
+      return "p@=RestoreRegister()\<cr>"
+  endfunction
+
+  " this supports "rp that replaces the selection by the contents of @r
+  vnoremap <silent> <expr> p <sid>Repl()
+
 
   " Goes to the end of the line (pressing shift+4 is annoying)
   nmap 44 $
@@ -382,8 +398,16 @@ command! CtrlPVimPath call SetCtrlPPathTheSameAsVim()
 
       let filename_without_line_number = substitute(a:filename, ':\d\+$', '', '')
       " Minitest
-      if match(a:filename, '\(_test\)') != -1
-        exec ":!ruby -Ilib/ " . a:filename
+      if match(a:filename, '\(_test.rb\)') != -1
+
+        " Rails codebase itself?
+        if globpath(".", "rails.gemspec") > -1
+          let rails_framework = substitute(expand("%"), '/test/.*', '', '')
+          let include_path = rails_framework . "/lib:" . rails_framework . "/test"
+          exec ":!ruby -I" . include_path . " " . filename_without_line_number
+        else
+          exec ":!ruby -Ilib/ " . filename_without_line_number
+        end
 
       " Bundler
       elseif match(readfile(filename_without_line_number), '\("spec_helper\|''spec_helper\|capybara_helper\|acceptance_spec_helper\|acceptance_helper\)') >= 0
@@ -445,3 +469,4 @@ inoremap <s-tab> <c-n>
 
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
+Bundle 'rking/ag.vim'
