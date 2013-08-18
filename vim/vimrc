@@ -16,6 +16,7 @@ Bundle 'gmarik/vundle'
 Bundle 'vim-scripts/CSApprox'
 Bundle 'vim-scripts/EasyGrep'
 Bundle 'kurko/autocoder.vim'
+Bundle 'kurko/smartest.vim'
 Bundle 'thisivan/vim-bufexplorer'
 
 Bundle 'bkad/CamelCaseMotion'
@@ -317,129 +318,6 @@ command! CtrlPVimPath call SetCtrlPPathTheSameAsVim()
   map <leader>z <ESC>:w<CR>\|:!zeus rspec --color --no-drb %<cr>
   map <leader>tu <ESC>:w<CR>\|:!rspec --color --no-drb spec/lib<cr>
   map <leader>bu <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb spec/lib<cr>
-
-  function! RunTestFile(...)
-    if a:0
-      let command_suffix = a:1
-    else
-      let command_suffix = ""
-    endif
-
-    " Run the tests for the previously-marked file.
-    let in_test_file = match(expand("%"), '\(.feature\|_spec.rb\|_test.rb\|_test.js\|_spec.js\)')
-
-    if in_test_file >= 0
-      call SetTestFile(command_suffix)
-    elseif !exists("t:grb_test_file")
-      :echo "Vim: I don't know what file to test :("
-      return
-    end
-
-    call RunTests(t:grb_test_file . t:grb_test_line)
-  endfunction
-
-  function! RunNearestTest()
-    let spec_line_number = line('.')
-    call RunTestFile(":" . spec_line_number)
-  endfunction
-
-  function! SetTestFile(...)
-    " Set the spec file that tests will be run for.
-    if a:0 && a:1 != ""
-      let t:grb_test_line = a:1
-    else
-      let t:grb_test_line = ""
-    endif
-
-    let t:grb_test_file = @%
-  endfunction
-
-  function! RunTests(filename)
-
-    " Write the file and run tests for the given filename
-    :w
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-    :silent !echo;echo;echo;echo;echo;echo;echo;echo;echo;echo
-
-    " JAVASCRIPT
-    if match(expand("%"), '\(._test.js\|_spec.js\)') >= 0
-
-      let filename_for_spec = substitute(expand("%"), "spec/javascripts/", "", "")
-      "Konacha
-      if filereadable("Gemfile") && match(readfile("Gemfile"), "konacha") >= 0
-
-        " Konacha with Zeus
-        if filereadable("zeus.json")
-          :silent !echo "Konacha with zeus"
-          exec ":!zeus rake konacha:run SPEC=" . filename_for_spec
-
-        " Konacha with bundle exec
-        else
-          :silent !echo "Konacha with bundle exec"
-          exec ":!bundle exec rake konacha:run SPEC=" . filename_for_spec
-        endif
-
-      " Everything else (QUnit)
-      else
-        "Rake
-        :silent !echo "Javascript test, running rake"
-        exec ":!rake"
-      endif
-
-    " RUBY
-    elseif match(a:filename, '\(._test.rb\|_spec.rb\)') >= 0
-
-      let filename_without_line_number = substitute(a:filename, ':\d\+$', '', '')
-      " Minitest
-      if match(a:filename, '\(_test.rb\)') != -1
-
-        " Rails codebase itself?
-        if globpath(".", "rails.gemspec") > -1
-          let rails_framework = substitute(expand("%"), '/test/.*', '', '')
-          let include_path = rails_framework . "/lib:" . rails_framework . "/test"
-          exec ":!ruby -I" . include_path . " " . filename_without_line_number
-        else
-          exec ":!ruby -Ilib/ " . filename_without_line_number
-        end
-
-      " Bundler
-      elseif match(readfile(filename_without_line_number), '\("spec_helper\|''spec_helper\|capybara_helper\|acceptance_spec_helper\|acceptance_helper\)') >= 0
-
-        " Spring (gem like Zeus, to make things faster)
-        if match(system('spring status'), 'Spring is running') >= 0
-          :silent !echo "Using Spring"
-          exec ":!spring rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
-
-        " Zeus
-        elseif filereadable("zeus.json") && filereadable("Gemfile")
-          :silent !echo "Using zeus"
-          exec ":!zeus rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
-
-        " bundle exec
-        elseif filereadable("Gemfile")
-          :silent !echo "Using bundle exec"
-          exec ":!bundle exec rspec --color --order random " . a:filename
-
-        " pure rspec
-        else
-          :silent !echo "Using vanilla rspec"
-          exec ":!rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
-        end
-
-      " Everything else
-      else
-        :silent !echo "Using vanilla rspec outside Rails"
-        exec ":!rspec -O ~/.rspec --color --format progress --no-drb --order random " . a:filename
-      end
-    end
-  endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " ENVIRONMENT CONFIGURATIONS
