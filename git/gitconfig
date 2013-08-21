@@ -41,7 +41,7 @@
   auto = 1
 
 [core]
-	excludesfile = /home/vagrant/.gitignore
+	excludesfile = /Users/kurko/.gitignore
 	editor = vim
 
 [merge]
