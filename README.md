@@ -5,11 +5,13 @@ Use these files in your bash to improve it.
 Start by cloning this repo into `~/.dotfiles`. Then add this to your
 `~/.bashrc` (or `~/.bash_profile` if you're in a Mac):
 
-```if [ -f ~/.bashrc ]; then
+```Bash
+if [ -f ~/.bashrc ]; then
   source ~/.dotfiles/bashrc
 else
   source ~/.dotfiles/bash_profile
-fi```
+fi
+```
 
 Edit gitconfig file at `~/.dotfiles/git/` with your name and email.
 
