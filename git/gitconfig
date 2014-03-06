@@ -27,8 +27,8 @@
   la = !git l --all
 
 [user]
-	name = Alexandre de Oliveira
-	email = chavedomundo@gmail.com
+	name = Jader Correa
+	email = jadercorrea.hv@gmail.com
 
 [color]
   diff = auto
