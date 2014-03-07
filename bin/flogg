@@ -9,10 +9,10 @@ function calculate_complexity_difference() {
 }
 
 function print_complexity_diff() {
-    calculate_complexity_difference
-    echo "Previous Complexity: $previous_complexity"
-    echo -e "Current Complexity: $current_complexity\n"
-    echo "You have reduced the total complexity by: $difference"
+  calculate_complexity_difference
+  echo "Previous Complexity: $previous_complexity"
+  echo -e "Current Complexity: $current_complexity\n"
+  echo "You have reduced the total complexity by: $difference"
 }
 
 function invalid_filepath() {

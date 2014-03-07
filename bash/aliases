@@ -35,9 +35,10 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
 alias dbmigrate='echo "Running rake db:migrate db:test:prepare" && be rake db:migrate db:test:prepare'
-alias capst='echo "Running be cap staging deploy:migrations" && be cap staging deploy:migrations'
-alias capstaging='capst'
-alias capprod='echo "Running be cap production deploy:migrations" && be cap production deploy:migrations'
+alias dbmigratestatus='echo "Running rake db:migrate:status" && be rake db:migrate:status'
+alias deploystaging='echo "Running be cap staging deploy:migrations" && be cap staging deploy:migrations'
+alias deployprod="echo \"Running be 'cap production deploy:migrations'\" && be cap production deploy:migrations"
+alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:migrations'\" && gpush && be cap production deploy:migrations"
 
 # Git
 
@@ -47,12 +48,13 @@ alias gb='git branch'
 alias gd='git diff'
 alias gdc='git diff --cached'
 alias gl='git log'
+alias gamend='git commit --amend'
 alias gdm='git diff master'
 
 	# Commit pending changes and quote all args as message
-	function gc(){
-		git commit -v -m "$*"
-	}
+	function gc(){ echo "Do you mean gco?"; }
+	function gco(){ git commit -v -m "$*"; }
+	function gch(){ git checkout $*; }
 
   # rmr = Rebase Master Rebase
 	function rmr(){
@@ -102,15 +104,22 @@ alias gdm='git diff master'
 
 # Development
 function spn(){ time rspec $*; }
-function spna(){ time rspec spec_no_rails/ $*; }
 function be(){ time bundle exec $*; }
-function ber(){ echo 'Running all tests in spec/' && time bundle exec rspec spec/ $*; }
-function spr(){ echo 'Running all tests in spec/requests/' && time bundle exec rspec spec/requests/ $*; }
-function spa(){ echo 'Running all tests in spec/acceptance/' && time bundle exec rspec spec/acceptance/ $*; }
-function spu(){ echo 'Running all tests in spec/unit/' && time rspec spec/unit/ $*; }
-function spc(){ echo 'Running all tests in spec/controllers/' && time bundle exec rspec spec/controllers/ $*; }
-function spm(){ echo 'Running all tests in spec/models/' && time bundle exec rspec spec/models/ $*; }
-function spl(){ echo 'Running all tests in spec/lib/' && time bundle exec rspec spec/lib/ $*; }
+function t(){
+  SPEC_PATH='spec/'
+  if [ ! -z "$*" ]; then
+    SPEC_PATH="$*"
+  fi
+  echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH 2> >(grep -v CoreText 1>&2);
+}
+function tf(){
+  SPEC_PATH='spec/'
+  if [ ! -z "$*" ]; then
+    SPEC_PATH="$*"
+  fi
+  echo "Running all tests in $SPEC_PATH and failing-fast" && time bundle exec rspec $SPEC_PATH --fail-fast 2> >(grep -v CoreText 1>&2);
+}
+function tsay(){ echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* && say 'SPECS ARE DONE! GET BACK HERE!'; }
 
 # checks the complexity of a file in HEAD~1
 function floggg(){
@@ -153,9 +162,17 @@ function grepp(){
 }
 
 function findd(){
-  find . -ipath "*$**"
+  find . -ipath "*$**";
 }
 
 function superkill(){
   kill -9 `ps aux | grep $* | awk '{print $2}'`
+}
+
+function ,f() {
+  vim $(git ls-files|selecta)
+}
+
+function ffiles() {
+  find . -name \* -print | selecta
 }

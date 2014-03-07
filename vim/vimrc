@@ -111,7 +111,7 @@ let g:gitgutter_enabled = 1
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
-let g:ctrlp_custom_ignore = 'tmp\|logs\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
+let g:ctrlp_custom_ignore = 'tmp\|logs\|log\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
 let g:ctrlp_map = '<c-p>'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -128,11 +128,25 @@ let g:ctrlp_map = '<c-p>'
   map <Leader>s <ESC>:w<CR>
   map <Leader>be :BufExplorer<CR>
 
-  nnoremap <leader>1 :set foldlevel=1<cr>
-  nnoremap <leader>2 :set foldlevel=2<cr>
-  nnoremap <leader>3 :set foldlevel=3<cr>
-  nnoremap <leader>4 :set foldlevel=4<cr>
-  nnoremap <leader>9 :set foldlevel=9<cr>
+  " Motion for "next object". For example, "din(" would go to the next "()" pair
+  " and delete its contents.
+    onoremap an :<c-u>call <SID>NextTextObject('a')<cr>
+    xnoremap an :<c-u>call <SID>NextTextObject('a')<cr>
+    onoremap in :<c-u>call <SID>NextTextObject('i')<cr>
+    xnoremap in :<c-u>call <SID>NextTextObject('i')<cr>
+
+    function! s:NextTextObject(motion)
+      echo
+      let c = nr2char(getchar())
+      exe "normal! f".c."v".a:motion.c
+    endfunction
+
+  " Folding
+    nnoremap <leader>1 :set foldlevel=1<cr>
+    nnoremap <leader>2 :set foldlevel=2<cr>
+    nnoremap <leader>3 :set foldlevel=3<cr>
+    nnoremap <leader>4 :set foldlevel=4<cr>
+    nnoremap <leader>9 :set foldlevel=9<cr>
 
   " Tab mappings.
     map <leader>tt :tabnew<cr>
@@ -176,10 +190,28 @@ let g:ctrlp_map = '<c-p>'
   nnoremap <leader>g :call SearchCurrentPath()<cr>
 
   " Tab becomes Esc
-  " inoremap <Tab> <Esc>
+  " inoremap <m-i> <tab>
+  " nnoremap <tab> <esc>
+  " vnoremap <tab> <esc>gV
+  " inoremap <tab> <esc>`^
 
   " Updates CTags
   map <F5> :exec "!ctags -R --exclude=.git --exclude=vendor/bundle"<CR>
+
+  function! PropheticTag()
+    if v:count1 == "1"
+      :echo "Not prophetic"
+      return ""
+    endif
+
+    execute "normal! " . v:count1 . "G"
+    execute ":tag '" . expand("<cword>") . "'"
+    return ""
+  endfunction
+
+  "nnoremap <C-[> :<C-U>call PropheticTag()<CR>
+
+  nmap <leader>b :so $MYVIMRC<CR>
 
   " Resizing windows
   nnoremap <C-h> :vertical resize +5<cr>
@@ -233,13 +265,17 @@ let g:ctrlp_map = '<c-p>'
 " CUSTOM COMMANDS
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! SetCtrlPPathTheSameAsVim()
+  let new_dir = expand('%:h')
+  exec ':cd ' . new_dir
   let g:ctrlp_working_path_mode=''
+  exec ':echo "Changed CtrlP and Vim path to current folder."'
 endfunction
 
 " When you go to another project inside of a Rails project (e.g Ember project
 " in app/assets/javascript/my_project), CtrlP still uses ./ as root. By typing
 " this command, CtrlP will :cd into this internal project.
 command! CtrlPVimPath call SetCtrlPPathTheSameAsVim()
+map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM FUNCTIONS
@@ -299,6 +335,7 @@ function! InsertTabWrapper()
         return "\<c-p>"
     endif
 endfunction
+" inoremap <esc> <c-r>=InsertTabWrapper()<cr>
 inoremap <tab> <c-r>=InsertTabWrapper()<cr>
 inoremap <s-tab> <c-n>
 
