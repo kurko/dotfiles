@@ -43,7 +43,7 @@ alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:mig
 # Git
 
 alias g='git status'
-alias ga='git add . && git add . -u && git status'
+alias ga='git add . --all && git status'
 alias gb='git branch'
 alias gd='git diff'
 alias gdc='git diff --cached'
