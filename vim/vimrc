@@ -23,6 +23,7 @@ filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
 
+set pastetoggle=<F10>
 set showcmd                       " Display incomplete commands.
 set showmode                      " Display the mode you're in.
 
@@ -128,6 +129,12 @@ let g:ctrlp_user_command = 'find %s -type f'
   " save by pressing ,s instead of :w
   map <Leader>s <ESC>:w<CR>
   map <Leader>be :BufExplorer<CR>
+
+  " Prevents Vim from scrolling when splitting the window horizontally.
+    nnoremap <C-W>s Hmx`` \|:split<CR>`xzt``
+
+  " ]p to paste and indent code automatically
+    nnoremap ]p p=`]
 
   " Motion for "next object". For example, "din(" would go to the next "()" pair
   " and delete its contents.
@@ -325,6 +332,27 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
   autocmd BufWinLeave * call clearmatches()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" INDENTING WHEN PASTING
+" Paste and indent if we're at the beginning of a line. Else, just paste.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! PasteAndIndent()
+  let col = col('.') - 1
+  if !col || getline('.')[col - 1] !~ '\k'
+    "execute ":normal! p=`]"
+    execute ":echo 1111"
+    execute ":normal! p"
+  else
+    execute ":echo 2222"
+    execute ":normal! p"
+  endif
+endfunction
+
+nnoremap p :call PasteAndIndent()<cr>
+
+" ]p to paste and indent code automatically
+" nnoremap ]p p=`]
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " MULTIPURPOSE TAB KEY
 " Indent if we're at the beginning of a line. Else, do completion.
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -336,7 +364,6 @@ function! InsertTabWrapper()
         return "\<c-p>"
     endif
 endfunction
-" inoremap <esc> <c-r>=InsertTabWrapper()<cr>
 inoremap <tab> <c-r>=InsertTabWrapper()<cr>
 inoremap <s-tab> <c-n>
 
