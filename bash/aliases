@@ -23,6 +23,7 @@ alias ls='ls -G'
 alias ..='cd ..'
 alias count_files='find ./ -maxdepth 1 -type d | while read -r dir; do printf "%s:\t" "$dir"; find "$dir" | wc -l; done'
 
+
 # Processes
 alias tu='top -o cpu'
 alias tm='top -o cpu'
@@ -155,6 +156,10 @@ function floggg(){
 # Tmux
 #
 # execute_in_all_panes "echo OH HAI"
+function tmuxa(){ tmux attach -t $*; }
+function tmuxn(){ tmux new-session -s $*; }
+function tmuxk(){ tmux kill-session -t $*; }
+
 
 # General commands
 function grepp(){

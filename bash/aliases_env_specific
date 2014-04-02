@@ -1,0 +1,9 @@
+alias pg="pg_ctl -D /usr/local/var/postgres -l ~/.pg.log start"
+
+alias stt="cd ~/www/store && tmux attach -t store"
+alias aust="cd ~/www/aust && tmux attach -t aust"
+
+# pro
+alias hay="cd ~/www/sb/haystack && tmux attach -t haystack"
+alias seo="cd ~/www/sb/seo_platform && tmux attach -t seo_platform"
+alias se="cd ~/www/sb/seo_essentials && tmux attach -t seo_essentials"
