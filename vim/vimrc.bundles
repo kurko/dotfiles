@@ -10,7 +10,6 @@ Bundle 'kurko/smartest.vim'
 Bundle 'thisivan/vim-bufexplorer'
 
 "Bundle 'bkad/CamelCaseMotion'
-Bundle 'tsaleh/vim-matchit'
 " To use CTags
 Bundle 'vim-scripts/taglist.vim'
 
@@ -29,12 +28,9 @@ Bundle 'tpope/vim-ragtag.git'
 Bundle 'tpope/vim-rails.git'
 Bundle 'cakebaker/scss-syntax.vim.git'
 Bundle 'ciaranm/securemodelines.git'
-" Bundle 'ervandew/supertab.git'
 Bundle 'tpope/vim-surround.git'
 Bundle 'scrooloose/syntastic.git'
 " Bundle 'timcharper/textile.vim.git'
-Bundle 'tomtom/tlib_vim.git'
-Bundle 'MarcWeber/vim-addon-mw-utils.git'
 Bundle 'asux/vim-capybara.git'
 Bundle 'kchmck/vim-coffee-script.git'
 Bundle 'altercation/vim-colors-solarized.git'
@@ -45,8 +41,6 @@ Bundle 'tpope/vim-rails.git'
 Bundle 'tpope/vim-rake.git'
 " vim-ruby.git slow
 " Bundle 'vim-ruby/vim-ruby.git'
-Bundle 'garbas/vim-snipmate.git'
-Bundle 'honza/vim-snippets.git'
 Bundle 'chrismetcalf/vim-yankring.git'
 Bundle 'tpope/vim-vividchalk.git'
 Bundle 'mattn/zencoding-vim.git'
@@ -54,3 +48,11 @@ Bundle 'mattn/zencoding-vim.git'
 Bundle 'rking/ag.vim'
 
 Bundle 'tonchis/to-github-vim'
+
+" vim-snipmate requires tlib and vim-addon-mw-utils
+Bundle 'tomtom/tlib_vim.git'
+Bundle 'MarcWeber/vim-addon-mw-utils.git'
+Bundle 'garbas/vim-snipmate.git'
+Bundle 'honza/vim-snippets.git'
+
+Bundle 'ervandew/supertab.git'
