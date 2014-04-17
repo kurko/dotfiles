@@ -19,6 +19,7 @@ filetype off                   " required!
 set tags=tags                     " ctags
 
 syntax on                         " Turn on syntax highlighting.
+set synmaxcol=120
 filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
@@ -113,8 +114,9 @@ let g:gitgutter_enabled = 1
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 let g:ctrlp_custom_ignore = 'tmp\|logs\|log\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
+let g:ctrlp_custom_ignore += '.git'
 let g:ctrlp_map = '<c-p>'
-let g:ctrlp_user_command = 'find %s -type f'
+"let g:ctrlp_user_command = 'find %s -type f'
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS
