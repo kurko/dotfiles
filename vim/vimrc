@@ -65,7 +65,7 @@ set laststatus=2                  " Show the status line all the time
 " Useful status information at bottom of screen
 set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c-%v\ %)%P
 
-set foldmethod=syntax
+set foldmethod=manual
 set foldlevelstart=99
 set foldlevel=99
 au BufRead,BufNewFile *.scss set filetype=scss
