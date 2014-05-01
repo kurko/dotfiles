@@ -41,6 +41,7 @@ alias deploystaging='echo "Running be cap staging deploy:migrations" && be cap s
 alias deployprod="echo \"Running be 'cap production deploy:migrations'\" && be cap production deploy:migrations"
 alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:migrations'\" && gpush && be cap production deploy:migrations"
 
+alias startredis="redis-server /usr/local/etc/redis.conf & disown"
 # Git
 
 alias g='git status'

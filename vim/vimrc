@@ -115,6 +115,7 @@ let g:gitgutter_enabled = 1
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 let g:ctrlp_custom_ignore = 'tmp\|logs\|log\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
 let g:ctrlp_custom_ignore += '.git'
+let g:ctrlp_custom_ignore += 'spec/vcr/'
 let g:ctrlp_map = '<c-p>'
 "let g:ctrlp_user_command = 'find %s -type f'
 
@@ -170,7 +171,7 @@ let g:ctrlp_map = '<c-p>'
     map <leader>tm :tabmove
 
   " Enter clears search highlight
-  nmap <CR> :nohlsearch<CR>
+  " nmap <CR> :nohlsearch<CR>
 
   " When pasting in visual mode, doesn't replace current register
   " vnoremap p "_dP
@@ -318,6 +319,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " TESTS & SPECS FUNCTIONS
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+  nnoremap <cr> :call RunTestFile()<cr>
   map <leader>t :call RunTestFile()<cr>
   map <leader>r :call RunNearestTest()<cr>
   map <leader>bt <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb %<cr>
