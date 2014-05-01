@@ -19,7 +19,7 @@ filetype off                   " required!
 set tags=tags                     " ctags
 
 syntax on                         " Turn on syntax highlighting.
-set synmaxcol=120
+set synmaxcol=200
 filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
