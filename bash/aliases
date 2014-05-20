@@ -3,6 +3,7 @@ function update_bash(){
 	ln -nfs ~/.dotfiles/git/githelpers ~/.githelpers
 	ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
 	ln -nfs ~/.dotfiles/vim/vimrc.bundles ~/.vimrc.bundles
+	ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.vim/colors/
 	ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
 	ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
 	ln -nfs ~/.dotfiles/ag/agignore ~/.agignore

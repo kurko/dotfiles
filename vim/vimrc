@@ -77,7 +77,7 @@ augroup CLNRSet
 augroup END
 
 " "Theme
-colorscheme ir_black
+colorscheme alex_ir_black
 "railscasts
 
 
@@ -113,9 +113,11 @@ let g:gitgutter_enabled = 1
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set runtimepath^=~/.vim/bundle/ctrlp.vim
-let g:ctrlp_custom_ignore = 'tmp\|logs\|log\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE'
-let g:ctrlp_custom_ignore += '.git'
-let g:ctrlp_custom_ignore += 'spec/vcr/'
+let g:ctrlp_custom_ignore = 'tmp\|logs\|log\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|/app/assets/image\|/coverage\|.DS_STORE\|/node_modules\|bower'
+" let g:ctrlp_custom_ignore += '.git'
+" let g:ctrlp_custom_ignore += 'spec/vcr/'
+" let g:ctrlp_custom_ignore += 'node_modules'
+" let g:ctrlp_custom_ignore += 'bower_components'
 let g:ctrlp_map = '<c-p>'
 "let g:ctrlp_user_command = 'find %s -type f'
 
