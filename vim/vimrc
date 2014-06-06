@@ -321,7 +321,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " TESTS & SPECS FUNCTIONS
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-  nnoremap <cr> :call RunTestFile()<cr>
+  nnoremap <cr> <ESC>:w<CR>\|:call RunTestFile()<cr>
   map <leader>t :call RunTestFile()<cr>
   map <leader>r :call RunNearestTest()<cr>
   map <leader>bt <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb %<cr>

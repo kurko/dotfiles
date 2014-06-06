@@ -53,6 +53,7 @@ alias gd='git diff'
 alias gdc='git diff --cached'
 alias gl='git log'
 alias gamend='git commit --amend'
+alias gamendc='git commit --amend --no-edit'
 alias gdm='git diff master'
 
 	# Commit pending changes and quote all args as message
