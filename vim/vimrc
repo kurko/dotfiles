@@ -138,6 +138,9 @@ let g:ctrlp_map = '<c-p>'
   " Prevents Vim from scrolling when splitting the window horizontally.
     nnoremap <C-W>s Hmx`` \|:split<CR>`xzt``
 
+  " Spacebar saves
+    nnoremap <Space> :w<cr>
+
   " ]p to paste and indent code automatically
     nnoremap ]p p=`]
 
@@ -251,9 +254,6 @@ let g:ctrlp_map = '<c-p>'
     " Keeps current file in on side, and its test file in the other
     " (depends on Rails.vim)
     map <leader>A :on<CR>\|:vsplit<CR>\|<c-w>l\|:A<CR>
-    " adds <%= %> in the current line
-    inoremap <leader>e <%=  %><ESC>==lllli
-    nnoremap <leader>e i<%=  %><ESC>==lllli
 
     " :A is from rails.vim plugin
     nnoremap <Leader>a :A<CR>
