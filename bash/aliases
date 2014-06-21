@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function update_bash(){
 	ln -nfs ~/.dotfiles/git/gitconfig ~/.gitconfig
 	ln -nfs ~/.dotfiles/git/githelpers ~/.githelpers

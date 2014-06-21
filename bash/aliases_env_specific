@@ -1,3 +1,5 @@
+#!/bin/bash
+
 alias pg="pg_ctl -D /usr/local/var/postgres -l ~/.pg.log start"
 
 alias stt="cd ~/www/store && tmux attach -t store"

@@ -1,3 +1,4 @@
+#!/bin/bash
 export GREP_OPTIONS="--color=auto"
 export GREP_COLOR="4;33"
 export CLICOLOR="auto"
@@ -31,20 +32,78 @@ USER='\u'
 # FUNCTIONS
 ################################
 
-function __ruby_version {
-  root_dir=$(git rev-parse --show-toplevel 2>&1 | sed -n '/\/.*\/.*/p')
+function __git_root_dir {
+  root_dir="$(git rev-parse --show-toplevel 2>&1 | sed -n '/\/.*\/.*/p')"
   if [ "${root_dir}" != "" ]; then
     root_dir="${root_dir}/"
   fi
+  echo $root_dir
+}
+
+function __ruby_version {
+  root_dir=$(__git_root_dir)
 
   if [ -f "${root_dir}Gemfile" ]      ||
      [ -f "${root_dir}Gemfile.lock" ] ||
-     [ -f "${root_dir}Rakefile" ]     ||
+     [ -f "${root_dir}Rakefile" ]     || [ -f "Rakefile" ] ||
      [ -f "${root_dir}Capfile" ]      ||
      [ -f "${root_dir}config.ru" ]
   then
-    version="$(ruby -v | cut -d " " -f2)"
-    echo "($version) "
+    version="$(ruby -v 2>&1 | cut -d " " -f2 | sed -n '/[0-9]/p')"
+    if [ "${version}" != "" ]; then
+      echo $version
+    else
+      echo "No Ruby;"
+    fi
+  fi
+}
+function __rails_version {
+  root_dir=$(__git_root_dir)
+
+  if [ -f "${root_dir}Gemfile.lock" ]
+  then
+    version="$(cat ${root_dir}Gemfile.lock|sed -n 's/^ \{1,2\}rails .*\([0-4]\))/\1/p')"
+    echo $version
+  fi
+}
+
+function __ruby_project {
+  result=""
+  ruby_version="$(__ruby_version)"
+  rails_version="$(__rails_version)"
+  if [ "${ruby_version}" != "" ]; then
+    result="${ruby_version}"
+  fi
+  if [ "${rails_version}" != "" ]; then
+    result="${result}, Rails ${rails_version}"
+  fi
+  if [ "${result}" != "" ]; then
+    echo "($result) "
+  fi
+}
+function __ember_js_version {
+  root_dir=$(__git_root_dir)
+
+  if [ -f "${root_dir}bower.json" ]
+  then
+    version=$(cat ${root_dir}bower.json | sed -n "s/ember['\"].*\"\(.*\)['\"],/\1/p")
+    version=$(echo ${version}|tr -d '"')
+    echo $version
+  fi
+}
+
+function __javascript_project {
+  result=""
+  ember_cli_version="$(__ember_js_version)"
+  if [ "${ember_cli_version}" != "" ]; then
+    if [[ $ember_cli_version =~ git ]]; then
+      result="Ember.js@git"
+    else
+      result="Ember.js v${ember_cli_version}"
+    fi
+  fi
+  if [ "${result}" != "" ]; then
+    echo "($result) "
   fi
 }
 
@@ -110,4 +169,8 @@ branch_color () {
   echo -ne $color
 }
 
-export PS1="\n\[$YELLOW\]\$(__ruby_version)\[${NO_COLOR}\]\w \[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] \n\[$NO_COLOR\]→\[$NO_COLOR\] "
+export PS1="\n\[$YELLOW\]\$(__ruby_project)\[${NO_COLOR}\]"
+export PS1="${PS1}\[$YELLOW\]\$(__javascript_project)\[${NO_COLOR}\]"
+export PS1="${PS1}\w "
+export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
+export PS1="${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
