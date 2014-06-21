@@ -32,7 +32,20 @@ USER='\u'
 ################################
 
 function __ruby_version {
-   ruby -v | cut -d " " -f2
+  root_dir=$(git rev-parse --show-toplevel 2>&1 | sed -n '/\/.*\/.*/p')
+  if [ "${root_dir}" != "" ]; then
+    root_dir="${root_dir}/"
+  fi
+
+  if [ -f "${root_dir}Gemfile" ]      ||
+     [ -f "${root_dir}Gemfile.lock" ] ||
+     [ -f "${root_dir}Rakefile" ]     ||
+     [ -f "${root_dir}Capfile" ]      ||
+     [ -f "${root_dir}config.ru" ]
+  then
+    version="$(ruby -v | cut -d " " -f2)"
+    echo "($version) "
+  fi
 }
 
 # some colors
@@ -97,4 +110,4 @@ branch_color () {
   echo -ne $color
 }
 
-export PS1="\n\[$YELLOW\](\$(__ruby_version)) \[${NO_COLOR}\]\w \[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] \n\[$NO_COLOR\]→\[$NO_COLOR\] "
+export PS1="\n\[$YELLOW\]\$(__ruby_version)\[${NO_COLOR}\]\w \[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] \n\[$NO_COLOR\]→\[$NO_COLOR\] "
