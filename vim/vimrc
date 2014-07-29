@@ -7,13 +7,15 @@ set nocompatible               " be iMproved
 filetype off                   " required!
 
 " Vundle
-  set rtp+=~/.vim/bundle/vundle/
-  call vundle#rc()
+  set rtp+=~/.vim/bundle/Vundle.vim/
+  call vundle#begin()
 
   if filereadable(expand("~/.vimrc.bundles"))
     source ~/.vimrc.bundles
   endif
 
+  call vundle#end()               " required
+  filetype plugin indent on       " required
 
 " Configuration
 set tags=tags                     " ctags
