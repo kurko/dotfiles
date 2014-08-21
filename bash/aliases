@@ -18,6 +18,7 @@ function update_bash(){
 
 alias update_hosts='dscacheutil -flushcache'
 alias ubp='echo "Updating ~/.bash_profile..." && source ~/.bash_profile && update_bash'
+alias vimdotfiles='vim ~/.dotfiles/bash/'
 
 source ~/.dotfiles/bash/git-completion.bash
 
@@ -26,8 +27,7 @@ alias ls='ls -G'
 alias ..='cd ..'
 alias count_files='find ./ -maxdepth 1 -type d | while read -r dir; do printf "%s:\t" "$dir"; find "$dir" | wc -l; done'
 
-
-# Processes
+# Unix Processes
 alias tu='top -o cpu'
 alias tm='top -o cpu'
 
@@ -60,7 +60,13 @@ alias gdm='git diff master'
 
 	# Commit pending changes and quote all args as message
 	function gc(){ echo "Do you mean gco?"; }
-	function gco(){ git commit -v -m "$*"; }
+	function gco(){
+    if [ ! -z "$*" ]; then
+      git commit -v -m "$*";
+    else
+      git commit;
+    fi
+  }
 	function gch(){ git checkout $*; }
 
   # rmr = Rebase Master Rebase
@@ -117,16 +123,16 @@ function t(){
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH 2> >(grep -v CoreText 1>&2);
+  echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --color 2> >(grep -v CoreText 1>&2);
 }
 function tf(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH and failing-fast" && time bundle exec rspec $SPEC_PATH --fail-fast 2> >(grep -v CoreText 1>&2);
+  echo "Running all tests in $SPEC_PATH and failing-fast" && time bundle exec rspec $SPEC_PATH --fail-fast --color 2> >(grep -v CoreText 1>&2);
 }
-function tsay(){ echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* && say 'SPECS ARE DONE! GET BACK HERE!'; }
+function tsay(){ echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!'; }
 
 # checks the complexity of a file in HEAD~1
 function floggg(){

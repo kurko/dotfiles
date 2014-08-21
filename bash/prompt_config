@@ -62,7 +62,7 @@ function __rails_version {
 
   if [ -f "${root_dir}Gemfile.lock" ]
   then
-    version="$(cat ${root_dir}Gemfile.lock|sed -n 's/^ \{1,2\}rails .*\([0-4]\))/\1/p')"
+    version="$(cat ${root_dir}Gemfile.lock|sed -n 's/^ \{1,2\}rails .*\(.*[3-4].*\))/\1/p')"
     echo $version
   fi
 }
