@@ -3,6 +3,7 @@ logs/
 images/
 public/assets/
 tmp/
+tags
 vendor/
 bundle/
 spec/vcr/
