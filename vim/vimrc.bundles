@@ -1,7 +1,9 @@
 Plugin 'gmarik/Vundle.vim'
 
+Plugin 'elzr/vim-json'
+Plugin 'wting/rust.vim'
 Plugin 'vim-scripts/dbext.vim'
-Bundle 'mustache/vim-mustache-handlebars'
+Plugin 'mustache/vim-mustache-handlebars'
 "Plugin 'vim-scripts/CSApprox'
 Plugin 'vim-scripts/EasyGrep'
 Plugin 'kurko/autocoder.vim'

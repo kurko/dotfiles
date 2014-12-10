@@ -57,6 +57,8 @@ alias gl='git log'
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
 alias gdm='git diff master'
+alias gdelete_merged_branches='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
+alias gshow_unmerged_branches='git branch --no-merged'
 
 	# Commit pending changes and quote all args as message
 	function gc(){ echo "Do you mean gco?"; }
@@ -143,7 +145,7 @@ function floggg(){
 
 # Zeus
   alias zst='zeus start'
-  alias zsts='(tmux send-keys -t 8 "zse" C-m &) && zst'
+  alias zsts='(tmux send-keys -t 8 "sleep 1 && zse" C-m &) && zst'
   alias zse='zeus server'
   alias zco='zeus console'
   function zra(){ zeus rake $*; }
@@ -158,6 +160,7 @@ function floggg(){
   alias zspr='time zeus rspec spec/request/'
 
 # Spring gem
+  alias sr='spring rake test'
   alias sse='spring rails server'
   alias sco='spring rails console'
   function sra(){ spring rake $*; }
