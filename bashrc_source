@@ -17,6 +17,7 @@ function create_dot_vim() {
 }
 
 function update_symlinks(){
+  ln -nfs ~/.dotfiles/git/gitignore ~/.gitignore
   ln -nfs ~/.dotfiles/git/gitconfig ~/.gitconfig
   ln -nfs ~/.dotfiles/git/githelpers ~/.githelpers
   ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc

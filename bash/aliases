@@ -1,12 +1,13 @@
 #!/bin/bash
 
 alias update_hosts='dscacheutil -flushcache'
-alias vimdotfiles='vim ~/.dotfiles/bash/'
 
 source ~/.dotfiles/bash/git-completion.bash
 
 alias install-dotfiles='update_dotfiles'
 alias ubp='update_dotfiles'
+alias dotfiles='cd ~/.dotfiles'
+alias vimdotfiles='vim ~/.dotfiles/bash/'
 
 # System
 alias ls='ls -G'
