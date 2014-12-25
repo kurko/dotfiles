@@ -2,12 +2,11 @@
 
 Use these files in your bash to improve it.
 
-Start by cloning this repo into `~/.dotfiles`. Then add this to your
-`~/.bashrc` (or `~/.bash_profile` if you're in a Mac):
+Start by cloning this repo into `~/.dotfiles`. Then run:
 
-`source ~/.dotfiles/bash`
+`source ~/.dotfiles/install`
 
-Now run the loading command:
+To reload dotfiles, run:
 
 `$ ubp`
 

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+touch ~/.bash_profile
+
+source ~/.dotfiles/bashrc_source
+
+update_dotfiles
+
+alias install-dotfiles='update_dotfiles'
+alias ubp='update_dotfiles'
