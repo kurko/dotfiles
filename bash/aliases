@@ -35,6 +35,7 @@ alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:mig
 alias startredis="redis-server /usr/local/etc/redis.conf & disown"
 # Git
 
+alias master='git checkout master'
 alias g='git status'
 alias ga='git add . --all && git status'
 alias gb='git branch'
