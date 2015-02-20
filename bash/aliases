@@ -45,7 +45,8 @@ alias gl='git log'
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
 alias gdm='git diff master'
-alias gdelete_merged_branches='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
+#alias gdelete_merged_branches='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
+alias gdelete_merged_branches="git checkout master; git branch --merged | egrep -v ^master$ | sed 's/^[ *]*//' | sed 's/^/git branch -D /' | bash"
 alias gshow_unmerged_branches='git branch --no-merged'
 
 	# Commit pending changes and quote all args as message
