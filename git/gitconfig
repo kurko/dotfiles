@@ -1,0 +1,57 @@
+[alias]
+  co = checkout
+  co- = checkout @{-1}
+  br = branch
+  ci = branch
+  st = status
+
+  # Divergence (commits we added and commits remote added)
+  div = divergence
+
+  # Goodness (summary of diff lines added/removed/total)
+  gn = goodness
+  gnc = goodness --cached
+
+  # Fancy logging.
+  #   h = head
+  #   hp = head with patch
+  #   r = recent commits, only current branch
+  #   ra = recent commits, all reachable refs
+  #   l = all commits, only current branch
+  #   la = all commits, all reachable refs
+  h = !git head
+  hp = "!source ~/.githelpers && show_git_head"
+  r = !git l -30
+  ra = !git r --all
+  l = "!source ~/.githelpers && pretty_git_log"
+  la = !git l --all
+
+[user]
+	name = Alexandre de Oliveira
+	email = chavedomundo@gmail.com
+
+[color]
+  diff = auto
+  status = auto
+  branch = auto
+  interactive = auto
+  ui = auto
+
+[gc]
+  auto = 1
+
+[core]
+	excludesfile = /Users/kurko/.gitignore
+	editor = vim
+
+[merge]
+  tool = vimdiff
+[github]
+	user = kurko
+[push]
+	default = simple
+[ghi]
+	token = !security find-internet-password -a kurko -s github.com -l 'ghi token' -w
+
+[credential]
+helper = /opt/boxen/bin/boxen-git-credential
