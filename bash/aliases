@@ -9,6 +9,9 @@ alias ubp='update_dotfiles'
 alias dotfiles='cd ~/.dotfiles'
 alias vimdotfiles='vim ~/.dotfiles/bash/'
 
+# General
+alias classicfmpostcode="echo N9 9LA"
+
 # System
 alias ls='ls -G'
 alias ..='cd ..'
@@ -18,9 +21,15 @@ alias count_files='find ./ -maxdepth 1 -type d | while read -r dir; do printf "%
 alias tu='top -o cpu'
 alias tm='top -o cpu'
 
+# Output helpers
+function pjson(){
+  cat $* | python -m json.tool
+}
+
 # JS helpers
 alias nombom='npm cache clear && bower cache clean && rm -rf node_modules bower_components && npm install && bower install'
 
+alias fix_pow='sudo pfctl -f /etc/pf.conf; sudo pfctl -e'
 # Rails helpers
 #
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
@@ -36,9 +45,14 @@ alias deployprod="echo \"Running be 'cap production deploy:migrations'\" && be c
 alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:migrations'\" && gpush && be cap production deploy:migrations"
 
 alias startredis="redis-server /usr/local/etc/redis.conf & disown"
+
 # Git
 
+# creates pull request and opens it in the browser
+alias pr='gpush && hub pull-request -o'
+
 alias master='git checkout master'
+alias mgpr='git checkout master && gpr'
 alias g='git status'
 alias ga='git add . --all && git status'
 alias gb='git branch'
