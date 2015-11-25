@@ -11,11 +11,20 @@ alias vimdotfiles='vim ~/.dotfiles/bash/'
 
 # General
 alias classicfmpostcode="echo N9 9LA"
+function boxen-brew-install(){ brew boxen-install $*; }
+
+#Heroku
+alias herokuwork="heroku accounts:set work"
+alias herokupersonal="heroku accounts:set personal"
+alias herokuhome="herokupersonal"
 
 # System
 alias ls='ls -G'
 alias ..='cd ..'
 alias count_files='find ./ -maxdepth 1 -type d | while read -r dir; do printf "%s:\t" "$dir"; find "$dir" | wc -l; done'
+function replaceFiles() {
+  find . -name "$1" -print0 | xargs -0 sed -i "" -e "s/$2/$3/g"
+}
 
 # Unix Processes
 alias tu='top -o cpu'
@@ -30,6 +39,10 @@ function pjson(){
 alias nombom='npm cache clear && bower cache clean && rm -rf node_modules bower_components && npm install && bower install'
 
 alias fix_pow='sudo pfctl -f /etc/pf.conf; sudo pfctl -e'
+function response_size() {
+  curl -so /dev/null -w '%{size_download}' $*
+}
+
 # Rails helpers
 #
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
@@ -52,7 +65,10 @@ alias startredis="redis-server /usr/local/etc/redis.conf & disown"
 alias pr='gpush && hub pull-request -o'
 
 alias master='git checkout master'
+alias dev='git checkout develop'
+alias develop='git checkout develop'
 alias mgpr='git checkout master && gpr'
+alias dgpr='git checkout develop && gpr'
 alias g='git status'
 alias ga='git add . --all && git status'
 alias gb='git branch'
@@ -62,6 +78,7 @@ alias gl='git log'
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
 alias gdm='git diff master'
+alias gdd='git diff develop'
 #alias gdelete_merged_branches='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
 alias gdelete_merged_branches="git checkout master; git branch --merged | egrep -v ^master$ | sed 's/^[ *]*//' | sed 's/^/git branch -D /' | bash"
 alias gshow_unmerged_branches='git branch --no-merged'
@@ -85,6 +102,21 @@ alias gshow_unmerged_branches='git branch --no-merged'
     echo Checking out master, rebasing and returning to $CURRENT_BRANCH...
 		git checkout master
     git pull --rebase origin master
+		git checkout $CURRENT_BRANCH
+    git rebase master
+	}
+
+  # rmd = Rebase Develop Rebase
+	function rdr(){
+		# Defines the current git branch
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+    echo 1. Checkout develop branch
+    echo 2. Rebase: git pull --rebase origin develop
+    echo 3. Checkout $CURRENT_BRANCH
+    echo 4. Rebase on top of develop
+		git checkout develop
+    git pull --rebase origin develop
 		git checkout $CURRENT_BRANCH
     git rebase master
 	}

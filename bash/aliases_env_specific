@@ -1,6 +1,7 @@
 #!/bin/bash
 
 alias pg="pg_ctl -D /usr/local/var/postgres -l ~/.pg.log start"
+alias pg_boxen="pg_ctl -D /opt/boxen/data/postgresql-9.4/ -l ~/.pg.log start"
 
 alias stt="cd ~/www/store && tmux attach -t store"
 alias sup="cd ~/www/supera && tmux attach -t supera"

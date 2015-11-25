@@ -41,7 +41,7 @@
   auto = 1
 
 [core]
-	excludesfile = /Users/kurko/.gitignore
+	excludesfile = /opt/boxen/config/git/gitignore
 	editor = vim
 
 [merge]
@@ -55,3 +55,7 @@
 
 [credential]
 helper = /opt/boxen/bin/boxen-git-credential
+[filter "lfs"]
+	clean = git-lfs clean %f
+	smudge = git-lfs smudge %f
+	required = true
