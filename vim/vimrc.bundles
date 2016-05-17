@@ -1,5 +1,9 @@
 Plugin 'gmarik/Vundle.vim'
 
+" Syntax highlighting
+Plugin 'elixir-lang/vim-elixir'
+Plugin 'keith/swift.vim'
+
 Plugin 'tpope/vim-unimpaired'
 Plugin 'unblevable/quick-scope'
 Plugin 'rust-lang/rust.vim'

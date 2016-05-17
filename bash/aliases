@@ -9,10 +9,39 @@ alias ubp='update_dotfiles'
 alias dotfiles='cd ~/.dotfiles'
 alias vimdotfiles='vim ~/.dotfiles/bash/'
 
+# Mac
+mac_notify="reattach-to-user-namespace terminal-notifier -message"
+
 # General
+alias speedtest="wget -O /dev/null http://speedtest.wdc01.softlayer.com/downloads/test10.zip"
 alias classicfmpostcode="echo N9 9LA"
 function boxen-brew-install(){ brew boxen-install $*; }
 function boxen-brew-uninstall(){ brew boxen-uninstall $*; }
+
+# Ride
+  function rfc-start() {
+    if [ -z "$*" ]; then
+      echo "Specify a name for the RFC file";
+      return
+    fi
+    cd ~/src/engineering/
+    git checkout -b $1
+    cp rfcs/0000-template.md rfcs/00xx-$1.md
+    open rfcs/00xx-$1.md
+  }
+
+  function rfc-finish() {
+    git add .
+    git commit
+    gfacepunch
+    hub pull-request -o
+  }
+
+  function rfc-amend() {
+    git add .
+    git commit --amend --no-edit
+    gfacepunch
+  }
 
 #Heroku
 alias herokuwork="heroku accounts:set work"
@@ -51,6 +80,7 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
+alias last_migration='vim $(ls db/migrate/* | tail -n1)'
 alias dbmigrate='echo "Running rake db:migrate db:test:prepare" && be rake db:migrate db:test:prepare'
 alias dbrollback='echo "Running rake db:rollback db:test:prepare" && be rake db:rollback db:test:prepare'
 alias dbmigratestatus='echo "Running rake db:migrate:status" && be rake db:migrate:status'
@@ -74,12 +104,14 @@ alias dev='git checkout develop'
 alias develop='git checkout develop'
 alias mgpr='git checkout master && gpr'
 alias dgpr='git checkout develop && gpr'
-alias g='git status'
+alias g='git status -sb'
+alias gst='git status'
 alias ga='git add . --all && git status'
 alias gb='git branch'
 alias gd='git diff'
 alias gdc='git diff --cached'
-alias gl='git log'
+alias glog='git log'
+alias gl="git log --pretty=format:'%C(yellow)%h %C(blue)<<%an>> %C(black)%ad%C(yellow)%d%Creset %s %Creset' --date=short --abbrev-commit | sed -e 's/<<\([A-Za-z]\).* \([A-Za-z]\).*>>/<\1\2>/' | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
 alias gdm='git diff master'
@@ -177,7 +209,20 @@ function tf(){
   fi
   echo "Running all tests in $SPEC_PATH and failing-fast" && time bundle exec rspec $SPEC_PATH --fail-fast --color 2> >(grep -v CoreText 1>&2);
 }
-function tsay(){ echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!'; }
+function tsay(){
+  echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!';
+}
+
+function tn() {
+  echo 'Running tests then notifying'
+  time bundle exec rspec spec/ $* --color
+  if [ $? == 0 ]; then
+    mac_notify 'Specs are passing.'
+  else
+    mac_notify 'Some specs failed.'
+  fi
+}
+alias tdiff="git diff --name-only spec/**/*_spec.rb | xargs bin/rspec"
 
 # checks the complexity of a file in HEAD~1
 function floggg(){
