@@ -2,6 +2,9 @@
 
 alias rs="be rails server"
 alias rc="be rails console"
+alias zc="zeus console"
+alias zs="zeus server"
+alias zt="zeus rspec spec/"
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
 alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
