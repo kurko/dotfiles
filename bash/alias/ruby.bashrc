@@ -1,5 +1,6 @@
 #!/bin/bash
 
+alias fs="foreman start"
 alias rs="be rails server"
 alias rc="be rails console"
 alias zc="zeus console"
