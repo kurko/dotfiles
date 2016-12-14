@@ -26,7 +26,7 @@ filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
 
-set pastetoggle=<F10>
+set pastetoggle=<F2>
 set showcmd                       " Display incomplete commands.
 set showmode                      " Display the mode you're in.
 
@@ -91,6 +91,11 @@ colorscheme alex_ir_black
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " PLUGINS CONFIGURATIONS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+let g:syntastic_mode_map = {
+\ "mode": "active",
+\ "passive_filetypes": ["cucumber"] }
+
 " git gutter plugin
 let g:gitgutter_enabled = 1
 
@@ -120,6 +125,9 @@ let g:ctrlp_custom_ignore = 'tmp$\|deps\|_build\|log\/\|vendor/assets\|vendor/bu
 
 let g:ctrlp_map = '<c-p>'
 "let g:ctrlp_user_command = 'find %s -type f'
+if executable('ag')
+  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS
@@ -182,7 +190,7 @@ let g:ctrlp_map = '<c-p>'
     map <leader>tl :tablast<cr>
     map <leader>tm :tabmove
 
-  " Enter clears search highlight
+  " Enter clears search highlight (replaced with running tests)
   " nmap <CR> :nohlsearch<CR>
 
   " When pasting in visual mode, doesn't replace current register
@@ -199,8 +207,9 @@ let g:ctrlp_map = '<c-p>'
   endfunction
 
   " this supports "rp that replaces the selection by the contents of @r
-  vnoremap <silent> <expr> p <sid>Repl()
-
+  " I was using vnoremap but that was getting in select as well and
+  " conflicting with Snipmate.
+  xnoremap <silent> <expr> p <sid>Repl()
 
   " Goes to the end of the line (pressing shift+4 is annoying)
   nmap 44 $
@@ -360,7 +369,7 @@ function! PasteAndIndent()
   endif
 endfunction
 
-nnoremap p :call PasteAndIndent()<cr>
+" nnoremap p :call PasteAndIndent()<cr>
 
 " ]p to paste and indent code automatically
 " nnoremap ]p p=`]

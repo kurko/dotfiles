@@ -54,3 +54,6 @@ source $DOTFILES/bash/bootstrap_machine
 source $DOTFILES/bash/dirmarks
 
 export PATH=$PATH:~/.dotfiles/bin
+
+# disable XON/XOFF so I can use ctrl+s with `history`
+[[ $- == *i* ]] && stty -ixon

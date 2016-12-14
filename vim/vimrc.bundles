@@ -22,7 +22,6 @@ Plugin 'vim-scripts/taglist.vim'
 
 " Bundle 'airblade/vim-gitgutter'
 Plugin 'ctrlpvim/ctrlp.vim.git'
-" Bundle 'tpope/vim-cucumber.git'
 Plugin 'tpope/vim-endwise.git'
 Plugin 'tpope/vim-fugitive.git'
 Plugin 'sjl/gundo.vim.git'
@@ -56,3 +55,6 @@ Plugin 'MarcWeber/vim-addon-mw-utils.git'
 Plugin 'garbas/vim-snipmate.git'
 Plugin 'honza/vim-snippets.git'
 Plugin 'ervandew/supertab.git'
+
+" PERSONAL
+Plugin 'takac/vim-spotifysearch'
