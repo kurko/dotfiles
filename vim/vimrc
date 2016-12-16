@@ -313,10 +313,14 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
   " Rename current file
   function! RenameFile()
     let old_name = expand('%')
+    let old_directory = $PWD . "/" . fnamemodify(expand(old_name), ':h')
     let new_name = input('Renaming file. New file name: ', expand('%'), 'file')
+    let new_directory = fnamemodify(expand(new_name), ':h')
     if new_name != '' && new_name != old_name
+      exec ':silent !mkdir -p ' . new_directory
       exec ':saveas ' . new_name
       exec ':silent !rm ' . old_name
+      exec ':silent !find ' . old_directory . ' -type d -empty -exec rmdir {} +'
       redraw!
     endif
   endfunction
@@ -325,7 +329,9 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
   function! CopyFile()
     let old_name = expand('%')
     let new_name = input('Copying file. New file name: ', expand('%'), 'file')
+    let new_directory = fnamemodify(expand(new_name), ':h')
     if new_name != '' && new_name != old_name
+      exec ':silent !mkdir -p ' . new_directory
       exec ':saveas ' . new_name
       redraw!
     endif
