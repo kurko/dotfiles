@@ -1,9 +1,18 @@
 Plugin 'gmarik/Vundle.vim'
 
+" This is halting the entire vim startup process
+"Plugin 'jimmy-ai/jimmy-vim'
+Plugin 'kurko/autocoder.vim'
+Plugin 'kurko/smartest.vim'
+
+
+Plugin 'scrooloose/nerdtree'
 " Syntax highlighting
 Plugin 'elixir-lang/vim-elixir'
 Plugin 'keith/swift.vim'
 
+Plugin 'skywind3000/asyncrun.vim'
+Plugin 'tpope/vim-dispatch'
 Plugin 'tpope/vim-unimpaired'
 Plugin 'unblevable/quick-scope'
 Plugin 'rust-lang/rust.vim'
@@ -12,8 +21,6 @@ Plugin 'vim-scripts/dbext.vim'
 Plugin 'mustache/vim-mustache-handlebars'
 "Plugin 'vim-scripts/CSApprox'
 Plugin 'vim-scripts/EasyGrep'
-Plugin 'kurko/autocoder.vim'
-Plugin 'kurko/smartest.vim'
 Plugin 'thisivan/vim-bufexplorer'
 
 "Bundle 'bkad/CamelCaseMotion'

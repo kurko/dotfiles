@@ -398,3 +398,9 @@ inoremap <s-tab> <c-n>
 "highlight ColorColumn ctermbg=7
 set colorcolumn=80
 
+
+" PLUGINS
+"
+" Nerdtree
+map <C-n> :NERDTreeToggle<CR>
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
