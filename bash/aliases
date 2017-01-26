@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Kubernetes
+alias copy_kube_config_64="cat ~/.kube/config | base64 | pbcopy"
 
 # Finds out if a program is installed
 function is_program_installed() {
