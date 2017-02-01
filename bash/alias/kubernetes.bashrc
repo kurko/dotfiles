@@ -16,6 +16,8 @@ function kube() {
     echo `kube-podname`
   elif [[ $1 == "ssh" ]]; then
     kube-ssh
+  elif [[ $1 == "services" ]]; then
+    kube-services
   else
     printf "Usage: kube <command> [options]\n"
     printf "\n"
@@ -23,6 +25,7 @@ function kube() {
     printf "podname\t\tReturns the name of the remote pod corresponding to the\n"
     printf "\t\tapp in the current directory.\n"
     printf "ssh \t\tSSH into the current app.\n"
+    printf "services\tLists all services available.\n"
   fi
 }
 
@@ -50,4 +53,9 @@ function kube-podname() {
 function kube-ssh() {
   echo 'Running: kubectl exec -it `kube-podname` /bin/bash'
   kubectl exec -it `kube-podname` /bin/bash
+}
+
+function kube-services() {
+  echo 'Running: kubectl get services'
+  kubectl get services
 }
