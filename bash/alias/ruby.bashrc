@@ -33,7 +33,14 @@ function tf(){
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH and failing-fast" && time bundle exec rspec $SPEC_PATH --fail-fast --color 2> >(grep -v CoreText 1>&2);
+  echo "Running all tests in $SPEC_PATH with --only-failure" && time bundle exec rspec $SPEC_PATH --only-failure --color 2> >(grep -v CoreText 1>&2);
+}
+function tff(){
+  SPEC_PATH='spec/'
+  if [ ! -z "$*" ]; then
+    SPEC_PATH="$*"
+  fi
+  echo "Running all tests in $SPEC_PATH with --fail-fast" && time bundle exec rspec $SPEC_PATH --fail-fast --color 2> >(grep -v CoreText 1>&2);
 }
 function tsay(){
   echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!';

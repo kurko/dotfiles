@@ -59,3 +59,8 @@ function kube-services() {
   echo 'Running: kubectl get services'
   kubectl get services
 }
+
+function kube-port-forward() {
+  echo 'kubectl port-forward `kube-podname` 3000:3000'
+  kubectl port-forward `kube-podname` 3000:3000
+}
