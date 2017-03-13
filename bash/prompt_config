@@ -1,4 +1,19 @@
 #!/bin/bash
+
+# Add command to PROMPT_COMMAND (runs before each command)
+# Makes sure ithe command is not already in PROMPT_COMMAND
+addToPromptCommand() {
+  if [[ ":$PROMPT_COMMAND:" != *":$1:"* ]]; then
+    PROMPT_COMMAND="${PROMPT_COMMAND:+"$PROMPT_COMMAND:"}$1"
+  fi
+}
+
+# Set iTerm title to show current directory
+if [ $ITERM_SESSION_ID ]; then
+  addToPromptCommand 'echo -ne "\033];${PWD##*/}\007"'
+fi
+
+
 export GREP_OPTIONS="--color=auto"
 export GREP_COLOR="4;33"
 export CLICOLOR="auto"
