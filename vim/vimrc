@@ -177,6 +177,10 @@ endif
     nnoremap <leader>2 :set foldlevel=2<cr>
     nnoremap <leader>3 :set foldlevel=3<cr>
     nnoremap <leader>4 :set foldlevel=4<cr>
+    nnoremap <leader>5 :set foldlevel=5<cr>
+    nnoremap <leader>6 :set foldlevel=6<cr>
+    nnoremap <leader>7 :set foldlevel=7<cr>
+    nnoremap <leader>8 :set foldlevel=8<cr>
     nnoremap <leader>9 :set foldlevel=9<cr>
 
   " Tab mappings.
