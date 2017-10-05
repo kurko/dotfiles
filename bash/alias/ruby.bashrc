@@ -12,8 +12,8 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
 alias last_migration='vim $(ls db/migrate/* | tail -n1)'
-alias dbmigrate='echo "Running rake db:migrate && RAILS_ENV=test rake db:migrate" && be rake db:migrate && RAILS_ENV=test be rake db:migrate'
-alias dbrollback='echo "Running rake db:rollback db:test:prepare" && be rake db:rollback db:test:prepare'
+alias dbmigrate='echo "Running be rake db:migrate && RAILS_ENV=test be rake db:migrate" && be rake db:migrate && RAILS_ENV=test be rake db:migrate'
+alias dbrollback='echo "Running be rake db:rollback && RAILS_ENV=test be rake db:rollback" && be rake db:rollback && RAILS_ENV=test be rake db:rollback'
 alias dbmigratestatus='echo "Running rake db:migrate:status" && be rake db:migrate:status'
 alias deploystaging='echo "Running be cap staging deploy:migrations" && be cap staging deploy:migrations'
 alias deployprod="echo \"Running be 'cap production deploy:migrations'\" && be cap production deploy:migrations"

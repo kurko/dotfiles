@@ -182,6 +182,7 @@ endif
     nnoremap <leader>7 :set foldlevel=7<cr>
     nnoremap <leader>8 :set foldlevel=8<cr>
     nnoremap <leader>9 :set foldlevel=9<cr>
+    nnoremap <leader>0 :set foldlevel=99<cr>
 
   " Tab mappings.
     map <leader>tt :tabnew<cr>
@@ -347,7 +348,8 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " TESTS & SPECS FUNCTIONS
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-  nnoremap <cr> <ESC>:w<CR>\|:call RunTestFile()<cr>
+  nnoremap <cr> <ESC>:w<CR>\|:sleep 50m<CR>\|:call RunTestFile()<cr>
+  nnoremap <Bslash> <ESC>:w<CR>\|:sleep 50m<CR>\|:call RunNearestTest()<cr>
   map <leader>t :call RunTestFile()<cr>
   map <leader>r :call RunNearestTest()<cr>
   map <leader>bt <ESC>:w<CR>\|:!bundle exec rspec --color --no-drb %<cr>

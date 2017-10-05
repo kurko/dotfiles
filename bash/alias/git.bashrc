@@ -1,5 +1,5 @@
 # Git
-alias git_update_submodules="git pull --recurse-submodules && git submodule update --init --recursive --remote --merge"
+alias git_update_submodules="git submodule init && git submodule update && git pull --recurse-submodules && git submodule update --init --recursive --remote --merge"
 
 # creates pull request and opens it in the browser
 alias pr='gpush && hub pull-request -o'
