@@ -25,7 +25,7 @@ alias glog='git log'
 #
 # The commits that are Merge or Revert are made red.
 
-alias gl="git log --pretty=format:'%C(yellow)%h %C(blue)<<%an>> %C(black)%ad%C(yellow)%d%Creset %s %Creset' --date=short --abbrev-commit | sed -e 's/<<\([A-Za-z]\).* \([A-Za-z]\).*>>/<\1\2>/' | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
+alias gl="git log --pretty=format:'%C(yellow)%h %C(blue)<<%an>> %C(black)%ad%Creset %s %Creset' --date=short --abbrev-commit | sed -e 's/<<\([A-Za-z]\).* \([A-Za-z]\).*>>/<\1\2>/' | sed -e 's/<<\([A-Za-z]\)\([A-Za-z]\).*>>/<\1\2>/' | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
 
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
@@ -112,6 +112,10 @@ alias gshow_unmerged_branches='git branch --no-merged'
 		echo Pulling from origin $CURRENT_BRANCH...
 		git pull origin $CURRENT_BRANCH
 	}
+
+  function git_current_branch() {
+    git branch 2> /dev/null | grep -e ^* | sed -e 's/^* \(.*\)/\1/'
+  }
 
 	alias gpull=gpul
 
