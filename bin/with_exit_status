@@ -1,0 +1,10 @@
+#!/bin/bash
+
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+$* &
+pid=$$
+echo "Running: $*"
+echo "PID: $pid (e.g kill -- $pid)"
+echo ""
+wait
