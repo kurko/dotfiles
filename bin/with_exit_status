@@ -1,10 +1,16 @@
 #!/bin/bash
 
-trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+function clean_up {
+  echo "Cleaning up.."
+  kill -9 $child
+}
+
+trap clean_up SIGINT SIGTERM EXIT
 
 $* &
-pid=$$
+parent=$$
+child=$!
 echo "Running: $*"
-echo "PID: $pid (e.g kill -- $pid)"
+echo "PID: $parent (child $child)"
 echo ""
 wait
