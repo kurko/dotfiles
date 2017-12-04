@@ -28,13 +28,9 @@ function t(){
   fi
   echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --color 2> >(grep -v CoreText 1>&2);
 }
-function tf(){
-  SPEC_PATH='spec/'
-  if [ ! -z "$*" ]; then
-    SPEC_PATH="$*"
-  fi
-  echo "Running all tests in $SPEC_PATH with --only-failure" && time bundle exec rspec $SPEC_PATH --only-failure --color 2> >(grep -v CoreText 1>&2);
-}
+alias tf="echo Running all tests with --only-failure && time bundle exec rspec spec/ --only-failure --color 2> >(grep -v CoreText 1>&2);"
+alias ztf="echo Running all tests with --only-failure && zeus rspec spec/ --only-failure --color 2> >(grep -v CoreText 1>&2);"
+
 function tff(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then

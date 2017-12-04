@@ -1,3 +1,4 @@
 .DS_STORE
 tags
 spec/fixtures/vcr_cassettes/*
+ctrlp_root
