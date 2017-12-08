@@ -14,7 +14,8 @@ if [ $ITERM_SESSION_ID ]; then
 fi
 
 
-export GREP_OPTIONS="--color=auto"
+# Deprecated in Ubuntu
+#export GREP_OPTIONS="--color=auto"
 export GREP_COLOR="4;33"
 export CLICOLOR="auto"
 

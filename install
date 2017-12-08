@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -d "~/.dotfiles" ]; then
+if [ ! -d ~/.dotfiles ]; then
   echo "Cloning git@github.com:kurko/.dotfiles.git into ~/.dotfiles"
   git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
 fi
