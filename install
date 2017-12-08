@@ -1,6 +1,9 @@
 #!/bin/bash
 
-touch ~/.bash_profile
+if [ ! -d "~/.dotfiles" ]; then
+  echo "Cloning git@github.com:kurko/.dotfiles.git into ~/.dotfiles"
+  git git@github.com:kurko/.dotfiles.git ~/.dotfiles
+fi
 
 source ~/.dotfiles/bashrc_source
 

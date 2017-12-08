@@ -1,6 +1,13 @@
+#!/bin/bash
+
 function update_dotfiles() {
   echo "Updating ~/.bash_profile..."
-  source ~/.bash_profile
+  if [ -f "~/.bashrc" ]; then
+    source ~/.bashrc
+  elif [ -f "~/.bash_profile" ]; then
+    source ~/.bash_profile
+  fi
+
   create_dot_vim
   update_symlinks
   reload_bash_profile
@@ -31,15 +38,20 @@ function update_symlinks(){
 
 function reload_bash_profile() {
   # Loads .dotfiles
-  if ! grep -q "source ~/.dotfiles/bashrc_source" ~/.bash_profile; then
-    echo 'source ~/.dotfiles/bashrc_source' >> ~/.bash_profile
-  fi
-
   if [ -f "~/.bashrc" ]; then
+    if ! grep -q "source ~/.dotfiles/bashrc_source" ~/.bashrc; then
+      echo 'source ~/.dotfiles/bashrc_source' >> ~/.bashrc
+    fi
+
     source ~/.bashrc
-  fi
-  if [ -f "~/.bash_profile" ]; then
+  elif [ -f "~/.bash_profile" ]; then
+    if ! grep -q "source ~/.dotfiles/bashrc_source" ~/.bash_profile; then
+      echo 'source ~/.dotfiles/bashrc_source' >> ~/.bash_profile
+    fi
+
     source ~/.bash_profile
+  else
+    echo "Error installing bashrc_source: Neither .bashrc nor .bash_profile found."
   fi
 }
 
