@@ -1,5 +1,3 @@
-#!/bin/bash
-
 function update_dotfiles() {
   echo "Updating ~/.bash_profile..."
   if [ -f ~/.bashrc ]; then
