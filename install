@@ -2,9 +2,11 @@
 
 if [ ! -d "~/.dotfiles" ]; then
   echo "Cloning git@github.com:kurko/.dotfiles.git into ~/.dotfiles"
-  git git@github.com:kurko/.dotfiles.git ~/.dotfiles
+  git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
 fi
 
+echo "Loading ~/.dotfiles/bashrc_source"
 source ~/.dotfiles/bashrc_source
 
+echo "Updating scripts and aliases"
 update_dotfiles
