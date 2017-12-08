@@ -1,4 +1,8 @@
-if [ ! -d ~/.dotfiles ]; then
+if [ -d ~/.dotfiles ]
+then
+  echo "Pulling from master"
+  git pull --rebase origin master
+else
   echo "Cloning git@github.com:kurko/.dotfiles.git into ~/.dotfiles"
   git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
 fi
