@@ -32,6 +32,8 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
   ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
   ln -nfs ~/.dotfiles/ag/agignore ~/.agignore
+
+  git config --global core.excludesfile ~/.gitignore
 }
 
 function reload_bash_profile() {
