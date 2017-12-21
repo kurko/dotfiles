@@ -27,7 +27,7 @@ Plugin 'thisivan/vim-bufexplorer'
 " To use CTags
 Plugin 'vim-scripts/taglist.vim'
 
-" Bundle 'airblade/vim-gitgutter'
+Bundle 'airblade/vim-gitgutter'
 Plugin 'ctrlpvim/ctrlp.vim.git'
 Plugin 'tpope/vim-endwise.git'
 Plugin 'tpope/vim-fugitive.git'
@@ -67,3 +67,4 @@ Plugin 'ervandew/supertab.git'
 
 " PERSONAL
 Plugin 'takac/vim-spotifysearch'
+Plugin 'bogado/file-line'

@@ -98,6 +98,7 @@ let g:syntastic_mode_map = {
 
 " git gutter plugin
 let g:gitgutter_enabled = 1
+let g:gitgutter_max_signs = 400  " 500 is the default value
 
 " zencoding plugin
  let g:user_zen_settings = {

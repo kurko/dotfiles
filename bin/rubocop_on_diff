@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+# Runs rubocop against changed files against master. It works even when
+# user is inside subdirs
+
+root_path="$(pwd)"
+removable_string_set=0
+match=""
+matching_done=0
+
+FILES=''
+for changed_file in `git diff master --name-only`;
+do
+  if [[ $matching_done == 0 ]];
+  then
+
+    # Searches for matches in current file and pwd. Example:
+    #
+    #   pwd:          /User/john/repo
+    #   current_file: repo/my_file.rb
+    #
+    # This will return 'repo', which is then removed from current_file. In the
+    # end, only my_file.rb will be returned.
+    #
+    # The implemented algorithm will remove the first char from the pwd until
+    # it finds a match. It assumes the match is at the end of the pwd string.
+    #
+    # The following algorithm will search against all possibilities, but is
+    # a lot slower:
+    #
+    # for i in $(seq ${#root_path} -1 1); do
+    #   for j in $(seq 0 $((${#root_path}-i))); do
+    #     #echo "${root_path:$j}"
+    #     #grep -q "${root_path:$j:$i}" <<< "$changed_file" && match="${root_path:$j:$i}" && break 2
+    #     grep -q "${root_path:$j}" <<< "$changed_file" && match="${root_path:$j}" && break 1
+    #   done
+    # done
+
+    for j in $(seq 0 $((${#root_path}-i))); do
+      grep -q "${root_path:$j}" <<< "$changed_file" && match="${root_path:$j}" && break 1
+    done
+
+    # Once the first lookup is done, don't do it again. We already know that
+    # 'repo' is the thing that needs to be removed.
+    matching_done=1
+  fi
+
+  if [[ $match != "" ]];
+  then
+    final_path=${changed_file/$match}
+  else
+    final_path=$changed_file
+  fi
+
+  final_path=$(echo $final_path | sed -e 's/^\///')
+  FILES="${FILES} ${final_path}";
+done;
+
+echo "bundle exec rubocop$FILES"
+bundle exec rubocop $FILES

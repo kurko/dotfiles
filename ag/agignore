@@ -8,7 +8,6 @@ vendor/
 bundle/
 spec/vcr/
 spec/cassettes/
-*.sql
 *.tags*
 *.gemtags*
 *.csv
