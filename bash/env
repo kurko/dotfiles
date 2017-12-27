@@ -1,1 +1,8 @@
-# export EDITOR='mvim -f --nomru -c "au VimLeave * !open -a Terminal"'
+export EDITOR="vim"
+
+# PSQL
+#
+# Makes history infinite
+export HISTFILESIZE=
+export HISTSIZE=
+export PSQL_EDITOR="vim"
