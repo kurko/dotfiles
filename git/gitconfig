@@ -41,7 +41,6 @@
   auto = 1
 
 [core]
-	excludesfile = ~/.gitignore
 	editor = vim
 
 [merge]
