@@ -26,7 +26,7 @@ function t(){
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --color 2> >(grep -v CoreText 1>&2);
+  echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
 }
 function tf(){
   SPEC_PATH='spec/'
