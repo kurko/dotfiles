@@ -1,4 +1,5 @@
 export EDITOR="vim"
+export PSQL_EDITOR="vim_within_temp_tmux" # "vim -u NONE"
 export DISABLE_SPRING=1
 
 # PSQL
@@ -6,4 +7,3 @@ export DISABLE_SPRING=1
 # Makes history infinite
 export HISTFILESIZE=
 export HISTSIZE=
-export PSQL_EDITOR="vim"

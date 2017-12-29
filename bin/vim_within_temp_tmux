@@ -1,0 +1,4 @@
+#!/bin/bash
+
+tmux split-window "vim $1 ; tmux wait-for -S psql_editor_$$"
+tmux wait-for psql_editor_$$
