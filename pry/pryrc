@@ -12,9 +12,13 @@ gems_path = `rbenv exec gem environment | grep INSTALLATION`
 gems_path = gems_path.scan(/DIRECTORY: (.*)\Z/).flatten[0]
 
 awesome_print_listing = Dir["#{gems_path}/gems/*"].keep_if { |d| d.match("awesome_print") }.last
-awesome_print_version = awesome_print_listing.scan(/awesome_print-([0-9]+\.[0-9]+\.[0-9]+)/).flatten[0]
-awesome_print_path = "#{gems_path}/gems/awesome_print-#{awesome_print_version}/lib"
+if awesome_print_listing.nil?
+  puts "awesome_print not installed"
+else
+  awesome_print_version = awesome_print_listing.scan(/awesome_print-([0-9]+\.[0-9]+\.[0-9]+)/).flatten[0]
+  awesome_print_path = "#{gems_path}/gems/awesome_print-#{awesome_print_version}/lib"
 
-$LOAD_PATH << awesome_print_path
-require 'awesome_print'
-Pry.config.print = proc { |output, value| output.puts value.ai }
+  $LOAD_PATH << awesome_print_path
+  require 'awesome_print'
+  Pry.config.print = proc { |output, value| output.puts value.ai }
+end

@@ -2,3 +2,4 @@
 tags
 spec/fixtures/vcr_cassettes/*
 ctrlp_root
+.byebug_history
