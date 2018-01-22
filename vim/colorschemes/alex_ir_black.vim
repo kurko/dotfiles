@@ -62,6 +62,9 @@ endif
 
 let colors_name = "ir_black"
 
+" When there are spelling errors
+hi SpellBad ctermfg=darkred ctermbg=darkgray guifg=red guibg=white
+hi SpellCap ctermfg=darkred ctermbg=darkgray guifg=red guibg=white
 
 "hi Example         guifg=NONE        guibg=NONE        gui=NONE      ctermfg=NONE        ctermbg=NONE        cterm=NONE
 
