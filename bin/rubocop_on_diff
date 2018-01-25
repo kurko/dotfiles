@@ -57,4 +57,4 @@ do
 done;
 
 echo "bundle exec rubocop$FILES"
-bundle exec rubocop $FILES
+bundle exec rubocop $FILES --force-exclusion
