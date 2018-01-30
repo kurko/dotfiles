@@ -112,6 +112,24 @@ let g:ale_lint_on_text_changed = 'never'
 highlight ALEErrorSign ctermfg=red
 highlight ALEWarningSign ctermfg=red
 
+" Only use linters that make sense
+function! SetAleBufferLinters()
+  let ruby_linters = ["ruby"]
+
+  if filereadable(".rubocop.yml") | :call add(ruby_linters, "rubocop") | endif
+  if filereadable("rails_best_practices.yml") | :call add(ruby_linters, "rails_best_pratices") | endif
+  if filereadable(".reek") | :call add(ruby_linters, "reek") | endif
+
+  :echo ruby_linters
+  let b:ale_linters = {
+  \   'ruby': ruby_linters,
+  \}
+endfunction
+augroup AleGroup
+  autocmd!
+  autocmd FileType,BufEnter * call SetAleBufferLinters()
+augroup END
+
 " git gutter plugin
 let g:gitgutter_enabled = 1
 let g:gitgutter_max_signs = 400  " 500 is the default value
@@ -165,15 +183,15 @@ endif
   " Prevents Vim from scrolling when splitting the window horizontally.
     nnoremap <C-W>s Hmx`` \|:split<CR>`xzt``
 
-    function! SaveAndReloadVimFile()
-      exec ":write"
-      if match(expand('%'), ".vim") >= 1
-        exec ":so %"
-      endif
-    endfunction
+    " function! SaveAndReloadVimFile()
+    "   exec ":write"
+    "   if match(expand('%'), ".vim") >= 1
+    "     exec ":so %"
+    "   endif
+    " endfunction
   " Spacebar saves
-   " nnoremap <Space> :w<cr>
-    nnoremap <Space> :call SaveAndReloadVimFile()<cr>
+    "nnoremap <Space> :call SaveAndReloadVimFile()<cr>
+    nnoremap <Space> :exec ":write" \| if match(expand('%'), ".vim") >= 1 \| exec ":so %" \| endif<cr>
 
   " ]p to paste and indent code automatically
     nnoremap ]p p=`]
