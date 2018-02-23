@@ -120,7 +120,6 @@ function! SetAleBufferLinters()
   if filereadable("rails_best_practices.yml") | :call add(ruby_linters, "rails_best_pratices") | endif
   if filereadable(".reek") | :call add(ruby_linters, "reek") | endif
 
-  :echo ruby_linters
   let b:ale_linters = {
   \   'ruby': ruby_linters,
   \}
@@ -151,10 +150,7 @@ let g:gitgutter_max_signs = 400  " 500 is the default value
   \  },
   \}
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CtrlP
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 let g:ctrlp_custom_ignore = 'tmp$\|deps\|_build\|log\/\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|coverage\|.DS_STORE\|node_modules\|test_build\|bower_'
 let g:ctrlp_root_markers = ['ctrlp_root']
@@ -165,6 +161,11 @@ let g:ctrlp_map = '<c-p>'
 if executable('ag')
   let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 endif
+
+" Paste.vim
+let g:paste_no_mappings = 1
+" nnoremap <shortcut> :Paste<CR>
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS

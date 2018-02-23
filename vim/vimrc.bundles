@@ -5,6 +5,7 @@ Plugin 'gmarik/Vundle.vim'
 Plugin 'kurko/autocoder.vim'
 Plugin 'kurko/smartest.vim'
 
+Plugin 'enricobacis/paste.vim'
 
 Plugin 'scrooloose/nerdtree'
 " Syntax highlighting
