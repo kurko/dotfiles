@@ -1,8 +1,29 @@
+echo-command() {
+  printf "${BLUE}• ${NO_COLOR}$1 ${BLUE}•${NO_COLOR}\n"
+}
+
 isFunction() { declare -F -- "$@" >/dev/null; }
 
 # Finds out if a program is installed
 function is_program_installed() {
   if which $1 > /dev/null ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+
+# Usage: file-exists ".zeus.sock"
+#
+#   if file-exists ".zeus.sock" ; then
+#     echo "file exists"
+#   else
+#     echo "file doesn't exist"
+#   fi
+#
+function file-exists() {
+  if [ -e $1 ]; then
     return 0
   else
     return 1

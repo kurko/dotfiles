@@ -12,12 +12,53 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
 alias last_migration='vim $(ls db/migrate/* | tail -n1)'
-alias dbmigrate='echo "Running be rake db:migrate && RAILS_ENV=test be rake db:migrate" && be rake db:migrate && RAILS_ENV=test be rake db:migrate'
-alias dbrollback='echo "Running be rake db:rollback && RAILS_ENV=test be rake db:rollback" && be rake db:rollback && RAILS_ENV=test be rake db:rollback'
-alias dbmigratestatus='echo "Running rake db:migrate:status" && be rake db:migrate:status'
 alias deploystaging='echo "Running be cap staging deploy:migrations" && be cap staging deploy:migrations'
 alias deployprod="echo \"Running be 'cap production deploy:migrations'\" && be cap production deploy:migrations"
 alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:migrations'\" && gpush && be cap production deploy:migrations"
+
+# Zeus fails with `Terminated: 15` for a year now and no one knows how to fix
+# it, so this will check for success and run that again.
+function zeus-and-retry() {
+  if file-exists ".zeus.sock" ; then
+    zeus $1
+    if [ $? -ne 0 ] ; then
+      echo "Exited with $?, retrying zeus..."
+      zeus $1
+    fi
+  fi
+}
+
+function dbmigratestatus() {
+  if file-exists ".zeus.sock" ; then
+    echo-command "zeus rake db:migrate:status"
+    zeus-and-retry "rake db:migrate:status"
+  else
+    echo-command "rake db:migrate:status"
+    bundle exec rake db:migrate:status
+  fi
+}
+
+function dbmigrate() {
+  if file-exists ".zeus.sock" ; then
+    echo-command 'zeus rake db:migrate db:test:prepare'
+    zeus-and-retry "rake db:migrate db:test:prepare"
+  else
+    echo-command 'rake db:migrate db:test:prepare'
+    bundle exec rake db:migrate db:test:prepare
+  fi
+}
+
+function dbrollback() {
+  if file-exists ".zeus.sock" ; then
+    echo-command 'zeus rake db:rollback db:test:prepare'
+    zeus-and-retry "rake db:rollback db:test:prepare"
+  else
+    echo-command 'rake db:rollback db:test:prepare'
+    bundle exec rake db:rollback db:test:prepare
+  fi
+}
+
+#alias dbrollback='echo "Running be rake db:rollback && RAILS_ENV=test be rake db:rollback" && be rake db:rollback && RAILS_ENV=test be rake db:rollback'
 
 function spn(){ time rspec $*; }
 function be(){ time bundle exec $*; }
@@ -26,14 +67,14 @@ function t(){
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
+  echo-command "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
 }
 function tf(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH with --only-failure" && time bundle exec rspec $SPEC_PATH --only-failure --color 3> >(grep -v CoreText 1>&2);
+  echo-command "Running all tests in $SPEC_PATH with --only-failure" && time bundle exec rspec $SPEC_PATH --only-failure --color 3> >(grep -v CoreText 1>&2);
 }
 alias ztf="echo Running all tests with --only-failure && zeus rspec spec/ --only-failure --color 2> >(grep -v CoreText 1>&2);"
 
@@ -42,14 +83,15 @@ function tff(){
   if [ ! -z "$*" ]; then
     SPEC_PATH="$*"
   fi
-  echo "Running all tests in $SPEC_PATH with --fail-fast" && time bundle exec rspec $SPEC_PATH --fail-fast --color 2> >(grep -v CoreText 1>&2);
+  echo-command "Running all tests in $SPEC_PATH with --fail-fast" && time bundle exec rspec $SPEC_PATH --fail-fast --color 2> >(grep -v CoreText 1>&2);
 }
+
 function tsay(){
-  echo 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!';
+  echo-command 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!';
 }
 
 function tn() {
-  echo 'Running tests then notifying'
+  echo-command 'Running tests then notifying'
   time bundle exec rspec spec/ $* --color
   if [ $? == 0 ]; then
     mac_notify 'Specs are passing.'
