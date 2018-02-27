@@ -36,7 +36,10 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
   ln -nfs ~/.dotfiles/ag/agignore ~/.agignore
 
-  git config --global core.excludesfile ~/.gitignore
+  # We don't use this directive anymore. We leave blank, which will default
+  # to $HOME/.config/git/ignore.
+  #
+  # git config --global core.excludesfile ~/.gitignore
 }
 
 function reload_bash_profile() {
