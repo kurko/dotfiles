@@ -4,6 +4,16 @@ echo-command() {
 
 isFunction() { declare -F -- "$@" >/dev/null; }
 
+# join_array , a "b c" d #a,b c,d
+# join_array / var local tmp #var/local/tmp
+# join_array , "${FOO[@]}" #a,b,c
+function join_array {
+  local d=$1;
+  shift;
+  echo -n "$1";
+  shift;
+  printf "%s" "${@/#/$d} "; }
+
 # Finds out if a program is installed
 function is_program_installed() {
   if which $1 > /dev/null ; then

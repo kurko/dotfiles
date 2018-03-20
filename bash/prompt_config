@@ -94,7 +94,7 @@ function __ruby_project {
     result="${result}, Rails ${rails_version}"
   fi
   if [ "${result}" != "" ]; then
-    echo "($result) "
+    echo "$result"
   fi
 }
 function __ember_js_version {
@@ -105,6 +105,15 @@ function __ember_js_version {
     version=$(cat ${root_dir}bower.json | sed -n "s/ember['\"].*\"\(.*\)['\"],/\1/p")
     version=$(echo ${version}|tr -d '"')
     echo $version
+  fi
+}
+
+function __git_last_commit {
+  if git rev-parse --git-dir > /dev/null 2>&1; then
+    commit="$(git rev-parse --short=2 HEAD)"
+    if [ "#{commit}" != "" ]; then
+      echo "$commit"
+    fi
   fi
 }
 
@@ -185,8 +194,22 @@ branch_color () {
   echo -ne $color
 }
 
-export PS1="\n\[$YELLOW\]\$(__ruby_project)\[${NO_COLOR}\]"
-export PS1="${PS1}\[$YELLOW\]\$(__javascript_project)\[${NO_COLOR}\]"
-export PS1="${PS1}\w "
+# This will take various information about the current dir (Ruby version,
+# last git commit etc) and put in an array. Then it will write these elements
+# joining them with a comma (,). It will look like:
+#
+#   2.2.2p95, 7518b
+#
+DirInfo=()
+DirInfo=(${DirInfo[@]} $(__ruby_project))
+DirInfo=(${DirInfo[@]} $(__git_last_commit))
+DirInfo=(${DirInfo[@]} $(__javascript_project))
+DirInfoString=$(join_array ', ' ${DirInfo[@]})
+
+export PS1=""
+if [ "${DirInfoString}" != "" ]; then
+  export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\]"
+fi
+export PS1="${PS1} \w "
 export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
-export PS1="${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
+export PS1="\n${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
