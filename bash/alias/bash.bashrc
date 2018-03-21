@@ -12,7 +12,9 @@ function join_array {
   shift;
   echo -n "$1";
   shift;
-  printf "%s" "${@/#/$d} "; }
+  result=$(printf "%s" "${@/#/$d} ");
+  echo $result
+}
 
 # Finds out if a program is installed
 function is_program_installed() {

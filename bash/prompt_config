@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $DOTFILES/bash/alias/bash.bashrc
+
 # Add command to PROMPT_COMMAND (runs before each command)
 # Makes sure ithe command is not already in PROMPT_COMMAND
 addToPromptCommand() {
@@ -208,8 +210,8 @@ DirInfoString=$(join_array ', ' ${DirInfo[@]})
 
 export PS1=""
 if [ "${DirInfoString}" != "" ]; then
-  export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\]"
+  export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\] "
 fi
-export PS1="${PS1} \w "
+export PS1="${PS1}\w "
 export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
 export PS1="\n${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
