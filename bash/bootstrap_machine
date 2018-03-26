@@ -1,20 +1,21 @@
 #!/bin/bash
 
 function bootstrap_machine() {
-  echo "Installing applications:"
+  echo "> Installing applications..."
 
   if command -v brew >/dev/null 2>&1; then
-    echo "Homebrew already installed!\n"
+    echo "Homebrew already installed!"
   else
     echo "Homebrew... "
     ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
     brew update
-    echo "done!\n"
+    echo "done!"
   fi
+  echo ""
 
+  printf "> Installing Rbenv... "
   if command -v rbenv >/dev/null 2>&1; then
     echo "Rbenv already installed!\n"
-    echo "Please, install Ruby manually"
   else
     echo "Rbenv & ruby-build... "
     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
@@ -24,10 +25,16 @@ function bootstrap_machine() {
     type rbenv
     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
     echo "done!\n"
-    echo "Installing Ruby 2.1.2... "
-    rbenv install 2.1.2
-    rbenv global 2.1.2
-    ruby -v
+    LAST_RUBY="$(rbenv install -l | grep -v - | tail -1)"
+    echo "> Installing Ruby ${LAST_RUBY}... "
+    rbenv install $LAST_RUBY
+    rbenv global $LAST_RUBY
     echo "done!\n"
   fi
+  ruby -v
+
+  echo ""
+  echo "> Installing fliqlo... "
+  brew cask install fliqlo
+  echo "done."
 }
