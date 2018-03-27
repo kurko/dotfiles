@@ -68,5 +68,4 @@ Plugin 'honza/vim-snippets.git'
 Plugin 'ervandew/supertab.git'
 
 " PERSONAL
-Plugin 'takac/vim-spotifysearch'
 Plugin 'bogado/file-line'
