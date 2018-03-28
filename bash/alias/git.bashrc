@@ -16,6 +16,7 @@ alias gb='git branch'
 alias gd='git diff --compaction-heuristic'
 alias gdc='git diff --cached'
 alias glog='git log'
+alias gt='git tag --sort=creatordate'
 
 # This will output something like:
 # Sha1    Author initials   Date   Commit message
