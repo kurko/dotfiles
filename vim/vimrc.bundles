@@ -15,7 +15,12 @@ Plugin 'keith/swift.vim'
 Plugin 'skywind3000/asyncrun.vim'
 Plugin 'tpope/vim-dispatch'
 Plugin 'tpope/vim-unimpaired'
-Plugin 'unblevable/quick-scope'
+
+" quick-scope from unblevable is dead, but someone else is taking over so we
+" can get back to it later
+Plugin 'bradford-smith94/quick-scope'
+" Plugin 'unblevable/quick-scope'
+
 Plugin 'rust-lang/rust.vim'
 Plugin 'elzr/vim-json'
 Plugin 'vim-scripts/dbext.vim'

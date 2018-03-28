@@ -113,10 +113,11 @@ let g:syntastic_mode_map = {
 let g:syntastic_ruby_checkers = ["mri", "rubocop"]
 
 " ALE plugin
-let g:ale_sign_error = '>>'
+let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
 let g:ale_lint_on_text_changed = 'never'
+let g:ale_set_highlights = 1
 highlight ALEErrorSign ctermfg=red
 highlight ALEWarningSign ctermfg=red
 
