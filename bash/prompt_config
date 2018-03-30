@@ -88,15 +88,15 @@ function __rails_version {
 function __ruby_project {
   result=""
   ruby_version="$(__ruby_version)"
-  rails_version="$(__rails_version)"
   if [ "${ruby_version}" != "" ]; then
-    result="${ruby_version}"
+    echo "${ruby_version}"
   fi
+}
+function __rails_project {
+  result=""
+  rails_version="$(__rails_version)"
   if [ "${rails_version}" != "" ]; then
-    result="${result}, Rails ${rails_version}"
-  fi
-  if [ "${result}" != "" ]; then
-    echo "$result"
+    echo "Rails ${rails_version}"
   fi
 }
 function __ember_js_version {
@@ -119,7 +119,7 @@ function __git_last_commit {
   fi
 }
 
-function __javascript_project {
+function __javascript_project() {
   result=""
   ember_cli_version="$(__ember_js_version)"
   if [ "${ember_cli_version}" != "" ]; then
@@ -202,16 +202,32 @@ branch_color () {
 #
 #   2.2.2p95, 7518b
 #
-DirInfo=()
-DirInfo=(${DirInfo[@]} $(__ruby_project))
-DirInfo=(${DirInfo[@]} $(__git_last_commit))
-DirInfo=(${DirInfo[@]} $(__javascript_project))
-DirInfoString=$(join_array ', ' ${DirInfo[@]})
+function set_ps1() {
+  DirInfo=()
+  ruby_info="$(echo $(__ruby_project))"
+  rails_info="$(echo $(__rails_project))"
+  git_commit_info="$(echo $(__git_last_commit))"
+  js_info="$(echo $(__javascript_project))"
 
-export PS1=""
-if [ "${DirInfoString}" != "" ]; then
-  export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\] "
-fi
-export PS1="${PS1}\w "
-export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
-export PS1="\n${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
+  # For bash arrays, we have to use ' if we want to have string elements with
+  # spaces.
+  #
+  # The reason for the ''" is because we have to write the value returned from
+  # the function without passing its reference. If instead we do
+  # '${ruby_info}', it will pass the function reference which will render bad
+  # values when evaluation its length (e.g for "", ${#value} will return 10).
+  DirInfo=(''"${ruby_info}"''
+  ''"${rails_info}"''
+  ''"${git_commit_info}"''
+  ''"${js_info}"'')
+  DirInfoString="$(echo $(join_array DirInfo ', '))"
+
+  export PS1=""
+  if [ "${DirInfoString}" != "" ]; then
+    export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\] "
+  fi
+  export PS1="${PS1}\w "
+  export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
+  export PS1="\n${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
+}
+PROMPT_COMMAND="set_ps1"

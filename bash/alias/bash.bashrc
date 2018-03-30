@@ -4,15 +4,43 @@ echo-command() {
 
 isFunction() { declare -F -- "$@" >/dev/null; }
 
-# join_array , a "b c" d #a,b c,d
-# join_array / var local tmp #var/local/tmp
-# join_array , "${FOO[@]}" #a,b,c
-function join_array {
-  local d=$1;
-  shift;
-  echo -n "$1";
-  shift;
-  result=$(printf "%s" "${@/#/$d} ");
+
+strLen() {
+    local bytlen sreal oLang=$LANG oLcAll=$LC_ALL
+    LANG=C LC_ALL=C
+    bytlen=${#1}
+    printf -v sreal %q "$1"
+    LANG=$oLang LC_ALL=$oLcAll
+    printf "String '%s' is %d bytes, but %d chars len: %s.\n" "$1" $bytlen ${#1} "$sreal"
+}
+
+# join_array ('one two', 'three') ', '
+#
+# Avoid passing functions. If you have to use functions, make sure you escape
+# the inputs so the function reference isn't passed in, e.g
+#
+#     DirInfo=(''"${js_info}"'')
+#     DirInfoString=$(join_array DirInfo ', ')
+#
+function join_array() {
+  local array_arg_name=$1[@]
+  local array=("${!array_arg_name}")
+  local delimiter=$2
+  local result=""
+
+  for ((i = 0; i < "${#array[@]}"; i++))
+  do
+    value="$(echo "${array[$i]}")"
+    value="$(echo $(echo $value))"
+
+    if [[ ! -z "${value/ /}" ]]; then
+      if [ "$i" -gt 0 ]; then
+        result="$result$delimiter$value"
+      else
+        result="$result$value"
+      fi
+    fi
+  done
   echo $result
 }
 
