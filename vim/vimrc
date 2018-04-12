@@ -140,7 +140,7 @@ augroup END
 
 " git gutter plugin
 let g:gitgutter_enabled = 1
-let g:gitgutter_max_signs = 400  " 500 is the default value
+let g:gitgutter_max_signs = 999  " 500 is the default value
 
 " zencoding plugin
  let g:user_zen_settings = {

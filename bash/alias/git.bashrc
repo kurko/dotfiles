@@ -2,7 +2,7 @@
 alias git_update_submodules="git submodule init && git submodule update && git pull --recurse-submodules && git submodule update --init --recursive --remote --merge"
 
 # creates pull request and opens it in the browser
-alias pr='gpush && hub pull-request -o'
+alias pr='gpush -u && hub pull-request -o'
 
 alias master='git checkout master'
 alias dev='git checkout develop'
@@ -86,8 +86,8 @@ alias gshow_unmerged_branches='git branch --no-merged'
 		# Defines the current git branch
 		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
 
-		echo Pushing to origin $CURRENT_BRANCH...
-		git push origin $CURRENT_BRANCH
+		echo Pushing to origin $CURRENT_BRANCH $*
+		git push origin $CURRENT_BRANCH $*
 	}
 
 	function gpr(){
