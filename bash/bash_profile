@@ -1,0 +1,15 @@
+_rake_migrate() {
+  COMPREPLY=()
+  if [ $3 != "db:migrate:down" ]; then
+    return 0
+  fi
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  IFS='=' read -r -a array <<< "$cur"
+  local version_number_part=${array[1]}
+  if [ "$COMP_CWORD" -eq 2 ]; then
+    local res=$(find db/migrate/ -type f -exec basename {} \; | grep ${version_number_part})
+    COMPREPLY=($(compgen -W "$res" ))
+  fi
+}
+
+complete -F _rake_migrate rake

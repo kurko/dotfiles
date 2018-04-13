@@ -63,6 +63,7 @@ function reload_bash_profile() {
 }
 
 export DOTFILES=~/.dotfiles
+source $DOTFILES/bash/bash_profile
 source $DOTFILES/bash/prompt_config
 source $DOTFILES/bash/env
 source $DOTFILES/bash/aliases
