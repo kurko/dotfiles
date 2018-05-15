@@ -20,7 +20,10 @@ filetype off                   " required!
 " Configuration
 set tags=tags                     " ctags
 
+" This makes Vim slow with Ruby and the new Vim regex engine after v7+
 syntax on                         " Turn on syntax highlighting.
+" This relies on the old regex
+set re=1
 
 " syntax on is pretty slow after updating VIM to v8-1600. The following
 " 2 lines make it fast
@@ -86,6 +89,28 @@ hi CursorLineNR cterm=bold
 augroup CLNRSet
   autocmd! ColorScheme * hi CursorLineNR cterm=bold ctermfg=green
 augroup END
+
+
+" LARGE FILES
+"
+" file is large from 10mb
+let g:LargeFile = 1024 * 1024 * 10
+augroup LargeFile
+  autocmd BufReadPre * let f=getfsize(expand("<afile>")) | if f > g:LargeFile || f == -2 | call LargeFile() | endif
+augroup END
+
+function LargeFile()
+  " no syntax highlighting etc
+  set eventignore+=FileType
+  " save memory when other file is viewed
+  setlocal bufhidden=unload
+  " is read-only (write with :w new_filename)
+  setlocal buftype=nowrite
+  " no undo possible
+  setlocal undolevels=-1
+  " display message
+  autocmd VimEnter *  echo "The file is larger than " . (g:LargeFile / 1024 / 1024) . " MB, so some options are changed (see .vimrc for details)."
+endfunction
 
 " "Theme
 colorscheme alex_ir_black
@@ -165,8 +190,10 @@ let g:ctrlp_custom_ignore = 'tmp$\|deps\|_build\|log\/\|vendor/assets\|vendor/bu
 let g:ctrlp_root_markers = ['ctrlp_root']
 let g:ctrlp_switch_buffer = 'et'
 let g:ctrlp_cache_dir = $HOME . '/.cache/ctrlp'
-let g:ctrlp_clear_cache_on_exit = 0
+let g:ctrlp_clear_cache_on_exit = 1
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/vendor/*,*/\.git/*
+" https://github.com/JazzCore/ctrlp-cmatcher
+" let g:ctrlp_match_func = {'match' : 'matcher#cmatch' }
 
 let g:ctrlp_map = '<c-p>'
 "let g:ctrlp_user_command = 'find %s -type f'
@@ -345,7 +372,6 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
     " deletes the remaining chars from a string
     nnoremap <Leader>ds vf"hd
 
-  " CTRLP
     map <leader>ga :CtrlPClearCache<cr>\|:CtrlP app/assets<cr>
     map <leader>gv :CtrlPClearCache<cr>\|:CtrlP app/views<cr>
     map <leader>gc :CtrlPClearCache<cr>\|:CtrlP app/controllers<cr>
@@ -354,8 +380,10 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
     map <leader>gs :CtrlPClearCache<cr>\|:CtrlP spec<cr>
     map <leader>gu :CtrlPClearCache<cr>\|:CtrlP spec/unit<cr>
     map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
-    map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
+    " map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
+    map <leader>f :CtrlP<cr>
     map <leader>F :CtrlPClearCache<cr>\|:CtrlP %%<cr>
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM FUNCTIONS

@@ -85,3 +85,7 @@ function has-argument() {
   fi
 }
 
+function replace-recursively() {
+  echo-command "Replacing $1 with $2 recursively"
+  find config/locales/ -type f -exec sed -i '' -e "s/$1/$2/" {} \;
+}

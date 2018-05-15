@@ -5,7 +5,6 @@ alias rs="be rails server"
 alias rc="be rails console"
 alias zc="zeus console"
 alias zs="zeus server"
-alias zt="zeus rspec spec/"
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
 alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
@@ -68,6 +67,13 @@ function t(){
     SPEC_PATH="$*"
   fi
   echo-command "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
+}
+function zt(){
+  SPEC_PATH='spec/'
+  if [ ! -z "$*" ]; then
+    SPEC_PATH="$*"
+  fi
+  echo-command "[Zeus] Running all tests in $SPEC_PATH" && time zeus rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
 }
 function tf(){
   SPEC_PATH='spec/'
