@@ -64,7 +64,7 @@ Plugin 'tpope/vim-bundler.git'
 Plugin 'chrismetcalf/vim-yankring.git'
 Plugin 'tpope/vim-vividchalk.git'
 Plugin 'mattn/emmet-vim'
-Plugin 'rking/ag.vim'
+Plugin 'mileszs/ack.vim'
 Plugin 'tonchis/to-github-vim'
 
 " vim-snipmate requires tlib and vim-addon-mw-utils

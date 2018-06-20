@@ -1,9 +1,20 @@
 [alias]
+  c = commit
   co = checkout
   co- = checkout @{-1}
   br = branch
-  ci = branch
   st = status
+  s = status
+  ds = diff --stat=160,120
+  dh1 = diff HEAD~1
+  dm = diff master
+  dmstat = diff master --shortstat
+  fa = fetch --all
+
+  # logs
+  lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+  lol = log --graph --decorate --pretty=oneline --abbrev-commit
+  logtitles = log --pretty=format:%s
 
   # Divergence (commits we added and commits remote added)
   div = divergence
@@ -13,16 +24,7 @@
   gnc = goodness --cached
 
   # Fancy logging.
-  #   h = head
-  #   hp = head with patch
-  #   r = recent commits, only current branch
-  #   ra = recent commits, all reachable refs
   #   l = all commits, only current branch
-  #   la = all commits, all reachable refs
-  h = !git head
-  hp = "!source ~/.githelpers && show_git_head"
-  r = !git l -30
-  ra = !git r --all
   l = "!source ~/.githelpers && pretty_git_log"
   la = !git l --all
 
@@ -36,6 +38,15 @@
   branch = auto
   interactive = auto
   ui = auto
+[color "status"]
+  added = green
+  changed = red
+  untracked = white
+[color "diff"]
+  meta = yellow
+  frag = magenta bold
+  old = red
+  #new = green
 
 [gc]
   auto = 1

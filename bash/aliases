@@ -15,6 +15,7 @@ source ~/.dotfiles/bash/alias/git.bashrc
 source ~/.dotfiles/bash/alias/github.bashrc
 source ~/.dotfiles/bash/alias/docker.bashrc
 source ~/.dotfiles/bash/alias/kubernetes.bashrc
+source ~/.dotfiles/bash/alias/bash_files.bashrc
 
 alias install-dotfiles='update_dotfiles'
 alias ubp='update_dotfiles'

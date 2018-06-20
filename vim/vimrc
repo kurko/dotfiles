@@ -137,6 +137,11 @@ let g:syntastic_mode_map = {
 \ "passive_filetypes": ["cucumber"] }
 let g:syntastic_ruby_checkers = ["mri", "rubocop"]
 
+" ACK + AG
+if executable('ag')
+  let g:ackprg = 'ag --vimgrep'
+endif
+
 " ALE plugin
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'

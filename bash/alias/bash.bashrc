@@ -4,7 +4,6 @@ echo-command() {
 
 isFunction() { declare -F -- "$@" >/dev/null; }
 
-
 strLen() {
     local bytlen sreal oLang=$LANG oLcAll=$LC_ALL
     LANG=C LC_ALL=C
