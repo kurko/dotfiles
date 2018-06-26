@@ -43,7 +43,7 @@ module KeyInstaller
     end
     
     ## Set the command to run on the remote server:
-    ssh_command    = %Q{echo '#{public_key}' | ssh #{host} -p #{ssh_port} "mkdir -p .ssh && cat - >> .ssh/authorized_keys"}
+    ssh_command    = %Q{echo '\n#{public_key}' | ssh #{host} -p #{ssh_port} "mkdir -p .ssh && cat - >> .ssh/authorized_keys"}
 
     if %x[ #{ssh_command} ] == ''
       puts " ** Key installed to '#{host}' successfully."
