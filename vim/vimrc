@@ -387,7 +387,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
     map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
     " map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
     map <leader>f :CtrlP<cr>
-    map <leader>F :CtrlPClearCache<cr>\|:CtrlP %%<cr>
+    map <leader>F :CtrlPClearCache<cr>\|:CtrlP<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -407,6 +407,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
       exec ':silent !find ' . old_directory . ' -type d -empty -exec rmdir {} +'
       redraw!
     endif
+    exec ':CtrlPClearCache'
   endfunction
 
   " Copy current file to a new location
@@ -419,6 +420,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
       exec ':saveas ' . new_name
       redraw!
     endif
+    exec ':CtrlPClearCache'
   endfunction
 
   map <leader>n :call RenameFile()<cr>
