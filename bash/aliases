@@ -11,6 +11,7 @@ source ~/.dotfiles/bash/alias/heroku.bashrc
 source ~/.dotfiles/bash/alias/swift.bashrc
 source ~/.dotfiles/bash/alias/xcode.bashrc
 source ~/.dotfiles/bash/alias/ruby.bashrc
+source ~/.dotfiles/bash/alias/vim.bashrc
 source ~/.dotfiles/bash/alias/git.bashrc
 source ~/.dotfiles/bash/alias/github.bashrc
 source ~/.dotfiles/bash/alias/docker.bashrc
