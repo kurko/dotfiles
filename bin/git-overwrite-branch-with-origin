@@ -1,0 +1,12 @@
+#!/bin/bash
+
+function replace_current_branch_with_origins(){
+	# Defines the current git branch
+	export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+
+  echo "git fetch --all && git reset --hard origin/$CURRENT_BRANCH..."
+	git fetch --all
+	git reset --hard origin/$CURRENT_BRANCH
+}
+
+replace_current_branch_with_origins

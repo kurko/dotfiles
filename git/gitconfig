@@ -11,6 +11,9 @@
   dmstat = diff master --shortstat
   fa = fetch --all
 
+  # branches
+  overwrite-branch-with-origin = git-overwrite-branch-with-origin
+
   # logs
   lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
   lol = log --graph --decorate --pretty=oneline --abbrev-commit
