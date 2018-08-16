@@ -1,2 +1,9 @@
 snippet ap
 	ap "$1: #{${1:var}.inspect}"
+snippet ap2
+	ap "$1:"; ap ${1:var}
+snippet ap-
+	ap "----------------------------------------"
+snippet pbcopy
+	# Write below the string variable you to copy to clipboard
+	IO.popen("pbcopy", "w") { |pipe| pipe.puts "#{$0}" }

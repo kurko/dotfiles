@@ -37,6 +37,11 @@ filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
 
+"highlight ColorColumn ctermbg=7
+highlight ColorColumn guibg=darkgray ctermbg=darkgray
+set colorcolumn=80
+"let &colorcolumn=join(range(81,999),",")
+"let &colorcolumn="80,".join(range(120,999),",")
 set pastetoggle=<F2>
 set showcmd                       " Display incomplete commands.
 set showmode                      " Display the mode you're in.
@@ -241,16 +246,6 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
   " Prevents Vim from scrolling when splitting the window horizontally.
     nnoremap <C-W>s Hmx`` \|:split<CR>`xzt``
 
-    " function! SaveAndReloadVimFile()
-    "   exec ":write"
-    "   if match(expand('%'), ".vim") >= 1
-    "     exec ":so %"
-    "   endif
-    " endfunction
-  " Spacebar saves
-    "nnoremap <Space> :call SaveAndReloadVimFile()<cr>
-    nnoremap <Space> :exec ":write" \| if match(expand('%'), ".vim") >= 1 \| exec ":so %" \| endif<cr>
-
   " ]p to paste and indent code automatically
     nnoremap ]p p=`]
 
@@ -281,6 +276,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 
   " Tab mappings.
     map <leader>tt :tabnew<cr>
+    map <leader>ts :tab split<cr>
     map <leader>te :tabedit
     map <leader>tc :tabclose<cr>
     map <leader>to :tabonly<cr>
@@ -344,6 +340,12 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
   "nnoremap <C-[> :<C-U>call PropheticTag()<CR>
 
   nmap <leader>b :so $MYVIMRC<CR>
+  nmap <leader>vim :e ~/.vimrc<CR>
+
+  " Spacebar saves
+  "
+  " If current file is .vimrc, it will then reload it to refresh the changes
+  nnoremap <Space> :exec ":write" \| if match(expand('%'), ".vim") >= 1 \| exec ":so %" \| endif<cr>
 
   " Resizing windows
   nnoremap <C-h> :vertical resize +5<cr>
@@ -481,9 +483,6 @@ function! InsertTabWrapper()
 endfunction
 " imap <tab> <c-r>=InsertTabWrapper()<cr>
 inoremap <s-tab> <c-n>
-
-"highlight ColorColumn ctermbg=7
-set colorcolumn=80
 
 
 " PLUGINS
