@@ -52,7 +52,7 @@ set cursorline
 set hidden                        " Handle multiple buffers better.
 
 set wildmenu                      " Enhanced command line completion.
-set wildmode=list:longest         " Complete files like a shell.
+set wildmode=full                 " Complete files like a shell.
 
 set ignorecase                    " Case-insensitive searching.
 set smartcase                     " But case-sensitive if expression contains a capital letter.
@@ -104,7 +104,7 @@ augroup LargeFile
   autocmd BufReadPre * let f=getfsize(expand("<afile>")) | if f > g:LargeFile || f == -2 | call LargeFile() | endif
 augroup END
 
-function LargeFile()
+function! LargeFile()
   " no syntax highlighting etc
   set eventignore+=FileType
   " save memory when other file is viewed
@@ -202,6 +202,8 @@ let g:ctrlp_switch_buffer = 'et'
 let g:ctrlp_cache_dir = $HOME . '/.cache/ctrlp'
 let g:ctrlp_clear_cache_on_exit = 1
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/vendor/*,*/\.git/*
+set wildignorecase
+
 " https://github.com/JazzCore/ctrlp-cmatcher
 " let g:ctrlp_match_func = {'match' : 'matcher#cmatch' }
 
@@ -339,8 +341,35 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 
   "nnoremap <C-[> :<C-U>call PropheticTag()<CR>
 
-  nmap <leader>b :so $MYVIMRC<CR>
+
   nmap <leader>vim :e ~/.vimrc<CR>
+
+  " Buffer
+  "
+  " :Ls will mimic :ls, but order by filenames, not number
+  command! -bang Ls redir @" | silent ls<bang> | redir END | echo " " |
+   \ perl {
+   \ my $msg=VIM::Eval('@"');
+   \ my %list=();
+   \ my $key, $value;
+   \ while($msg =~ m/(.*?line\s+\d+)/g)
+   \ {
+   \ $value = $1;
+   \ $value =~ m/"([^"]+)"/;
+   \ $key = $1;
+   \ ($^O =~ /mswin/i) and $key = lc($key);
+   \ $list{$key} = $value;
+   \ }
+   \ my $msg = '';
+   \ for $key (sort keys %list)
+   \ {
+   \ $msg .= "$list{$key}\n";
+   \ }
+   \ VIM::Msg($msg);
+   \ }
+   \ <CR>
+  " opens buffer list and writes ':b ', so you just have to type a number
+  nnoremap <leader>l :Ls<CR>:b<Space>
 
   " Spacebar saves
   "
@@ -389,6 +418,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
     map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
     " map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
     map <leader>f :CtrlP<cr>
+    nmap <leader>b :CtrlPBuffer<cr>
     map <leader>F :CtrlPClearCache<cr>\|:CtrlP<cr>
 
 
@@ -431,7 +461,11 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " TESTS & SPECS FUNCTIONS
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-  nnoremap <cr> <ESC>:w<CR>\|:sleep 50m<CR>\|:call RunTestFile()<cr>
+  function! SleepForZeusToReload()
+    exec ':sleep 250m'
+  endfunction
+
+  nnoremap <cr> <ESC>:w<CR>\|:call SleepForZeusToReload()\|:call RunTestFile()<cr>
   nnoremap <Bslash> <ESC>:w<CR>\|:sleep 50m<CR>\|:call RunNearestTest()<cr>
   map <leader>t :call RunTestFile()<cr>
   map <leader>r :call RunNearestTest()<cr>
