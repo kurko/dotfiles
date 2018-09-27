@@ -1,10 +1,20 @@
 if [ -d ~/.dotfiles ]
 then
+  LAST_DIR=$(pwd)
   echo "Pulling from master"
+  cd ~/.dotfiles
   git pull --rebase origin master
+  cd $LAST_DIR
 else
   echo "Cloning git@github.com:kurko/.dotfiles.git into ~/.dotfiles"
   git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
+fi
+
+if [ ! -d ~/.vim/bundle/Vundle.vim ]
+then
+  echo "Install Vim's Vundle on ~/.vim/bundle/Vundle.vim"
+  git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+  vim +PluginInstall +qall
 fi
 
 echo "Loading ~/.dotfiles/bashrc_source"
