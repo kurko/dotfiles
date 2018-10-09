@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Runs rubocop against changed files against master. It works even when
+# Runs reek against changed files against master. It works even when
 # user is inside subdirs
 
 root_path="$(pwd)"
@@ -56,5 +56,5 @@ do
   FILES="${FILES} ${final_path}";
 done;
 
-echo "bundle exec rubocop $FILES --force-exclusion"
-bundle exec rubocop $FILES --force-exclusion
+echo "bundle exec reek $FILES $*"
+bundle exec reek $FILES $*
