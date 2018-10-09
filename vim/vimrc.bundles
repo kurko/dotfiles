@@ -77,3 +77,9 @@ Plugin 'ervandew/supertab.git'
 
 " PERSONAL
 Plugin 'bogado/file-line'
+
+
+" This enables me to have cfi#format()
+"
+" let &statusline .= '%{cfi#format(" [%s()]", "")}'
+Bundle "tyru/current-func-info.vim"
