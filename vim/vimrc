@@ -141,7 +141,7 @@ endif
 let g:syntastic_mode_map = {
 \ "mode": "active",
 \ "passive_filetypes": ["cucumber"] }
-let g:syntastic_ruby_checkers = ["mri", "rubocop"]
+let g:syntastic_ruby_checkers = ["mri", "rubocop", "reek"]
 
 " ACK + AG
 if executable('ag')
@@ -162,8 +162,8 @@ function! SetAleBufferLinters()
   let ruby_linters = ["ruby"]
 
   if filereadable(".rubocop.yml") | :call add(ruby_linters, "rubocop") | endif
+  if filereadable(".reek.yml") | :call add(ruby_linters, "reek") | endif
   if filereadable("rails_best_practices.yml") | :call add(ruby_linters, "rails_best_pratices") | endif
-  if filereadable(".reek") | :call add(ruby_linters, "reek") | endif
 
   let b:ale_linters = {
   \   'ruby': ruby_linters,
