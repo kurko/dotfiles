@@ -1,8 +1,10 @@
 function update_dotfiles() {
   echo "Updating ~/.bash_profile..."
   if [ -f ~/.bashrc ]; then
+    echo "Loading ~/.bashrc"
     source ~/.bashrc
   elif [ -f ~/.bash_profile ]; then
+    echo "Loading ~/.bash_profile"
     source ~/.bash_profile
   fi
 
@@ -13,15 +15,18 @@ function update_dotfiles() {
 
 function create_dot_vim() {
   if [ ! -d ~/.vim ]; then
+    echo "Creating ~/.vim"
     mkdir ~/.vim
   fi
 
   if [ ! -d ~/.vim/colors ]; then
+    echo "Creating ~/.vim/colors"
     mkdir ~/.vim/colors
   fi
 }
 
 function update_symlinks(){
+  echo "Linking configuration files to ~/"
   mkdir -p ~/.config/git
   ln -nfs ~/.dotfiles/git/gitignore ~/.config/git/ignore
 
@@ -46,12 +51,14 @@ function update_symlinks(){
 function reload_bash_profile() {
   # Loads .dotfiles
   if [ -f ~/.bashrc ]; then
+    echo "Linking ~/.bashrc"
     if ! grep -q "source ~/.dotfiles/bashrc_source" ~/.bashrc; then
       echo 'source ~/.dotfiles/bashrc_source' >> ~/.bashrc
     fi
 
     source ~/.bashrc
   elif [ -f ~/.bash_profile ]; then
+    echo "Linking ~/.bashrc"
     if ! grep -q "source ~/.dotfiles/bashrc_source" ~/.bash_profile; then
       echo 'source ~/.dotfiles/bashrc_source' >> ~/.bash_profile
     fi
@@ -69,9 +76,7 @@ source $DOTFILES/bash/env
 source $DOTFILES/bash/aliases
 source $DOTFILES/bash/aliases_env_specific
 source $DOTFILES/bash/bootstrap_machine
-
-# This is neat
-source $DOTFILES/bash/dirmarks
+source $DOTFILES/bash/dirmarks # This is neat
 
 export PATH=$PATH:~/.dotfiles/bin
 
