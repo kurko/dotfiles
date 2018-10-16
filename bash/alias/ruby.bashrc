@@ -8,6 +8,8 @@ alias zs="zeus server"
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
 alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
+function ruby_server() { ruby -run -ehttpd . -p$1 }
+
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
 alias last_migration='vim $(ls db/migrate/* | tail -n1)'
