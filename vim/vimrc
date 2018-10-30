@@ -152,8 +152,13 @@ endif
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
-let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_on_text_changed = 'normal' " never
+let g:ale_lint_on_insert_leave = 1 " default 0
+let g:ale_lint_delay = 10 " defaults to 200
+let g:ale_echo_delay = 10 " defaults 10
+let g:ale_completion_delay = 100 "defaults 100
 let g:ale_set_highlights = 1
+
 highlight ALEErrorSign ctermfg=red
 highlight ALEWarningSign ctermfg=red
 
@@ -162,7 +167,9 @@ function! SetAleBufferLinters()
   let ruby_linters = ["ruby"]
 
   if filereadable(".rubocop.yml") | :call add(ruby_linters, "rubocop") | endif
-  if filereadable(".reek.yml") | :call add(ruby_linters, "reek") | endif
+  if filereadable(".reek.yml")
+    :call add(ruby_linters, "reek")
+  endif
   if filereadable("rails_best_practices.yml") | :call add(ruby_linters, "rails_best_pratices") | endif
 
   let b:ale_linters = {
