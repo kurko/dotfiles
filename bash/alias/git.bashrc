@@ -2,7 +2,7 @@
 alias git_update_submodules="git submodule init && git submodule update && git pull --recurse-submodules && git submodule update --init --recursive --remote --merge"
 
 # creates pull request and opens it in the browser
-alias pr='gpush -u && hub pull-request -o'
+function pr() { gpush -u && hub pull-request -o $*; }
 
 alias master='git checkout master'
 alias dev='git checkout develop'
