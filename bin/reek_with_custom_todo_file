@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+reek -c .todo.reek
