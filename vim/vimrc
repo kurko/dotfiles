@@ -64,6 +64,7 @@ set incsearch                     " Highlight matches as you type.
 set hlsearch                      " Highlight matches.
 
 set wrap                          " Turn on line wrapping.
+au BufNewFile,BufRead,BufReadPost *.md set linebreak
 set scrolloff=3                   " Show 3 lines of context around the cursor.
 
 set title                         " Set the terminal's title
@@ -204,7 +205,7 @@ let g:gitgutter_max_signs = 999  " 500 is the default value
 
 " CtrlP
 set runtimepath^=~/.vim/bundle/ctrlp.vim
-let g:ctrlp_custom_ignore = 'tmp$\|deps\|_build\|log\/\|vendor/assets\|vendor/bundle\|vendor/plugins\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|coverage\|.DS_STORE\|node_modules\|test_build\|bower_'
+let g:ctrlp_custom_ignore = 'tmp$\|deps\|_build\|log\/\|vendor/assets\|vendor/bundle\|vendor/plugins\|.jpg\|.png\|.jpeg\|.gif\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|coverage\|.DS_STORE\|node_modules\|test_build\|bower_'
 let g:ctrlp_root_markers = ['ctrlp_root']
 let g:ctrlp_switch_buffer = 'et'
 let g:ctrlp_cache_dir = $HOME . '/.cache/ctrlp'
@@ -246,7 +247,7 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
 " section below
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-  set timeoutlen=200
+  set timeoutlen=500
   let mapleader = ","
 
   " save by pressing ,s instead of :w
