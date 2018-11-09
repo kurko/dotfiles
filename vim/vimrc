@@ -377,8 +377,13 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
    \ VIM::Msg($msg);
    \ }
    \ <CR>
+
   " opens buffer list and writes ':b ', so you just have to type a number
-  nnoremap <leader>l :Ls<CR>:b<Space>
+  if has('perl')
+    nnoremap <leader>l :Ls<CR>:b<Space>
+  else
+    nnoremap <leader>l :ls<CR>:b<Space>
+  endif
 
   " Spacebar saves
   "
