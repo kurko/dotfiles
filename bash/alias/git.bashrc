@@ -14,7 +14,7 @@ alias gst='git status'
 alias ga='git add . --all && git status'
 alias gb='git branch'
 
-git_version="$(semver_compare 'git --version' 2.9.0)"
+git_version="$($DOTFILES/bin/semver_compare 'git --version' 2.9.0)"
 if [[ $git_version == "-1" ]]; then
   alias gd='git diff'
 else
