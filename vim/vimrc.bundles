@@ -84,5 +84,3 @@ Plugin 'bogado/file-line'
 "
 " let &statusline .= '%{cfi#format(" [%s()]", "")}'
 Bundle "tyru/current-func-info.vim"
-
-Bundle "jeetsukumaran/vim-buffergator"
