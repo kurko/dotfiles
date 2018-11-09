@@ -1,0 +1,23 @@
+#!/usr/bin/ruby
+
+# Usage
+#   server_compare <program_command> <version>
+#
+# Example:
+#   semver_compare "git --version" 2.9.0
+#
+if ARGV[0] && ARGV[1]
+  program_version_output = `#{ARGV[0]}`
+  compare_to = ARGV[1]
+  version = program_version_output.scan(/[0-9]+\.[0-9]+\.?[0-9]?/)[0]
+
+  print Gem::Version.new(version) <=> Gem::Version.new(compare_to)
+else
+  puts "Returns -1, 0 or 1 if the program version is greater than the compare one"
+  puts
+  puts "Usage: server_compare <program_command> <version>"
+  puts
+  puts "Example"
+  puts
+  puts "semver_compare \"git --version\" 2.9.0"
+end

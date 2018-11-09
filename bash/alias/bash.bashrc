@@ -52,7 +52,6 @@ function is_program_installed() {
   fi
 }
 
-
 # Usage: file-exists ".zeus.sock"
 #
 #   if file-exists ".zeus.sock" ; then

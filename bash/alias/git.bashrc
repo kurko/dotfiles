@@ -13,8 +13,14 @@ alias g='git status -sb'
 alias gst='git status'
 alias ga='git add . --all && git status'
 alias gb='git branch'
-alias gd='git diff --compaction-heuristic'
-alias gdc='git diff --cached'
+
+git_version="$(semver_compare 'git --version' 2.9.0)"
+if [[ $git_version == "-1" ]]; then
+  alias gd='git diff'
+else
+  alias gd='git diff --compaction-heuristic'
+fi
+alias gdc='gd --cached'
 alias glog='git log'
 alias gt='git tag --sort=creatordate'
 
