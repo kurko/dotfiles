@@ -435,6 +435,12 @@ map <leader>p :call SetCtrlPPathTheSameAsVim()<cr>
     nmap <leader>b :CtrlPBuffer<cr>
     map <leader>F :CtrlPClearCache<cr>\|:CtrlP<cr>
 
+    let g:splitjoin_trailing_comma = 0
+    let g:splitjoin_ruby_hanging_args = 0
+    let g:splitjoin_ruby_curly_braces = 0
+    nmap sj :SplitjoinSplit<cr>
+    nmap sk :SplitjoinJoin<cr>
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM FUNCTIONS
