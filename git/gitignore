@@ -1,5 +1,8 @@
 .DS_STORE
 tags
+todo
 spec/fixtures/vcr_cassettes/*
 ctrlp_root
 .byebug_history
+zeus.json
+custom_plan.rb
