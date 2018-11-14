@@ -75,10 +75,10 @@ source $DOTFILES/bash/prompt_config
 source $DOTFILES/bash/env
 source $DOTFILES/bash/aliases
 source $DOTFILES/bash/aliases_env_specific
-source $DOTFILES/bash/bootstrap_machine
 source $DOTFILES/bash/dirmarks # This is neat
 
 export PATH=$PATH:~/.dotfiles/bin
+export USER=`whoami`
 
 # disable XON/XOFF so I can use ctrl+s with `history`
 [[ $- == *i* ]] && stty -ixon

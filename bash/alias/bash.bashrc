@@ -44,6 +44,14 @@ function join_array() {
 }
 
 # Finds out if a program is installed
+#
+# Usage: is_program_installed PROGRAM_NAME
+#
+#   if is_program_installed rbenv ; then
+#     echo "file exists"
+#   else
+#     echo "file doesn't exist"
+#   fi
 function is_program_installed() {
   if which $1 > /dev/null ; then
     return 0

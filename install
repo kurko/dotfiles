@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ -d ~/.dotfiles ]
 then
   LAST_DIR=$(pwd)
@@ -22,3 +23,13 @@ source ~/.dotfiles/bashrc_source
 
 echo "Updating scripts and aliases"
 update_dotfiles
+
+# MacOS?
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  source $DOTFILES/installation/macos
+  install_macos
+#elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+  # ...
+fi
+
+

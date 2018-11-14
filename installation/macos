@@ -1,0 +1,72 @@
+#! /bin/bash
+
+function brew_install_if_absent() {
+  echo -n "> $1: "
+  if ! is_program_installed $1; then
+    echo "brew installing... "
+    brew install $1;
+    echo "done."
+  else
+    echo "already installed."
+  fi
+}
+
+function brew_cask_install_if_absent() {
+  echo -n "> $1: "
+  if ! is_program_installed $1; then
+    echo "brew installing... "
+    brew cask install $1
+    echo "done."
+  else
+    echo "already installed."
+  fi
+}
+
+function install_macos() {
+  echo "> Installing applications..."
+
+  if command -v brew >/dev/null 2>&1; then
+    echo "Homebrew already installed!"
+  else
+    echo "Homebrew... "
+    ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/install/master/install)"
+    brew update
+    echo "done!"
+  fi
+  echo ""
+
+  printf "> Installing Rbenv... "
+  if command -v rbenv >/dev/null 2>&1; then
+    echo "Rbenv already installed!\n"
+  else
+    echo "Rbenv & ruby-build... "
+    git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
+    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+    echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+    source ~/.bash_profile
+    type rbenv
+    git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+    echo "done!\n"
+    LAST_RUBY="$(rbenv install -l | grep -v - | tail -1)"
+    echo "> Installing Ruby ${LAST_RUBY}... "
+    rbenv install $LAST_RUBY
+    rbenv global $LAST_RUBY
+    echo "done!\n"
+    echo "> Installing Bundler... "
+    gem install bundler
+    echo "done!\n"
+  fi
+  ruby -v
+
+  brew_install_if_absent wget
+  brew_install_if_absent curl
+  brew_install_if_absent tmux
+  brew_install_if_absent the_silver_searcher
+  brew_install_if_absent postgresql
+  brew_cask_install_if_absent fliqlo
+  brew_cask_install_if_absent slack
+  brew_cask_install_if_absent alfred
+  brew_cask_install_if_absent google-chrome
+  brew_cask_install_if_absent dropbox
+  brew_cask_install_if_absent 1password
+}
