@@ -65,6 +65,7 @@ function install_macos() {
   brew_install_if_absent tmux
   brew_install_if_absent the_silver_searcher
   brew_install_if_absent postgresql
+  brew_install_if_absent redis
   brew install imagemagick@6 && brew link imagemagick@6
   brew install pkgconfig && brew unlink pkgconfig && brew link pkgconfig
   brew_install_if_absent mosh
