@@ -68,6 +68,7 @@ function install_macos() {
   brew install imagemagick@6 && brew link imagemagick@6
   brew install pkgconfig && brew unlink pkgconfig && brew link pkgconfig
   brew_install_if_absent mosh
+  brew_install_if_absent ctags-exuberant
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred

@@ -3,7 +3,7 @@ export PSQL_EDITOR="vim_within_temp_tmux" # "vim -u NONE"
 export DISABLE_SPRING=1
 
 # BREW
-HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_AUTO_UPDATE=1
 
 # PSQL
 #

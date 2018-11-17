@@ -6,3 +6,4 @@ ctrlp_root
 .byebug_history
 zeus.json
 custom_plan.rb
+zeus.log
