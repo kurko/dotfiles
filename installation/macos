@@ -3,24 +3,32 @@
 function brew_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  if ! is_program_installed $1; then
+  brew info $1 &> /dev/null
+  if [[ $? -eq 1 ]]
+  then
     echo "brew installing... "
     brew install $1;
     echo "done."
+    return 0
   else
     echo "already installed."
+    return 1
   fi
 }
 
 function brew_cask_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  if ! is_program_installed $1; then
+  brew cask info $1 &> /dev/null
+  if [[ $? -eq 1 ]]
+  then
     echo "brew installing... "
     brew cask install $1
     echo "done."
+    return 0
   else
     echo "already installed."
+    return 1
   fi
 }
 
@@ -66,8 +74,14 @@ function install_macos() {
   brew_install_if_absent the_silver_searcher
   brew_install_if_absent postgresql
   brew_install_if_absent redis
-  brew install imagemagick@6 && brew link imagemagick@6
-  brew install pkgconfig && brew unlink pkgconfig && brew link pkgconfig
+  brew_install_if_absent hub
+  if [[ "$(which vim)" == "/usr/bin/vim" ]]; then
+    brew install vim --override-system-vi
+  else
+    echo "> vim: already installed."
+  fi
+  brew_install_if_absent imagemagick@6 && brew link imagemagick@6
+  brew_install_if_absent pkgconfig && brew unlink pkgconfig && brew link pkgconfig
   brew_install_if_absent mosh
   brew_install_if_absent ctags-exuberant
   brew_cask_install_if_absent fliqlo
