@@ -72,6 +72,7 @@ function install_macos() {
 
   brew_install_if_absent wget
   brew_install_if_absent curl
+  brew_install_if_absent tree
   brew_install_if_absent tmux
   brew_install_if_absent the_silver_searcher
   brew_install_if_absent postgresql
