@@ -30,6 +30,7 @@
   #   l = all commits, only current branch
   l = "!source ~/.githelpers && pretty_git_log"
   la = !git l --all
+	plog = log --graph --pretty=format:'%h -%d %s %n' --abbrev-commit --date=relative --branches
 
 [user]
 	name = Alexandre de Oliveira
