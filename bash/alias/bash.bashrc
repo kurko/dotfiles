@@ -84,7 +84,7 @@ function file-exists() {
 #     do_something_else
 #   fi
 function has-argument() {
-  if [[ -z $1 ]]; then
+  if [[ -z "$1" ]]; then
     return 1
   else
     return 0
@@ -92,6 +92,10 @@ function has-argument() {
 }
 
 function replace-recursively() {
-  echo-command "Replacing $1 with $2 recursively"
-  find config/locales/ -type f -exec sed -i '' -e "s/$1/$2/" {} \;
+  if has-argument $1 && has-argument $2; then
+    echo-command "Replacing $1 with $2 recursively"
+    ag $1 -l0 | xargs -0 sed -i '' -e 's/$1/$2/g'
+  else
+    echo "No arguments supplied"
+  fi
 }
