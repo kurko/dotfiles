@@ -2,19 +2,18 @@
 
 source $DOTFILES/bash/alias/bash.bashrc
 
-# Add command to PROMPT_COMMAND (runs before each command)
-# Makes sure ithe command is not already in PROMPT_COMMAND
+# - Add command to PROMPT_COMMAND (runs before each command)
+# - Makes sure the command is not already in PROMPT_COMMAND
 addToPromptCommand() {
   if [[ ":$PROMPT_COMMAND:" != *":$1:"* ]]; then
-    PROMPT_COMMAND="${PROMPT_COMMAND:+"$PROMPT_COMMAND:"}$1"
+    #PROMPT_COMMAND="${PROMPT_COMMAND:+"$PROMPT_COMMAND:"}; $1"
+    if [[ "$PROMPT_COMMAND" == "" ]]; then
+      PROMPT_COMMAND="$1"
+    else
+      PROMPT_COMMAND="$PROMPT_COMMAND; $1"
+    fi
   fi
 }
-
-# Set iTerm title to show current directory
-if [ $ITERM_SESSION_ID ]; then
-  addToPromptCommand 'echo -ne "\033];${PWD##*/}\007"'
-fi
-
 
 # Deprecated in Ubuntu
 #export GREP_OPTIONS="--color=auto"
@@ -230,4 +229,10 @@ function set_ps1() {
   export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
   export PS1="\n${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
 }
-PROMPT_COMMAND="set_ps1"
+
+# Set iTerm title to show current directory
+if [ $ITERM_SESSION_ID ]; then
+  addToPromptCommand 'echo -ne "\033];${PWD##*/}\007"'
+fi
+
+addToPromptCommand 'set_ps1'
