@@ -38,7 +38,16 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/vim/vimrc.bundles ~/.vimrc.bundles
   ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.vim/colors/
   ln -nfs ~/.dotfiles/vim/snippets ~/.vim/
+
   ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.versioning.conf ~/.tmux.versioning.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.2.1.up-to.conf  ~/.tmux.2.1.up-to.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.2.1.and-up.conf ~/.tmux.2.1.and-up.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.2.2.up-to.conf  ~/.tmux.2.2.up-to.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.2.4.up-to.conf  ~/.tmux.2.4.up-to.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.2.4.and-up.conf ~/.tmux.2.4.and-up.conf
+  ln -nfs ~/.dotfiles/tmux/tmux.2.6.and-up.conf ~/.tmux.2.6.and-up.conf
+
   ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
   ln -nfs ~/.dotfiles/ag/agignore ~/.agignore
 
