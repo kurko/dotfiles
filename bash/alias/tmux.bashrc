@@ -53,7 +53,8 @@ if [[ "$TERM" =~ "screen".* ]]; then
     #trap "tmux set-window-option -t $__tmux_window automatic-rename on 1>/dev/null; tmux setw automatic-rename" RETURN
     tmux rename-window "$(__tmux_get_hostname $*)"
     command "$@"
-    tmux set-window-option automatic-rename "on" 1>/dev/null
+    # This is not working on Ubuntu
+    # tmux set-window-option automatic-rename "on" 1>/dev/null
     tmux setw automatic-rename
   }
 
