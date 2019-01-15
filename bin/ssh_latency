@@ -1,0 +1,16 @@
+#!/bin/bash
+
+SSH_CLIENT_INFO=$SSH_CLIENT
+if [ "$SSH_CLIENT_INFO" == "" ]; then
+  SSH_CLIENT_INFO=$SSH_CONNECTION
+fi
+
+if [ "$SSH_CLIENT_INFO" != "" ]; then
+  echo $SSH_CLIENT_INFO | \
+    echo $(awk '{print $1}') | \
+    ping -c 1 $(cat) | \
+    grep -o 'time=[0-9]*.*ms' |\
+    sed -e 's/time=//g' -e 's/ ms/ms/g'
+else
+  exit 1
+fi
