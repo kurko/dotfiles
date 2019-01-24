@@ -49,6 +49,18 @@ function dbmigrate() {
   fi
 }
 
+function dbmigratedown() {
+  version=$(ls db/migrate | fzf | awk -F _ '{print $1}')
+  if file-exists ".zeus.sock" ; then
+    echo-command "zeus rake db:migrate:down VERSION=$version && zeus rake db:test:prepare"
+    [[ -n "$version" ]] && zeus-and-retry "rake db:migrate:down VERSION=$version"
+    zeus-and-retry "rake db:test:prepare"
+  else
+    echo-command "rake db:migrate:down VERSION=$version && rake db:test:prepare"
+    bundle exec rake db:migrate:down VERSION=$version && bundle exec rake db:test:prepare
+  fi
+}
+
 function dbrollback() {
   if file-exists ".zeus.sock" ; then
     echo-command 'zeus rake db:rollback db:test:prepare'

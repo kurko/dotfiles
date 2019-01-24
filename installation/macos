@@ -87,6 +87,7 @@ function install_macos() {
   brew_install_if_absent pkgconfig && brew unlink pkgconfig && brew link pkgconfig
   brew_install_if_absent mosh
   brew_install_if_absent ctags-exuberant
+  brew_install_if_absent fzf
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred

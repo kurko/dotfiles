@@ -94,3 +94,4 @@ export USER=`whoami`
 
 # We need some programs to be installed for this environment to work as expected
 check_missing_binary 'bc'
+check_missing_binary 'fzf'
