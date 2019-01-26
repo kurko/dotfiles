@@ -3,7 +3,8 @@
 function brew_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  brew info $1 &> /dev/null
+  brew list $1 &> /dev/null
+
   if [[ $? -eq 1 ]]
   then
     echo "brew installing... "
@@ -19,7 +20,7 @@ function brew_install_if_absent() {
 function brew_cask_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  brew cask info $1 &> /dev/null
+  brew cask list $1 &> /dev/null
   if [[ $? -eq 1 ]]
   then
     echo "brew installing... "
@@ -88,6 +89,8 @@ function install_macos() {
   brew_install_if_absent mosh
   brew_install_if_absent ctags-exuberant
   brew_install_if_absent fzf
+  brew_install_if_absent nodejs
+  brew_install_if_absent yarn
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred
