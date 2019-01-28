@@ -7,7 +7,14 @@ function pr() { gpush -u && hub pull-request -o $*; }
 alias master='git checkout master'
 alias dev='git checkout develop'
 alias develop='git checkout develop'
-alias mgpr='git checkout master && gpr'
+function mgpr() {
+  git checkout master
+  gpr
+  if [ ! -z "$1" ]; then
+    git checkout $1
+  fi
+}
+# alias mgpr="git checkout master && gpr && [[ \\"$1\\" != \\"\\"]] && git checkout $1"
 alias dgpr='git checkout develop && gpr'
 alias g='git status -sb'
 alias gst='git status'
