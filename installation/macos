@@ -91,6 +91,7 @@ function install_macos() {
   brew_install_if_absent fzf
   brew_install_if_absent nodejs
   brew_install_if_absent yarn
+  brew_install_if_absent jq
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred
