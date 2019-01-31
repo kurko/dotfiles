@@ -7,6 +7,7 @@ function pr() { gpush -u && hub pull-request -o $*; }
 alias master='git checkout master'
 alias dev='git checkout develop'
 alias develop='git checkout develop'
+unalias mgpr 2>/dev/null
 function mgpr() {
   git checkout master
   gpr
