@@ -19,6 +19,9 @@ function tmuxn(){
 }
 function tmuxk(){ tmux kill-session -t $*; }
 
+# If there's a tmux session, attach to it, otherwise restore from tmux-ressurect
+alias mux='tmux attach || { (while ! tmux run-shell ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh; do sleep 0.2; done)& tmux ; }'
+
 # These functions are only available within a Tmux session
 if [[ "$TERM" =~ "screen".* ]]; then
   # We are in TMUX!
