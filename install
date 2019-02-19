@@ -18,6 +18,13 @@ then
   vim +PluginInstall +qall
 fi
 
+if [ ! -d ~/.tmux/plugins/tpm ]
+then
+  echo "Install Tmux Plugin Manager on ~/.tmux/plugins/tpm"
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  ~/.tmux/plugins/tpm/bin/install_plugins
+fi
+
 echo "Loading ~/.dotfiles/bashrc_source"
 source ~/.dotfiles/bashrc_source
 
