@@ -148,10 +148,10 @@ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Syntastic (not using currently)
-let g:syntastic_mode_map = {
-\ "mode": "active",
-\ "passive_filetypes": ["cucumber"] }
-let g:syntastic_ruby_checkers = ["mri", "rubocop", "reek"]
+" let g:syntastic_mode_map = {
+" \ "mode": "active",
+" \ "passive_filetypes": ["cucumber"] }
+" let g:syntastic_ruby_checkers = ["mri", "rubocop", "reek"]
 
 " ACK + AG
 if executable('ag')
@@ -165,15 +165,18 @@ let g:ale_sign_column_always = 1
 let g:ale_lint_on_text_changed = 'always' " never
 let g:ale_lint_on_insert_leave = 1 " default 0
 let g:ale_echo_msg_format = '%linter% says %code%: %s'
-let g:ale_lint_delay = 10 " defaults to 200
+let g:ale_lint_delay = 200 " defaults to 200
 let g:ale_echo_delay = 10 " defaults 10
 let g:ale_completion_delay = 10 "defaults 100
 let g:ale_set_highlights = 1
+let g:ale_fix_on_save = 0
+
+nmap <F8> <Plug>(ale_fix)
 
 highlight ALEErrorSign ctermfg=red
 highlight ALEWarningSign ctermfg=red
 
-" Only use linters that make sense
+" Ale - Only use linters that make sense
 function! SetAleBufferLinters()
   let ruby_linters = ["ruby"]
 
@@ -181,21 +184,40 @@ function! SetAleBufferLinters()
   if filereadable(".reek.yml")
     :call add(ruby_linters, "reek")
   endif
+  if filereadable(".standard.yml")
+    :call add(ruby_linters, "standardrb")
+  endif
   if filereadable("rails_best_practices.yml") | :call add(ruby_linters, "rails_best_pratices") | endif
 
   let b:ale_linters = {
   \   'ruby': ruby_linters,
   \}
 endfunction
+
+" Ale - Only use fixers that make sense
+function! SetAleBufferFixers()
+  let ruby_fixers = []
+
+  if filereadable(".rubocop.yml") | :call add(ruby_fixers, "rubocop") | endif
+  if filereadable(".standard.yml")
+    :call add(ruby_fixers, "standardrb")
+  endif
+
+  let b:ale_fixers = {
+  \   'ruby': ruby_fixers,
+  \}
+endfunction
+
 augroup AleGroup
   autocmd!
+  autocmd FileType,BufEnter * call SetAleBufferFixers()
   autocmd FileType,BufEnter * call SetAleBufferLinters()
 augroup END
 
 " git gutter plugin
-let g:gitgutter_enabled = 1
+let g:gitgutter_enabled = 0
 let g:gitgutter_max_signs = 999  " 500 is the default value
-set updatetime=200
+set updatetime=400
 
 " zencoding plugin
  let g:user_zen_settings = {

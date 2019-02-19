@@ -60,7 +60,7 @@ if exists("syntax_on")
   syntax reset
 endif
 
-let colors_name = "ir_black"
+let colors_name = "alex_ir_black"
 
 " When there are spelling errors
 hi SpellBad ctermfg=darkred ctermbg=darkgray guifg=red guibg=white
