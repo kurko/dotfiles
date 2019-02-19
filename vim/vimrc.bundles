@@ -78,6 +78,8 @@ Plugin 'garbas/vim-snipmate.git'
 Plugin 'honza/vim-snippets.git'
 Plugin 'ervandew/supertab.git'
 
+Plugin 'tpope/vim-obsession.git'
+
 " PERSONAL
 Plugin 'bogado/file-line'
 

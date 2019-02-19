@@ -86,6 +86,7 @@ source $DOTFILES/bash/aliases
 source $DOTFILES/bash/aliases_env_specific
 source $DOTFILES/bash/dirmarks # This is neat
 
+export HISTCONTROL=ignoreboth
 export PATH=$PATH:~/.dotfiles/bin
 export USER=`whoami`
 
