@@ -17,6 +17,13 @@ function tmuxn(){
   tmux attach -t $1
   #tmux set -g automatic-rename "on" 1>/dev/null
 }
+function tmuxn3(){
+  tmux new-session -d -s $1
+  tmux neww -t $1
+  tmux neww -t $1
+  tmux attach -t $1
+  #tmux set -g automatic-rename "on" 1>/dev/null
+}
 function tmuxk(){ tmux kill-session -t $*; }
 
 # If there's a tmux session, attach to it, otherwise restore from tmux-ressurect
