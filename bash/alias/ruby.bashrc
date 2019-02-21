@@ -22,9 +22,9 @@ alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:mig
 function zeus-and-retry() {
   if file-exists ".zeus.sock" ; then
     zeus $1
-    if [ $? -ne 0 ] ; then
-      echo "Exited with $?, retrying zeus..."
-      zeus $1
+    if [ $? -eq 143 ] ; then
+      echo "Exited with $?, retrying zeus with loop..."
+      while zeus $1; [ $? -eq 143 ]; do : ; done
     fi
   fi
 }
