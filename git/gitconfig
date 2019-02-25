@@ -10,6 +10,7 @@
   dm = diff master
   dmstat = diff master --shortstat
   fa = fetch --all
+  checkout-from-github = "!source ~/.githelpers && reset_from_github"
 
   # branches
   overwrite-branch-with-origin = git-overwrite-branch-with-origin

@@ -57,10 +57,14 @@ alias gshow_unmerged_branches='git branch --no-merged'
   }
 	function gch(){ git checkout $*; }
 
+  function export_git_branch_variable() {
+		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+  }
+
   # rmr = Rebase Master Rebase
 	function rmr(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
     echo Checking out master, rebasing and returning to $CURRENT_BRANCH...
 		git checkout master
@@ -72,7 +76,7 @@ alias gshow_unmerged_branches='git branch --no-merged'
   # rmd = Rebase Develop Rebase
 	function rdr(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
     echo 1. Checkout develop branch
     echo 2. Rebase: git pull --rebase origin develop
@@ -86,7 +90,7 @@ alias gshow_unmerged_branches='git branch --no-merged'
 
 	function gfacepunch(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
 		echo Face punching to origin $CURRENT_BRANCH...
 		git push --force origin $CURRENT_BRANCH
@@ -94,7 +98,7 @@ alias gshow_unmerged_branches='git branch --no-merged'
 
 	function gpush(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
 		echo Pushing to origin $CURRENT_BRANCH $*
 		git push origin $CURRENT_BRANCH $*
@@ -102,7 +106,7 @@ alias gshow_unmerged_branches='git branch --no-merged'
 
 	function gpr(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
 		echo Pulling origin/$CURRENT_BRANCH, rebasing on it and fetching origin...
 		git pull --rebase origin $CURRENT_BRANCH && git fetch origin
@@ -110,7 +114,7 @@ alias gshow_unmerged_branches='git branch --no-merged'
 
 	function gprs(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
 		echo Pulling origin/$CURRENT_BRANCH, rebasing on it and fetching origin, then running git_update_submodules...
 		git pull --rebase origin $CURRENT_BRANCH && git fetch origin && git_update_submodules
@@ -118,7 +122,7 @@ alias gshow_unmerged_branches='git branch --no-merged'
 
 	function gpul(){
 		# Defines the current git branch
-		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
+    export_git_branch_variable
 
 		echo Pulling from origin $CURRENT_BRANCH...
 		git pull origin $CURRENT_BRANCH
