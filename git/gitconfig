@@ -76,3 +76,4 @@
 	browser = open
 [commit]
   template = ~/.gitmessage
+	verbose = true

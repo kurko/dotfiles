@@ -71,6 +71,9 @@ Plugin 'tonchis/to-github-vim'
 
 Plugin 'AndrewRadev/splitjoin.vim.git'
 
+" SPLITS
+Plugin 'wesQ3/vim-windowswap'
+
 " vim-snipmate requires tlib and vim-addon-mw-utils
 Plugin 'tomtom/tlib_vim.git'
 Plugin 'MarcWeber/vim-addon-mw-utils.git'
