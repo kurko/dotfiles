@@ -36,6 +36,7 @@ Plugin 'thisivan/vim-bufexplorer'
 Plugin 'vim-scripts/taglist.vim'
 
 Bundle 'airblade/vim-gitgutter'
+Bundle 'airblade/vim-rooter'
 Plugin 'ctrlpvim/ctrlp.vim.git'
 Plugin 'tpope/vim-endwise.git'
 Plugin 'tpope/vim-fugitive.git'
@@ -49,7 +50,10 @@ Plugin 'tpope/vim-markdown.git'
 Plugin 'google/vim-searchindex.git'
 " Bundle 'gabrielelana/vim-markdown'
 Plugin 'tpope/vim-ragtag.git'
+
+" Ruby dev
 Plugin 'tpope/vim-rails.git'
+Plugin 'rlue/vim-fold-rspec' " Slow to open files
 Plugin 'cakebaker/scss-syntax.vim.git'
 Plugin 'ciaranm/securemodelines.git'
 Plugin 'tpope/vim-surround.git'
@@ -85,6 +89,7 @@ Plugin 'tpope/vim-obsession.git'
 
 " PERSONAL
 Plugin 'bogado/file-line'
+
 
 
 " This enables me to have cfi#format()

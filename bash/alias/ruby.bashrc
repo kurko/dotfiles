@@ -120,7 +120,7 @@ function tn() {
   fi
 }
 # Zeus
-  alias zst='rm .zeus.sock && zeus start'
+  alias zst='rm -f .zeus.sock && zeus start'
   alias zsts='(tmux send-keys -t 8 "sleep 1 && zse" C-m &) && zst'
   alias zse='zeus server'
   alias zco='zeus console'
