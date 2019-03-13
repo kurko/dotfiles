@@ -35,7 +35,7 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/git/git_commit_template ~/.gitmessage
   ln -nfs ~/.dotfiles/postgres/psqlrc ~/.psqlrc
   ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
-  ln -nfs ~/.dotfiles/vim/vimrc.bundles ~/.vimrc.bundles
+  ln -nfs ~/.dotfiles/vim/vim.bundles ~/.vim.bundles
   ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.vim/colors/
   ln -nfs ~/.dotfiles/vim/snippets ~/.vim/
 

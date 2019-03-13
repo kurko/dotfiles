@@ -19,8 +19,8 @@ filetype off                   " required!
   set rtp+=~/.vim/bundle/Vundle.vim/
   call vundle#begin()
 
-  if filereadable(expand("~/.vimrc.bundles"))
-    source ~/.vimrc.bundles
+  if filereadable(expand("~/.vim.bundles"))
+    source ~/.vim.bundles
   endif
 
   call vundle#end()               " required
@@ -215,10 +215,29 @@ augroup AleGroup
   autocmd FileType,BufEnter * call SetAleBufferLinters()
 augroup END
 
-" git gutter plugin
-let g:gitgutter_enabled = 0
-let g:gitgutter_max_signs = 999  " 500 is the default value
-set updatetime=400
+" vim-surround
+"
+autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
+
+" git gutter
+  set updatetime=500
+  let g:signify_realtime = 0
+
+  " highlight lines in signify and vimdiff etc.)
+  highlight DiffAdd           cterm=bold ctermbg=none ctermfg=119
+  highlight DiffDelete        cterm=bold ctermbg=none ctermfg=167
+  highlight DiffChange        cterm=bold ctermbg=none ctermfg=227
+
+  " highlight lines in signify and vimdiff etc.)
+  highlight SignifySignAdd    cterm=bold ctermbg=none  ctermfg=119
+  highlight SignifySignDelete cterm=bold ctermbg=none  ctermfg=167
+  highlight SignifySignChange cterm=bold ctermbg=none  ctermfg=227
+
+  " The sign column (often mistakenly called "gutter") itself (all lines without
+  " signs) is highlighted by |hl-SignColumn|. Some colorschemes define no
+  " background color for |hl-Normal| but for |hl-SignColumn|. To avoid that
+  " visible difference:
+  highlight SignColumn ctermbg=NONE cterm=NONE guibg=NONE gui=NONE
 
 " zencoding plugin
  let g:user_zen_settings = {
@@ -275,21 +294,6 @@ command! CtrlPVimPath call SetCtrlPPathTheSameAsVim()
 " vim-rooter
 let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
 
-" vim-fold-rspec (experimental)
-"
-" disables folding (toggle with `zi`)
-let g:fold_rspec_foldenable = 1
-" sets initial open/closed state of all folds
-" (open unless nested more than two levels deep)
-let g:fold_rspec_foldlevel = 2
-" shows a 4-character column on the lefthand side of the window displaying the document's fold structure
-let g:fold_rspec_foldcolumn = 4
-" closes folds automatically when the cursor is moved out of them (only applies
-" to folds deeper than 'foldlevel')
-let g:fold_rspec_foldclose = 'all'
-" disables closing of folds containing two lines or fewer
-let g:fold_rspec_foldminlines = 3
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS
 "
@@ -301,7 +305,6 @@ let g:fold_rspec_foldminlines = 3
   let mapleader = ","
 
   " save by pressing ,s instead of :w
-  map <Leader>s <ESC>:w<CR>
   map <Leader>be :BufExplorer<CR>
 
   " Prevents Vim from scrolling when splitting the window horizontally.
@@ -439,7 +442,7 @@ let g:fold_rspec_foldminlines = 3
   " Spacebar saves
   "
   " If current file is .vimrc, it will then reload it to refresh the changes
-  nnoremap <Space> :exec ":write" \| if match(expand('%'), ".vim") >= 1 \| exec ":so %" \| endif<cr>
+  nnoremap <Space> :exec ":write" \| if match(expand('%'), "\.vimrc") >= 1 \| exec ":so %" \| endif<cr>
 
   " Resizing windows
   nnoremap <C-h> :vertical resize +5<cr>
@@ -463,6 +466,27 @@ let g:fold_rspec_foldminlines = 3
   map <leader>v :view %%
 
   " RUBY & RAILS
+
+    "CANDIDATES FOR PLUGIN
+    "
+    " duplicate current block
+    "
+    " Put the cursor on a line that has a block (e.g 'context x do') and
+    " type <leader>d.
+    function! DuplicateRubyBlock()
+      normal $V%y
+      normal $%o
+      normal p
+      normal zz10<C-e>
+    endfunction
+    autocmd FileType ruby nmap <leader>D :call DuplicateRubyBlock()<cr>
+
+    " Surround Ruby block with another block
+    function! SurroundRubyBlock()
+      normal _V%So
+    endfunction
+    autocmd FileType ruby nmap <leader>S :call SurroundRubyBlock()<cr>
+
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     " SWITCH BETWEEN TEST AND PRODUCTION CODE
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
