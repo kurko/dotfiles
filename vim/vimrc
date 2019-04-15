@@ -160,6 +160,7 @@ if executable('ag')
 endif
 
 " ALE plugin
+let g:ale_enabled = 1
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1

@@ -8,3 +8,4 @@ function format_json_file() {
   FILE_PATH_TO_FORMAT=$1
   echo "$(cat $FILE_PATH_TO_FORMAT | jq . )" > $FILE_PATH_TO_FORMAT
 }
+alias json_formatted_file="format_json_file"
