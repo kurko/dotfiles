@@ -108,6 +108,20 @@ augroup CLNRSet
 augroup END
 
 
+" Comments: linebreak automatically in commenting lines in code.
+augroup comment_textwidth
+  autocmd!
+  autocmd TextChanged,TextChangedI * :call AdjustTextWidth()
+augroup END
+
+" Comments: returns the line width depending on whether it's a comment or not
+function! AdjustTextWidth()
+  let syn_element = synIDattr(synID(line("."), col(".") - 1, 1), "name")
+  let &textwidth = syn_element =~? 'comment' ? 80 : 80
+  echo "tw = " . &textwidth
+endfunction
+
+
 " LARGE FILES
 "
 " file is large from 2mb
@@ -164,12 +178,13 @@ let g:ale_enabled = 1
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
+let g:ale_lint_on_save = 1
 let g:ale_lint_on_text_changed = 'always' " never
-let g:ale_lint_on_insert_leave = 1 " default 0
+let g:ale_lint_on_insert_leave = 0 " default 0
 let g:ale_echo_msg_format = '%linter% says %code%: %s'
-let g:ale_lint_delay = 200 " defaults to 200
+let g:ale_lint_delay = 1000 " defaults to 200
 let g:ale_echo_delay = 10 " defaults 10
-let g:ale_completion_delay = 10 "defaults 100
+let g:ale_completion_delay = 100 "defaults 100
 let g:ale_set_highlights = 1
 let g:ale_fix_on_save = 0
 
@@ -484,7 +499,7 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
 
     " Surround Ruby block with another block
     function! SurroundRubyBlock()
-      normal _V%So
+      normal $V%So
     endfunction
     autocmd FileType ruby nmap <leader>S :call SurroundRubyBlock()<cr>
 
