@@ -94,6 +94,7 @@ set laststatus=2                  " Show the status line all the time
 set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c%V\ %)%P
 let &statusline .= '%{cfi#format(" [%s()]", "")}'
 
+set formatoptions+=j
 set foldmethod=indent
 set fillchars=fold:\ 
 set foldlevelstart=99
@@ -118,7 +119,7 @@ augroup END
 function! AdjustTextWidth()
   let syn_element = synIDattr(synID(line("."), col(".") - 1, 1), "name")
   let &textwidth = syn_element =~? 'comment' ? 80 : 80
-  echo "tw = " . &textwidth
+  return "tw = " . &textwidth
 endfunction
 
 
