@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  pmset -g batt | grep -E -o '[0-9]+%'
+else
+  exit 1
+fi
