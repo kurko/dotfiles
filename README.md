@@ -2,6 +2,9 @@
 
 Use these files in your bash to improve it.
 
+**Important:** `git/gitconfig` has my nickname/email for Github. Please change
+it.
+
 ### Setup
 
 Just run
