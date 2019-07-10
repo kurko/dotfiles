@@ -1,3 +1,5 @@
+export GPG_TTY=$(tty)
+
 _rake_migrate() {
   COMPREPLY=()
   if [ $3 != "db:migrate:down" ]; then

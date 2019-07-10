@@ -36,7 +36,8 @@ alias gt='git tag --sort=creatordate'
 #
 # The commits that are Merge or Revert are made red.
 
-alias gl="git log --pretty=format:'%C(yellow)%h %C(blue)<<%an>> %C(black)%ad%Creset %s %Creset' --date=short --abbrev-commit | sed -e 's/<<\([A-Za-z]\).* \([A-Za-z]\).*>>/<\1\2>/' | sed -e 's/<<\([A-Za-z]\)\([A-Za-z]\).*>>/<\1\2>/' | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
+alias glsimpler="git log --pretty=format:'%C(yellow)%h %C(black)%ad%Creset %s %C(blue)<%an> %Creset' --date=short --abbrev-commit --color=always"
+alias gl="glsimpler | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
 
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
