@@ -409,6 +409,17 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   " vnoremap <tab> <esc>gV
   " inoremap <tab> <esc>`^
 
+  " Ruby
+  "
+  " This will write:
+  "
+  "   ap 'AdWords::Response#entity'
+  function! ApFn()
+    execute "normal! ccputs \"" . expand("%") . "#" . cfi#get_func_name() . "\""
+  endfunction
+
+  autocmd FileType ruby command! Apfn call ApFn()
+
   " Updates CTags
   map <F5> :exec "!ctags -R --exclude=.git --exclude=vendor/bundle"<CR>
 
