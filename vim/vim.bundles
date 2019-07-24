@@ -50,6 +50,7 @@ Plugin 'kurko/autocoder.vim' " Generate new classes in Ruby projects
 Plugin 'kurko/smartest.vim' " Run tests the fastest way possible
 
 " SYNTAX HIGHLIGHTING
+Plugin 'vimtaku/hl_matchit.vim'
 Plugin 'elixir-lang/vim-elixir'
 Plugin 'keith/swift.vim'
 Plugin 'rust-lang/rust.vim'

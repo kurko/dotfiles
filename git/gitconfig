@@ -77,3 +77,5 @@
 [commit]
   template = ~/.gitmessage
 	verbose = true
+[log]
+	date = iso

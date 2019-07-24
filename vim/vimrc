@@ -236,6 +236,10 @@ augroup END
 "
 autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
 
+" git
+  highlight diffAdded   ctermfg=green
+  highlight diffRemoved ctermfg=red
+
 " git gutter
   set updatetime=500
   let g:signify_realtime = 0
