@@ -8,15 +8,18 @@
 # - lib/a.rb
 # - lib/b.rb
 # - lib/c.rb
-# - spec/a_spec.rb
-# - spec/b_spec.rb
+# - spec/lib/a_spec.rb
+# - spec/lib/b_spec.rb
 # - spec/c_spec.rb
 #
 # When lib/a.rb and spec/b_spec.rb are changed, then the following files will be
 # returned:
 #
-# - spec/a_spec.rb
-# - spec/b_spec.rb
+# - spec/lib/a_spec.rb
+# - spec/lib/b_spec.rb
+#
+# When lib/c.rb is changed, spec/c_spec.rb isn't returned because it doesn't
+# match the conventional path name "spec/#{lib_path_to_file}".
 #
 # With this, you can run `rspec $(rspec_changed_files)`
 all_modified_files = `git ls-files --modified --others`.split("\n")
