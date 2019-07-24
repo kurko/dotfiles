@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+# This will returned only test files that are related to the files that were
+# changed.
+#
+# Given we have these files:
+#
+# - lib/a.rb
+# - lib/b.rb
+# - lib/c.rb
+# - spec/a_spec.rb
+# - spec/b_spec.rb
+# - spec/c_spec.rb
+#
+# When lib/a.rb and spec/b_spec.rb are changed, then the following files will be
+# returned:
+#
+# - spec/a_spec.rb
+# - spec/b_spec.rb
+#
+# With this, you can run `rspec $(rspec_changed_files)`
+all_modified_files = `git ls-files --modified --others`.split("\n")
+
+spec_files = all_modified_files.map do |file|
+  respective_spec = "spec/#{file.gsub(/\.rb/, '_spec.rb')}"
+  if File.exist?(respective_spec)
+    respective_spec
+  else
+    file
+  end
+end
+
+spec_files = spec_files.select do |file|
+  file.match(/spec\//)
+end
+
+puts spec_files.uniq.join(" ")

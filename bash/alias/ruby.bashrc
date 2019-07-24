@@ -82,6 +82,17 @@ function t(){
   fi
   echo-command "Running all tests in $SPEC_PATH" && time bundle exec rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
 }
+function tchanged() {
+  CHANGED=$(rspec_changed_files)
+  if file-exists ".zeus.sock" ; then
+    echo-command "zeus rspec $CHANGED"
+    # [[ -n "$version" ]] &&
+    zeus-and-retry "rspec $CHANGED"
+  else
+    echo-command "bundle exec rspec $CHANGED"
+    bundle exec rspec $CHANGED
+  fi
+}
 function zt(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then
