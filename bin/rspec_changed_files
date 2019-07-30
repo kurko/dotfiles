@@ -22,7 +22,15 @@
 # match the conventional path name "spec/#{lib_path_to_file}".
 #
 # With this, you can run `rspec $(rspec_changed_files)`
+base_branch = ARGV[0] || 'master'
+
+# Returns all files modified in the last commit, including what isn't committed
+# yet.
 all_modified_files = `git ls-files --modified --others`.split("\n")
+
+# Returns all files from previous commits that are not on master.
+all_modified_files << `git diff #{base_branch} --name-only --relative`.split("\n")
+all_modified_files = all_modified_files.flatten.uniq
 
 spec_files = all_modified_files.map do |file|
   respective_spec = "spec/#{file.gsub(/\.rb/, '_spec.rb')}"
@@ -34,7 +42,7 @@ spec_files = all_modified_files.map do |file|
 end
 
 spec_files = spec_files.select do |file|
-  file.match(/spec\//)
+  file.match(/spec\/.*_spec\.rb/)
 end
 
 puts spec_files.uniq.join(" ")
