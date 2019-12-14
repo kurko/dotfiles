@@ -89,6 +89,7 @@ source $DOTFILES/bash/dirmarks # This is neat
 export HISTCONTROL=ignoreboth
 export PATH=$PATH:~/.dotfiles/bin
 export USER=`whoami`
+export BASH_SILENCE_DEPRECATION_WARNING=1
 
 # disable XON/XOFF so I can use ctrl+s with `history`
 [[ $- == *i* ]] && stty -ixon

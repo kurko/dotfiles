@@ -3,6 +3,10 @@ Plugin 'gmarik/Vundle.vim'
 " This is halting the entire vim startup process
 " Plugin 'jimmy-ai/jimmy-vim'
 
+Plugin 'jceb/vim-orgmode'
+Plugin 'vitalk/vim-simple-todo'
+Plugin 'wsdjeg/vim-todo'
+
 " OS
 Plugin 'enricobacis/paste.vim'
 
@@ -72,6 +76,7 @@ Plugin 'ciaranm/securemodelines.git'
 Plugin 'asux/vim-capybara.git'
 " Plugin 'altercation/vim-colors-solarized.git'
 Plugin 'pangloss/vim-javascript.git'
+Plugin 'maxmellon/vim-jsx-pretty'
 Plugin 'itspriddle/vim-jquery.git'
 Plugin 'greyblake/vim-preview.git'
 Plugin 'tpope/vim-rake.git'

@@ -474,7 +474,8 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   " Spacebar saves
   "
   " If current file is .vimrc, it will then reload it to refresh the changes
-  nnoremap <Space> :exec ":write" \| if match(expand('%'), "\.vimrc") >= 1 \| exec ":so %" \| endif<cr>
+  " nnoremap <Space> :exec ":write" \| if match(expand('%'), "\.vimrc") >= 1 \| exec ":so %" \| endif<cr>
+  nnoremap <Space> :exec ":write"<cr>
 
   " Resizing windows
   nnoremap <C-h> :vertical resize +5<cr>
@@ -579,6 +580,16 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     nmap sj :SplitjoinSplit<cr>
     nmap sk :SplitjoinJoin<cr>
 
+  " JAVASCRIPT
+  autocmd FileType jsx set syntax=javascript.jsx
+  autocmd FileType html,css,javascript.jsx EmmetInstall
+  autocmd Filetype javascript.jsx setlocal filetype=jsx
+  let g:user_emmet_leader_key='<Tab>'
+  let g:user_emmet_settings = {
+    \  'javascript.jsx' : {
+    \      'extends' : 'jsx',
+    \  },
+    \}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM FUNCTIONS
