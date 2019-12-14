@@ -26,6 +26,10 @@ function tmuxn3(){
 }
 function tmuxk(){ tmux kill-session -t $*; }
 
+function tmux-dir(){
+  echo "run -> :attach-session -t . -c $1"
+}
+
 # If there's a tmux session, attach to it, otherwise restore from tmux-ressurect
 alias mux='tmux attach || { (while ! tmux run-shell ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh; do sleep 0.2; done)& tmux ; }'
 
