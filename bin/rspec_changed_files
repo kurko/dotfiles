@@ -26,7 +26,7 @@ base_branch = ARGV[0] || 'master'
 
 # Returns all files modified in the last commit, including what isn't committed
 # yet.
-all_modified_files = `git ls-files --modified --others`.split("\n")
+all_modified_files = `git ls-files --modified --others --exclude-standard`.split("\n")
 
 # Returns all files from previous commits that are not on master.
 all_modified_files << `git diff #{base_branch} --name-only --relative`.split("\n")
