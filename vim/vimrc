@@ -581,9 +581,10 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     nmap sk :SplitjoinJoin<cr>
 
   " JAVASCRIPT
-  autocmd FileType jsx set syntax=javascript.jsx
-  autocmd FileType html,css,javascript.jsx EmmetInstall
+  autocmd FileType jsx,tsx set syntax=javascript.jsx
+  autocmd FileType html,css,javascript.jsx,typescript EmmetInstall
   autocmd Filetype javascript.jsx setlocal filetype=jsx
+  " autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescript.tsx
   let g:user_emmet_leader_key='<Tab>'
   let g:user_emmet_settings = {
     \  'javascript.jsx' : {
