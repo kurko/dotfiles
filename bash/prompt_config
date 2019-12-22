@@ -112,9 +112,11 @@ function __ember_js_version {
 
 function __git_last_commit {
   if git rev-parse --git-dir > /dev/null 2>&1; then
-    commit="$(git rev-parse --short=2 HEAD)"
-    if [ "#{commit}" != "" ]; then
-      echo "$commit"
+    if [ "$(git rev-list --all --count)" != "0" ]; then
+      commit="$(git rev-parse --short=2 HEAD)"
+      if [ "#{commit}" != "" ]; then
+        echo "$commit"
+      fi
     fi
   fi
 }
@@ -153,11 +155,11 @@ parse_git_branch () {
       if [ $? -eq 0 ]; then
 
         # it's a tracking branch
-        behind=`git log ..@{u} --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
-        ahead=`git log @{u}.. --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
         diverged=`git log @{u}... --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
 
         if [ $diverged -ne 0 ]; then
+          behind=`git log ..@{u} --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
+          ahead=`git log @{u}.. --pretty=oneline | wc -l | sed -e 's/[ \t]*//g'`
 
           if [ "$behind" == "$diverged" ]; then
             #remote=" [$behind]↓"
@@ -227,7 +229,14 @@ function set_ps1() {
     export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\] "
   fi
   export PS1="${PS1}\w "
-  export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
+
+  if [ "#{$git_commit_info}" != "" ]; then
+    if [ "$(git rev-list --all --count)" != "0" ]; then
+      export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
+    else
+      export PS1="${PS1}\[$YELLOW\](No commits yet)\[$NO_COLOR\] "
+    fi
+  fi
   export PS1="\n${PS1}\n\[$NO_COLOR\]→\[$NO_COLOR\] "
 }
 
@@ -245,3 +254,8 @@ fi
   # We are not in TMUX
   # addToPromptCommand 'echo -ne "\033];${PWD##*/}\007"'
 #fi
+
+function debugNowInMs() {
+  # depends on coreutils
+  echo "$(($(gdate +'%s * 1000 + %-N / 1000000'))) -> $1"
+}
