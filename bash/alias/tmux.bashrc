@@ -1,19 +1,28 @@
+source "$DOTFILES/bash/alias/bash.bashrc"
+
 # Tmux
 #
-
 function tmuxa(){
   tmux attach -t $*
 }
+
 function tmuxn(){
+  tmux attach -d
   tmux new-session -d -s $1
   tmux neww -t $1
   tmux neww -t $1
-  tmux neww -t $1
-  tmux neww -t $1
-  tmux neww -t $1
-  tmux neww -t $1
-  tmux neww -t $1
-  tmux neww -t $1
+
+  # Rails project?
+  if file-exists "Gemfile" && file-exists "config.ru" ; then
+    tmux neww -t $1
+    tmux neww -t $1
+    tmux neww -t $1
+    tmux neww -t $1
+    tmux neww -t $1
+    tmux neww -t $1
+    tmux neww -t $1
+  fi
+
   tmux attach -t $1
   #tmux set -g automatic-rename "on" 1>/dev/null
 }

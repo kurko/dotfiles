@@ -78,6 +78,7 @@ function install_macos() {
   brew_install_if_absent the_silver_searcher
   brew_install_if_absent postgresql
   brew_install_if_absent redis
+  brew_install_if_absent bash-completion
   brew_install_if_absent hub
   if [[ "$(which vim)" == "/usr/bin/vim" ]]; then
     brew install vim --override-system-vi

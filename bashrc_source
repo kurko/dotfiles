@@ -87,6 +87,7 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 
 # disable XON/XOFF so I can use ctrl+s with `history`
 [[ $- == *i* ]] && stty -ixon
+[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 
 # We need some programs to be installed for this environment to work as expected
 check_missing_binary 'bc'
