@@ -7,20 +7,23 @@ function tmuxa(){
 }
 
 function tmuxn(){
-  tmux attach -d
-  tmux new-session -d -s $1
-  tmux neww -t $1
-  tmux neww -t $1
+  tmux has-session -t $1 >/dev/null 2>&1
 
-  # Rails project?
-  if file-exists "Gemfile" && file-exists "config.ru" ; then
+  if [ $? != 0 ]; then
+    tmux new-session -d -s $1
     tmux neww -t $1
     tmux neww -t $1
-    tmux neww -t $1
-    tmux neww -t $1
-    tmux neww -t $1
-    tmux neww -t $1
-    tmux neww -t $1
+
+    # Rails project?
+    if file-exists "Gemfile" && file-exists "config.ru" ; then
+      tmux neww -t $1
+      tmux neww -t $1
+      tmux neww -t $1
+      tmux neww -t $1
+      tmux neww -t $1
+      tmux neww -t $1
+      tmux neww -t $1
+    fi
   fi
 
   tmux attach -t $1

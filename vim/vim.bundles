@@ -4,15 +4,16 @@ Plugin 'gmarik/Vundle.vim'
 " Plugin 'jimmy-ai/jimmy-vim'
 
 Plugin 'jceb/vim-orgmode'
-Plugin 'vitalk/vim-simple-todo'
-Plugin 'wsdjeg/vim-todo'
+" Plugin 'vitalk/vim-simple-todo'
+" Plugin 'wsdjeg/vim-todo'
+Plugin 'mkitt/tabline.vim.git'
 
 " OS
 Plugin 'enricobacis/paste.vim'
 
 " PROCESSING
 Plugin 'skywind3000/asyncrun.vim'
-Plugin 'w0rp/ale'
+" Slow? Plugin 'w0rp/ale'
 Plugin 'tpope/vim-dispatch'
 Plugin 'tpope/vim-unimpaired'
 
@@ -37,7 +38,7 @@ Plugin 'wesQ3/vim-windowswap'   " Swap windows easily
 
 " GIT
 "
-Plugin 'mhinz/vim-signify'      " Git diff in the gutter
+" Slow? Plugin 'mhinz/vim-signify'      " Git diff in the gutter
 Plugin 'airblade/vim-rooter'    " Set project root path
 Plugin 'tpope/vim-endwise.git'
 Plugin 'tpope/vim-fugitive.git' " Use Git inside vim
@@ -61,8 +62,9 @@ Plugin 'rust-lang/rust.vim'
 Plugin 'elzr/vim-json'
 Plugin 'mustache/vim-mustache-handlebars'
 Plugin 'tpope/vim-haml.git'
+Plugin 'slim-template/vim-slim.git'
 Plugin 'othree/html5.vim.git'
-Plugin 'gabrielelana/vim-markdown'
+" SLOW Plugin 'gabrielelana/vim-markdown'
 " Plugin 'tpope/vim-markdown.git'
 Plugin 'cakebaker/scss-syntax.vim.git'
 
@@ -73,13 +75,16 @@ Plugin 'AndrewRadev/splitjoin.vim.git'
 Plugin 'tpope/vim-rails.git'
 Plugin 'ciaranm/securemodelines.git'
 " Plugin 'scrooloose/syntastic.git'
-Plugin 'asux/vim-capybara.git'
+" Plugin 'asux/vim-capybara.git'
 " Plugin 'altercation/vim-colors-solarized.git'
+
 Plugin 'pangloss/vim-javascript.git'
 Plugin 'leafgarland/typescript-vim'
-Plugin 'Quramy/tsuquyomi' " React + Typescript
+Plugin 'ianks/vim-tsx.git'
 Plugin 'peitalin/vim-jsx-typescript'
 Plugin 'maxmellon/vim-jsx-pretty'
+Plugin 'Quramy/tsuquyomi' " React + Typescript
+
 Plugin 'itspriddle/vim-jquery.git'
 Plugin 'greyblake/vim-preview.git'
 Plugin 'tpope/vim-rake.git'

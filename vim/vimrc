@@ -15,16 +15,15 @@ endif
 set nocompatible               " be iMproved
 filetype off                   " required!
 
-" Vundle
-  set rtp+=~/.vim/bundle/Vundle.vim/
-  call vundle#begin()
-
+  " Vundle
   if filereadable(expand("~/.vim.bundles"))
-    source ~/.vim.bundles
-  endif
+    set rtp+=~/.vim/bundle/Vundle.vim/
+    call vundle#begin()
 
-  call vundle#end()               " required
-  filetype plugin indent on       " required
+    source ~/.vim.bundles
+    call vundle#end()               " required
+    filetype plugin indent on       " required
+  endif
 
 " Configuration
 set tags=tags                     " ctags
@@ -86,13 +85,16 @@ set directory=/var/tmp            " Keep swap files in one location
 
 " UNCOMMENT TO USE
 set tabstop=2                    " Global tab width.
+setlocal autoindent
+setlocal cindent
+setlocal smartindent
 set shiftwidth=2                 " And again, related.
 set expandtab                    " Use spaces instead of tabs
 
 set laststatus=2                  " Show the status line all the time
 " Useful status information at bottom of screen
 set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c%V\ %)%P
-let &statusline .= '%{cfi#format(" [%s()]", "")}'
+" let &statusline .= '%{cfi#format(" [%s()]", "")}'
 
 set formatoptions+=j
 set foldmethod=indent
@@ -175,17 +177,17 @@ if executable('ag')
 endif
 
 " ALE plugin
-let g:ale_enabled = 1
+let g:ale_enabled = 0
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
 let g:ale_lint_on_save = 1
-let g:ale_lint_on_text_changed = 'always' " never
+let g:ale_lint_on_text_changed = 'never' " always  never
 let g:ale_lint_on_insert_leave = 0 " default 0
 let g:ale_echo_msg_format = '%linter% says %code%: %s'
 let g:ale_lint_delay = 1000 " defaults to 200
-let g:ale_echo_delay = 10 " defaults 10
-let g:ale_completion_delay = 100 "defaults 100
+let g:ale_echo_delay = 100 " defaults 10
+let g:ale_completion_delay = 400 "defaults 100
 let g:ale_set_highlights = 1
 let g:ale_fix_on_save = 0
 
@@ -226,11 +228,11 @@ function! SetAleBufferFixers()
   \}
 endfunction
 
-augroup AleGroup
-  autocmd!
-  autocmd FileType,BufEnter * call SetAleBufferFixers()
-  autocmd FileType,BufEnter * call SetAleBufferLinters()
-augroup END
+"augroup AleGroup
+"  autocmd!
+"  autocmd FileType,BufEnter * call SetAleBufferFixers()
+"  autocmd FileType,BufEnter * call SetAleBufferLinters()
+"augroup END
 
 " vim-surround
 "
@@ -241,7 +243,7 @@ autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
   highlight diffRemoved ctermfg=red
 
 " git gutter
-  set updatetime=500
+  set updatetime=5000
   let g:signify_realtime = 0
 
   " highlight lines in signify and vimdiff etc.)
@@ -582,7 +584,7 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
 
   " JAVASCRIPT
   autocmd FileType jsx,tsx set syntax=javascript.jsx
-  autocmd FileType html,css,javascript.jsx,typescript EmmetInstall
+  autocmd FileType html,css,javascript.jsx,typescript.tsx EmmetInstall
   autocmd Filetype javascript.jsx setlocal filetype=jsx
   " autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescript.tsx
   let g:user_emmet_leader_key='<Tab>'

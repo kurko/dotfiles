@@ -230,7 +230,7 @@ function set_ps1() {
   fi
   export PS1="${PS1}\w "
 
-  if [ "#{$git_commit_info}" != "" ]; then
+  if [ "$git_commit_info" != "" ]; then
     if [ "$(git rev-list --all --count)" != "0" ]; then
       export PS1="${PS1}\[\$(branch_color)\]\$(parse_git_branch)\[$NO_COLOR\] "
     else
