@@ -21,7 +21,27 @@ SUBJECT="%s"
 
 FORMAT="$HASH}$RELATIVE_TIME}$AUTHOR}$REFS $SUBJECT"
 
-reset_from_github() {
+# This will output the log with titles only, plus colors:
+#
+# eb6e03f 2020-01-04 Add setting to log slow SQL queries (#341) <Author 3>
+# 2c9a64d 2020-01-03 Adds wrap_delivery_in_transaction config (#340) <Author 2>
+# 978d322 2020-01-02 Version 28.5.0 (#339) <Author 1>
+# 652b7c6 2020-01-01 Use different time strategy v8.0.0 (#338) <Author 3>
+#
+# Any `Revert` or `Merge` keywords will become red.
+
+git_log_simpler_titles() {
+  git log \
+    --pretty=format:'%C(yellow)%h %C(black)%ad%Creset %s %C(blue)<%an> %Creset' \
+    --date=short    \
+    --abbrev-commit \
+    --color=always $1 \
+    | sed ''/Merge/s//`printf "\035[31mMerge\033[0m"`/''   \
+    | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' \
+    | less -rX
+}
+
+reset_from_origin() {
   export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
   echo "Discarding $CURRENT_BRANCH and using origin's content"
   git fetch origin

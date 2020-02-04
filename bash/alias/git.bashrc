@@ -7,25 +7,23 @@ function pr() { gpush -u && hub pull-request -o $*; }
 alias master='git checkout master'
 alias dev='git checkout develop'
 alias develop='git checkout develop'
-unalias mgpr 2>/dev/null
-function mgpr() {
-  git checkout master
-  gpr
-  if [ ! -z "$1" ]; then
-    git checkout $1
+
+# Shorten git to one letter, execute status by default if no subcommand is
+# specified.
+function g() {
+  if [[ $# > 0 ]]; then
+    git $@
+  else
+    git status
   fi
 }
-# alias mgpr="git checkout master && gpr && [[ \\"$1\\" != \\"\\"]] && git checkout $1"
-alias dgpr='git checkout develop && gpr'
-alias g='git status -sb'
-alias gst='git status'
-alias ga='git add . --all && git status'
-alias gb='git branch'
 
-git_version="$($DOTFILES/bin/semver_compare 'git --version' 2.9.0)"
-alias gd='git diff'
-alias gdc='gd --cached'
-alias glog='git log'
+function mgpr() {
+  git checkout master
+  git fetch origin
+  git pull --rebase origin master
+}
+
 alias gt='git tag --sort=creatordate'
 
 # This will output something like:
@@ -37,7 +35,7 @@ alias gt='git tag --sort=creatordate'
 # The commits that are Merge or Revert are made red.
 
 alias glsimpler="git log --pretty=format:'%C(yellow)%h %C(black)%ad%Creset %s %C(blue)<%an> %Creset' --date=short --abbrev-commit --color=always"
-alias gl="glsimpler | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
+alias gl="glsimpler | sed ''/Merge/s//`printf "\035[31mMerge\033[0m"`/'' | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' | less -rX"
 
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
@@ -61,33 +59,6 @@ alias gshow_unmerged_branches='git branch --no-merged'
   function export_git_branch_variable() {
 		export CURRENT_BRANCH=`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\\\\\\1\\/`
   }
-
-  # rmr = Rebase Master Rebase
-	function rmr(){
-		# Defines the current git branch
-    export_git_branch_variable
-
-    echo Checking out master, rebasing and returning to $CURRENT_BRANCH...
-		git checkout master
-    git pull --rebase origin master
-		git checkout $CURRENT_BRANCH
-    git rebase master
-	}
-
-  # rmd = Rebase Develop Rebase
-	function rdr(){
-		# Defines the current git branch
-    export_git_branch_variable
-
-    echo 1. Checkout develop branch
-    echo 2. Rebase: git pull --rebase origin develop
-    echo 3. Checkout $CURRENT_BRANCH
-    echo 4. Rebase on top of develop
-		git checkout develop
-    git pull --rebase origin develop
-		git checkout $CURRENT_BRANCH
-    git rebase master
-	}
 
 	function gfacepunch(){
 		# Defines the current git branch

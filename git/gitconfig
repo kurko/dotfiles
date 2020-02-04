@@ -1,37 +1,44 @@
 [alias]
+  #
+  # Level 1
+  #
+  a = "!git add $* && git status # "
   c = commit
-  co = checkout
-  co- = checkout @{-1}
+  ch = checkout
   br = branch
-  st = status
-  s = status
-  ds = diff --stat=160,120
-  dh1 = diff HEAD~1
+  d = diff
+  dc = diff --cached
+  d-stat = diff --stat=160,120
+  d-head1 = diff HEAD~1
   dm = diff master
-  dmstat = diff master --shortstat
-  fa = fetch --all
-  checkout-from-github = "!source ~/.githelpers && reset_from_github"
+  dm-short = diff master --shortstat
+  f = fetch --all
+  l = "!source ~/.githelpers && git_log_simpler_titles"
+  p = push
+  s = status
+
+  #
+  # Level 2
+  #
+  mp = !git checkout master && git pull --rebase origin master
+  ch-prev = checkout @{-1}
+  pr-rebase = !git fetch && git rebase origin/master && git push --force
+  amend = commit --amend
 
   # branches
-  overwrite-branch-with-origin = git-overwrite-branch-with-origin
+  reset-branch-from-origin = "!source ~/.githelpers && reset_from_github"
 
   # logs
-  lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
-  lol = log --graph --decorate --pretty=oneline --abbrev-commit
-  logtitles = log --pretty=format:%s
-
-  # Divergence (commits we added and commits remote added)
-  div = divergence
+  l-oneline-all = log --graph --decorate --pretty=oneline --abbrev-commit --all
+  l-oneline = log --graph --decorate --pretty=oneline --abbrev-commit
+  l-titles = log --pretty=format:%s
 
   # Goodness (summary of diff lines added/removed/total)
   gn = goodness
   gnc = goodness --cached
 
   # Fancy logging.
-  #   l = all commits, only current branch
-  l = "!source ~/.githelpers && pretty_git_log"
-  la = !git l --all
-	plog = log --graph --pretty=format:'%h -%d %s %n' --abbrev-commit --date=relative --branches
+  l-graph = log --graph --pretty=format:'%h -%d %s %n' --abbrev-commit --date=relative --branches
 
 [user]
 	name = Alex Oliveira
