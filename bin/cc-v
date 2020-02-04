@@ -1,0 +1,57 @@
+
+#!/bin/sh
+set -e
+
+VELOCITY_DIR="$HOME/codeclimate/velocity"
+
+docker_compose() {
+  cd "$VELOCITY_DIR"
+  exec docker-compose "$@"
+}
+
+docker_compose_noexec() {
+  cd "$VELOCITY_DIR"
+  docker-compose "$@"
+}
+
+case "$1" in
+  web)
+    docker_compose up -d web $2
+  ;;
+  bash)
+    docker_compose --file docker-compose.test.development.yml run --rm app bash
+  ;;
+  logs)
+    docker_compose logs --tail="50" -f
+  ;;
+  restart)
+    docker_compose_noexec stop "$2"
+    docker_compose_noexec rm -f "$2"
+    docker_compose_noexec up -d "$2"
+  ;;
+  rake)
+    shift
+    docker_compose run -e DATABASE_STATEMENT_TIMEOUT="" web rake "$@"
+  ;;
+  rails)
+    shift
+    docker_compose run web rails "$@"
+  ;;
+  down)
+    echo "FYI: down deletes volumes, this probably wasn't what you wanted! Stopping instead."
+    docker_compose stop
+  ;;
+  psql)
+    docker_compose run --rm postgres psql \
+      --host=postgres \
+      --port=5432 \
+      --username=postgres \
+      --dbname=velocity_development
+  ;;
+  rebuild-test-db)
+    docker_compose --file docker-compose.test.development.yml \
+      run --rm app rake \
+      db:drop db:create db:structure:load db:migrate benchmark:import
+  ;;
+  *) docker_compose "$@";;
+esac
