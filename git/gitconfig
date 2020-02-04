@@ -34,7 +34,7 @@
 	plog = log --graph --pretty=format:'%h -%d %s %n' --abbrev-commit --date=relative --branches
 
 [user]
-	name = Alexandre de Oliveira
+	name = Alex Oliveira
 	email = kurko@users.noreply.github.com
 
 [color]
