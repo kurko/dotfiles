@@ -1,0 +1,36 @@
+#/usr/bin/env bash
+
+# Return a list of autocomplete words for a given command. Example:
+#
+#     echo _command_completion git ''
+#
+# This will output all commands that are suggested once you type `git<tab>`
+_command_completion() {
+  COMP_LINE="$*"
+  COMP_WORDS=("$@")
+  COMP_CWORD=${#COMP_WORDS[@]}
+  ((COMP_CWORD--))
+  COMP_POINT=${#COMP_LINE}
+  COMP_WORDBREAKS='"'"'><=;|&(:"
+  # Don't really thing any real autocompletion script will rely on
+  # the following 2 vars, but on principle they could ~~~  LOL.
+  COMP_TYPE=9
+  COMP_KEY=9
+  _command_offset 0
+  echo ${COMPREPLY[@]}
+}
+
+# TEMPLATE
+#
+# If you want to create some autocomplete, define a function such as the one
+# below:
+#
+#     _some_program_autocomplete() {
+#       COMPREPLY=($(compgen -W "now never someday" "${COMP_WORDS[1]}"))
+#     }
+#
+# Then call the following:
+#
+#     complete -F _some_program_autocomplete some_program
+#
+# Now you can type `some_program<tab>` and it'll show alternatives.
