@@ -3,7 +3,7 @@
   # Level 1
   #
   a = "!git add $* && git status # "
-  c = commit
+  c = "!git commit $*"
   ch = checkout
   br = branch
   d = diff
