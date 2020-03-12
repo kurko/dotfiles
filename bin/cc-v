@@ -1,5 +1,12 @@
-
 #!/bin/sh
+#
+# Usage: cc-v [command]
+#
+# Example:
+#
+#   $ cc-v web
+#   This will run `docker_compose up -d web $2`, as defined below.
+#
 set -e
 
 VELOCITY_DIR="$HOME/codeclimate/velocity"
@@ -15,6 +22,10 @@ docker_compose_noexec() {
 }
 
 case "$1" in
+  # To run this branch of code, use
+  #
+  #   $ cc-v web
+  #
   web)
     docker_compose up -d web $2
   ;;
@@ -47,6 +58,31 @@ case "$1" in
       --port=5432 \
       --username=postgres \
       --dbname=velocity_development
+  ;;
+  reset-web)
+    echo "rake db:drop db:create db:structure:load db:migrate"
+    docker-compose run --rm web rake db:drop db:create db:structure:load db:migrate
+    echo "rake db:seed"
+    docker-compose run --rm web rake db:seed
+  ;;
+
+  # Restores the dump data.pg_dump that is present in the repo's root folder.
+  pg-restore-web)
+    docker-compose run --rm --volume="$PWD":/local postgres pg_restore \
+      --data-only \
+      --schema=data \
+      --host=postgres \
+      --username=postgres \
+      --dbname=velocity_development \
+      --disable-triggers \
+      /local/data.pg_dump
+  ;;
+  rebuild-web)
+    docker-compose build web webpacker \
+      && docker-compose stop web webpacker \
+      && docker-compose rm -f web webpacker --remove-orphans \
+      && docker-compose up -d web webpacker \
+      && docker-compose run --rm web rake db:create db:structure:load db:migrate
   ;;
   rebuild-test-db)
     docker_compose --file docker-compose.test.development.yml \
