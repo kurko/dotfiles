@@ -289,6 +289,8 @@ endfunction
 " vim-surround
 "
 autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
+" When entering commit screen, automatically go into insert mode
+autocmd FileType gitcommit exec 'au VimEnter * startinsert'
 
 " git
   highlight diffAdded   ctermfg=green
