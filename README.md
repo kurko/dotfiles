@@ -9,15 +9,21 @@ it.
 
 Just run
 
-`source <(curl -s https://raw.githubusercontent.com/kurko/.dotfiles/master/install)`
+`source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
 
-that's all.
+that's all. If it doesn't work, 
+
+```
+git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+./install
+```
 
 ### Update from Github
 
 You can just run the same command
 
-`source <(curl -s https://raw.githubusercontent.com/kurko/.dotfiles/master/install)`
+`source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
 
 Or you can
 

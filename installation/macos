@@ -1,9 +1,12 @@
 #! /bin/bash
 
+BREW_LIST=$(brew list -l)
+BREW_CASK_LIST=$(brew cask list -1)
+
 function brew_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  brew list $1 &> /dev/null
+  echo $BREW_LIST | grep $1 &> /dev/null
 
   if [[ $? -eq 1 ]]
   then
@@ -20,7 +23,8 @@ function brew_install_if_absent() {
 function brew_cask_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  brew cask list $1 &> /dev/null
+  echo $BREW_CASK_LIST | grep $1 &> /dev/null
+
   if [[ $? -eq 1 ]]
   then
     echo "brew installing... "
@@ -87,17 +91,17 @@ function install_macos() {
     echo "> vim: already installed."
   fi
   brew_install_if_absent imagemagick@6 && brew link imagemagick@6
-  brew_install_if_absent pkgconfig && brew unlink pkgconfig && brew link pkgconfig
+  brew_install_if_absent pkg-config && brew unlink pkgconfig && brew link pkgconfig
   brew_install_if_absent mosh
-  brew_install_if_absent ctags-exuberant
+  brew_install_if_absent ctags
   brew_install_if_absent fzf
-  brew_install_if_absent nodejs
+  brew_install_if_absent node
   brew_install_if_absent yarn
   brew_install_if_absent jq
   brew_cask_install_if_absent fliqlo
-  brew_cask_install_if_absent slack
+  #brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred
-  brew_cask_install_if_absent google-chrome
-  brew_cask_install_if_absent dropbox
+  #brew_cask_install_if_absent google-chrome
+  #brew_cask_install_if_absent dropbox
   #brew_cask_install_if_absent 1password
 }

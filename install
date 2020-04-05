@@ -2,7 +2,8 @@
 if [ -d ~/.dotfiles ]
 then
   LAST_DIR=$(pwd)
-  echo "Pulling from master"
+  echo "Directory ~/.dotfiles found, make sure git status is clean."
+  echo "git pulling from master"
   cd ~/.dotfiles
   git pull --rebase origin master
   cd $LAST_DIR
@@ -11,28 +12,35 @@ else
   git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
 fi
 
+echo ""
+echo "sourcing ~/.dotfiles/bashrc_source... "
+source ~/.dotfiles/bashrc_source
+
+echo ""
+echo "Updating aliases, links and scripts... "
+update_dotfiles
+
 if [ ! -d ~/.vim/bundle/Vundle.vim ]
 then
-  echo "Install Vim's Vundle on ~/.vim/bundle/Vundle.vim"
+  echo ""
+  echo "Install Vim's Vundle on ~/.vim/bundle/Vundle.vim... "
   git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
   vim +PluginInstall +qall
 fi
 
 if [ ! -d ~/.tmux/plugins/tpm ]
 then
-  echo "Install Tmux Plugin Manager on ~/.tmux/plugins/tpm"
+  echo ""
+  echo "Install Tmux Plugin Manager on ~/.tmux/plugins/tpm... "
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
   ~/.tmux/plugins/tpm/bin/install_plugins
 fi
 
-echo "Loading ~/.dotfiles/bashrc_source"
-source ~/.dotfiles/bashrc_source
-
-echo "Updating scripts and aliases"
-update_dotfiles
 
 # MacOS?
 if [[ "$OSTYPE" == "darwin"* ]]; then
+  echo ""
+  echo "Installing MacOS software... "
   source $DOTFILES/installation/macos
   install_macos
 #elif [[ "$OSTYPE" == "linux-gnu" ]]; then
