@@ -38,10 +38,11 @@ Plugin 'wesQ3/vim-windowswap'   " Swap windows easily
 
 " GIT
 "
-" Slow? Plugin 'mhinz/vim-signify'      " Git diff in the gutter
-Plugin 'airblade/vim-rooter'    " Set project root path
+Plugin 'mhinz/vim-signify'        " Git diff in the gutter
+" Plugin 'airblade/vim-gitgutter' " Similar to vim-signify
+Plugin 'airblade/vim-rooter'      " Set project root path
 Plugin 'tpope/vim-endwise.git'
-Plugin 'tpope/vim-fugitive.git' " Use Git inside vim
+Plugin 'tpope/vim-fugitive.git'   " Use Git inside vim
 Plugin 'junegunn/gv.vim'
 Plugin 'tpope/vim-rhubarb'
 Plugin 'sjl/gundo.vim.git'
@@ -78,12 +79,16 @@ Plugin 'ciaranm/securemodelines.git'
 " Plugin 'asux/vim-capybara.git'
 " Plugin 'altercation/vim-colors-solarized.git'
 
+" Javascript
 Plugin 'pangloss/vim-javascript.git'
-Plugin 'leafgarland/typescript-vim'
-Plugin 'ianks/vim-tsx.git'
-Plugin 'peitalin/vim-jsx-typescript'
-Plugin 'maxmellon/vim-jsx-pretty'
-Plugin 'Quramy/tsuquyomi' " React + Typescript
+
+" Typescript
+" Plugin 'leafgarland/typescript-vim'   " Syntax Highlighting
+" Plugin 'ianks/vim-tsx.git'            " Syntax highlighting and indenting for TSX
+" Plugin 'peitalin/vim-jsx-typescript'
+" Plugin 'maxmellon/vim-jsx-pretty'
+Plugin 'HerringtonDarkholme/yats.vim'   " More complete HL for TSX
+Plugin 'Quramy/tsuquyomi'               " Typescript client for TSServer
 
 Plugin 'itspriddle/vim-jquery.git'
 Plugin 'greyblake/vim-preview.git'
@@ -100,11 +105,11 @@ Plugin 'tomtom/tlib_vim.git'
 Plugin 'MarcWeber/vim-addon-mw-utils.git'
 Plugin 'garbas/vim-snipmate.git'
 Plugin 'honza/vim-snippets.git'
-Plugin 'ervandew/supertab.git'
+" Plugin 'ervandew/supertab.git'
 
-Plugin 'tpope/vim-obsession.git'
+" Plugin 'tpope/vim-obsession.git'
 
 " This enables me to have cfi#format()
 "
 " let &statusline .= '%{cfi#format(" [%s()]", "")}'
-Plugin 'tyru/current-func-info.vim'
+" Plugin 'tyru/current-func-info.vim'

@@ -15,21 +15,12 @@ endif
 set nocompatible               " be iMproved
 filetype off                   " required!
 
-  " Vundle
-  if filereadable(expand("~/.vim.bundles"))
-    set rtp+=~/.vim/bundle/Vundle.vim/
-    call vundle#begin()
-
-    source ~/.vim.bundles
-    call vundle#end()               " required
-    filetype plugin indent on       " required
-  endif
-
 " Configuration
 set tags=tags                     " ctags
 
 " This makes Vim slow with Ruby and the new Vim regex engine after v7+
 syntax on                         " Turn on syntax highlighting.
+
 " This relies on the old regex
 set re=1
 
@@ -98,7 +89,7 @@ set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLo
 
 set formatoptions+=j
 set foldmethod=indent
-set fillchars=fold:\ 
+set fillchars=fold:\
 set foldlevelstart=99
 set foldlevel=99
 au BufRead,BufNewFile *.scss set filetype=scss
@@ -177,7 +168,7 @@ if executable('ag')
 endif
 
 " ALE plugin
-let g:ale_enabled = 0
+let g:ale_enabled = 1
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
@@ -243,7 +234,7 @@ autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
   highlight diffRemoved ctermfg=red
 
 " git gutter
-  set updatetime=5000
+  set updatetime=100
   let g:signify_realtime = 0
 
   " highlight lines in signify and vimdiff etc.)
@@ -476,8 +467,8 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   " Spacebar saves
   "
   " If current file is .vimrc, it will then reload it to refresh the changes
-  " nnoremap <Space> :exec ":write" \| if match(expand('%'), "\.vimrc") >= 1 \| exec ":so %" \| endif<cr>
-  nnoremap <Space> :exec ":write"<cr>
+  nnoremap <Space> :exec ":write" \| if match(expand('%'), "\.vimrc") >= 1 \| exec ":so %" \| endif<cr>
+  " nnoremap <Space> :exec ":write"<cr>
 
   " Resizing windows
   nnoremap <C-h> :vertical resize +5<cr>
@@ -583,9 +574,27 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     nmap sk :SplitjoinJoin<cr>
 
   " JAVASCRIPT
-  autocmd FileType jsx,tsx set syntax=javascript.jsx
-  autocmd FileType html,css,javascript.jsx,typescript.tsx EmmetInstall
+  "autocmd FileType jsx,tsx set syntax=javascript.jsx
+  autocmd FileType html,css,javascript.jsx,typescript EmmetInstall
   autocmd Filetype javascript.jsx setlocal filetype=jsx
+
+  " TYPESCRIPT
+  let g:tsuquyomi_completion_detail = 1
+
+  augroup typescript
+    au!
+    autocmd BufNewFile,BufRead *.tsx   set filetype=typescript
+    autocmd BufNewFile,BufRead *.tsx   set syntax=typescriptreact
+    autocmd BufNewFile,BufRead *.ts    set filetype=typescript
+    autocmd BufNewFile,BufRead *.ts    set syntax=javascript
+
+    " Type definitions
+    autocmd FileType typescript,typescript.tsx nmap <Space><C-]> <Plug>(TsuquyomiReferences)
+    autocmd FileType typescript,typescript.tsx nnoremap <leader>rn :TsuRenameSymbol<cr>
+    autocmd FileType typescript,typescript.tsx nnoremap <leader>d :TsuDefinition<cr>
+    autocmd FileType typescript,typescript.tsx nnoremap <leader>D :TsuTypeDefinition<cr>
+  augroup END
+
   " autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescript.tsx
   let g:user_emmet_leader_key='<Tab>'
   let g:user_emmet_settings = {
@@ -696,3 +705,14 @@ inoremap <s-tab> <c-n>
 " Nerdtree
 map <C-n> :NERDTreeToggle<CR>
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+
+" Vundle
+if filereadable(expand("~/.vim.bundles"))
+  set rtp+=~/.vim/bundle/Vundle.vim/
+  call vundle#begin()
+
+  source ~/.vim.bundles
+  call vundle#end()               " required
+  filetype plugin indent on       " required
+endif
