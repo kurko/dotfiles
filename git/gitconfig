@@ -86,3 +86,5 @@
 	verbose = true
 [log]
 	date = iso
+[http]
+	postBuffer = 524288000

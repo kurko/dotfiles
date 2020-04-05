@@ -62,8 +62,8 @@ case "$1" in
   reset-web)
     echo "rake db:drop db:create db:structure:load db:migrate"
     docker-compose run --rm web rake db:drop db:create db:structure:load db:migrate
-    echo "rake db:seed"
-    docker-compose run --rm web rake db:seed
+    # echo "rake db:seed"
+    # docker-compose run --rm web rake db:seed
   ;;
 
   # Restores the dump data.pg_dump that is present in the repo's root folder.
@@ -76,11 +76,12 @@ case "$1" in
       --dbname=velocity_development \
       --disable-triggers \
       /local/data.pg_dump
+    docker-compose run --rm web rake db:backfill:analysis
   ;;
   rebuild-web)
+      # && docker-compose rm -f web webpacker --remove-orphans \
     docker-compose build web webpacker \
       && docker-compose stop web webpacker \
-      && docker-compose rm -f web webpacker --remove-orphans \
       && docker-compose up -d web webpacker \
       && docker-compose run --rm web rake db:create db:structure:load db:migrate
   ;;
