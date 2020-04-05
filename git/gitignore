@@ -8,3 +8,5 @@ ctrlp_root
 zeus.json
 custom_plan.rb
 zeus.log
+*.smartest*
+data.pg_dump
