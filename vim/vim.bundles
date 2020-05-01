@@ -26,7 +26,8 @@ Plugin 'vim-scripts/taglist.vim' " To use CTags
 Plugin 'bogado/file-line' " Open file:line
 
 " EDITING & MOVEMENTS
-Plugin 'unblevable/quick-scope' " Highlights letters for <f>
+Plugin 'unblevable/quick-scope'     " Highlights letters for <f>
+Plugin 'easymotion/vim-easymotion'  " Motion highlights in line, across windows
 
 " SEARCH
 Plugin 'ctrlpvim/ctrlp.vim.git'

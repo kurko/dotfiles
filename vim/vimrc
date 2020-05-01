@@ -22,7 +22,7 @@ set tags=tags                     " ctags
 syntax on                         " Turn on syntax highlighting.
 
 " This relies on the old regex
-set re=1
+set re=0
 
 " syntax on is pretty slow after updating VIM to v8-1600. The following
 " 2 lines make it fast
@@ -74,6 +74,7 @@ set nobackup                      " Don't make a backup before overwriting a fil
 set nowritebackup                 " And again.
 set directory=/var/tmp            " Keep swap files in one location
 
+set signcolumn=yes
 " UNCOMMENT TO USE
 set tabstop=2                    " Global tab width.
 setlocal autoindent
@@ -92,8 +93,17 @@ set foldmethod=indent
 set fillchars=fold:\
 set foldlevelstart=99
 set foldlevel=99
-au BufRead,BufNewFile *.scss set filetype=scss
-au BufRead,BufNewFile *.ejs set filetype=html
+
+" Filetypes
+au BufRead,BufNewFile *.scss  set filetype=scss
+au BufRead,BufNewFile *.ejs   set filetype=html
+au BufNewFile,BufRead *.slim  setlocal filetype=slim
+au Filetype javascript.jsx    setlocal filetype=jsx
+au BufNewFile,BufRead *.tsx   set filetype=typescript
+au BufNewFile,BufRead *.ts    set filetype=typescript
+autocmd FileType gitcommit    set nosmartindent
+" autocmd FileType gitcommit    set nosmartindent | set formatoptions-=t
+
 au BufRead,BufNewFile *.md setlocal textwidth=80
 
 hi CursorLineNR cterm=bold
@@ -164,7 +174,7 @@ endif
 
 " ACK + AG
 if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
+  let g:ackprg = 'ag --vimgrep --ignore-dir /*node_modules --ignore-dir /*public/packs-test/'
 endif
 
 " ALE plugin
@@ -554,13 +564,13 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     " deletes the remaining chars from a string
     nnoremap <Leader>ds vf"hd
 
-    map <leader>ga :CtrlPClearCache<cr>\|:CtrlP app/assets<cr>
-    map <leader>gv :CtrlPClearCache<cr>\|:CtrlP app/views<cr>
-    map <leader>gc :CtrlPClearCache<cr>\|:CtrlP app/controllers<cr>
-    map <leader>gm :CtrlPClearCache<cr>\|:CtrlP app/models<cr>
-    map <leader>gl :CtrlPClearCache<cr>\|:CtrlP lib<cr>
-    map <leader>gs :CtrlPClearCache<cr>\|:CtrlP spec<cr>
-    map <leader>gu :CtrlPClearCache<cr>\|:CtrlP spec/unit<cr>
+    map <leader>fa :CtrlPClearCache<cr>\|:CtrlP app/assets<cr>
+    map <leader>fj :CtrlPClearCache<cr>\|:CtrlP app/javascript<cr>
+    map <leader>fv :CtrlPClearCache<cr>\|:CtrlP app/views<cr>
+    map <leader>fc :CtrlPClearCache<cr>\|:CtrlP app/controllers<cr>
+    map <leader>fm :CtrlPClearCache<cr>\|:CtrlP app/models<cr>
+    map <leader>fl :CtrlPClearCache<cr>\|:CtrlP lib<cr>
+    map <leader>fs :CtrlPClearCache<cr>\|:CtrlP spec<cr>
     map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
     " map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
     map <leader>f :CtrlP<cr>
@@ -574,18 +584,16 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     nmap sk :SplitjoinJoin<cr>
 
   " JAVASCRIPT
-  "autocmd FileType jsx,tsx set syntax=javascript.jsx
-  autocmd FileType html,css,javascript.jsx,typescript EmmetInstall
-  autocmd Filetype javascript.jsx setlocal filetype=jsx
+    au FileType html,css,javascript.jsx,typescript EmmetInstall
 
   " TYPESCRIPT
   let g:tsuquyomi_completion_detail = 1
 
   augroup typescript
     au!
-    autocmd BufNewFile,BufRead *.tsx   set filetype=typescript
+    autocmd BufNewFile,BufRead *.tsx   set re=0
+    autocmd BufNewFile,BufRead *.ts    set re=0
     autocmd BufNewFile,BufRead *.tsx   set syntax=typescriptreact
-    autocmd BufNewFile,BufRead *.ts    set filetype=typescript
     autocmd BufNewFile,BufRead *.ts    set syntax=javascript
 
     " Type definitions
@@ -595,7 +603,6 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     autocmd FileType typescript,typescript.tsx nnoremap <leader>D :TsuTypeDefinition<cr>
   augroup END
 
-  " autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescript.tsx
   let g:user_emmet_leader_key='<Tab>'
   let g:user_emmet_settings = {
     \  'javascript.jsx' : {
