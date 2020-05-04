@@ -325,7 +325,7 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
 " section below
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-  set timeoutlen=500
+  set timeoutlen=200
   let mapleader = ","
 
   " save by pressing ,s instead of :w
