@@ -400,12 +400,6 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   nmap 44 $
   vmap 44 $h
 
-  function! SearchCurrentPath()
-    let l:word = expand("<cword>")
-    call feedkeys(":CtrlP\<CR>".l:word, "t")
-  endfunction
-  nnoremap <leader>g :call SearchCurrentPath()<cr>
-
   " Tab becomes Esc
   " inoremap <m-i> <tab>
   " nnoremap <tab> <esc>
