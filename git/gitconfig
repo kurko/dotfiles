@@ -22,7 +22,7 @@
   #
   mp = !git checkout master && git pull --rebase origin master
   ch-prev = checkout @{-1}
-  pr-rebase = "!git fetch && git rebase origin/master && git push --force #"
+  pr-rebase-on-master = "!git fetch && git rebase origin/master && git push --force #"
   amend = commit --amend
 
   # branches
