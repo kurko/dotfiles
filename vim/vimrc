@@ -2,6 +2,9 @@
 
 " avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
+let g:table_mode_disable_mappings = 1
+let g:table_mode_disable_tableize_mappings = 1
+let g:table_mode_map_prefix = "<Leader>xxxxxxxxxxxxxxxxxx"
 
 " Change cursor shape between insert and normal mode in iTerm2.app
 if $TERM_PROGRAM =~ "iTerm.app"
@@ -32,13 +35,13 @@ set ttyfast
 set lazyredraw
 
 set synmaxcol=200
+filetype plugin on
 filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
 
-"highlight ColorColumn ctermbg=7
-highlight ColorColumn guibg=darkgray ctermbg=darkgray
-set colorcolumn=80
+" highlight ColorColumn guibg=darkgray ctermbg=darkgray
+" set colorcolumn=80
 "let &colorcolumn=join(range(81,999),",")
 "let &colorcolumn="80,".join(range(120,999),",")
 set pastetoggle=<F2>
@@ -52,6 +55,48 @@ set hidden                        " Handle multiple buffers better.
 
 set wildmenu                      " Enhanced command line completion.
 set wildmode=full                 " Complete files like a shell.
+
+" MUCOMPLETE Plugin
+"
+" Configuration for MUcomplete
+  set completeopt+=menuone
+  set completeopt+=noselect
+  set shortmess+=c   " Shut off completion messages
+  set belloff+=ctrlg " If Vim beeps during completion
+  set omnifunc=syntaxcomplete#Complete
+  autocmd FileType ruby setl omnifunc=syntaxcomplete#Complete
+  let g:snipMate = {}
+  let g:snipMate['no_match_completion_feedkeys_chars'] = ''
+  " Add snipmate to MUcomplete chain
+  let g:mucomplete#chains = { 'default': ['snip', 'keyn'] }
+
+  " Expand automatically when you accept a menu entry with Enter
+  inoremap <plug>MyEnter <cr>
+  imap <silent> <expr> <plug>MyCR (pumvisible()
+      \ ? "\<c-y>\<plug>snipMateTrigger"
+      \ : "\<plug>MyEnter")
+  imap <cr> <plug>MyCR
+
+  " UltiSnips conflicts with MUcomplete
+  let g:UltiSnipsExpandTrigger = "<f6>"        " Do not use <tab>
+	let g:UltiSnipsJumpForwardTrigger = "<c-b>"  " Do not use <c-j>
+
+  " Expand snippets or complete text using only <tab>
+  fun! MyTabAction()
+    let reservedSnippets = ['pp', 'ap', 'pp-', 'clog']
+    let wordBelowCursor = snipMate#WordBelowCursor()
+	  if (index(reservedSnippets, wordBelowCursor) >= 0)
+    "  if wordBelowCursor == 'pp'
+      echo 'worked'
+    "  endif
+	    return "\<plug>snipMateNextOrTrigger"
+	  else
+	    return "\<plug>(MyFwd)"
+	  endif
+	endf
+
+	imap <plug>(MyFwd) <plug>(MUcompleteFwd)
+	imap <expr> <silent> <tab> MyTabAction()
 
 set ignorecase                    " Case-insensitive searching.
 set smartcase                     " But case-sensitive if expression contains a capital letter.
@@ -103,8 +148,6 @@ au BufNewFile,BufRead *.tsx   set filetype=typescript
 au BufNewFile,BufRead *.ts    set filetype=typescript
 autocmd FileType gitcommit    set nosmartindent
 " autocmd FileType gitcommit    set nosmartindent | set formatoptions-=t
-
-au BufRead,BufNewFile *.md setlocal textwidth=80
 
 hi CursorLineNR cterm=bold
 augroup CLNRSet
@@ -400,12 +443,6 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   nmap 44 $
   vmap 44 $h
 
-  " Tab becomes Esc
-  " inoremap <m-i> <tab>
-  " nnoremap <tab> <esc>
-  " vnoremap <tab> <esc>gV
-  " inoremap <tab> <esc>`^
-
   " Ruby
   "
   " This will write:
@@ -480,20 +517,17 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   nnoremap <C-k> :resize +5<cr>
   nnoremap <C-j> :resize -5<cr>
 
-  inoremap  <Up>     <NOP>
-  inoremap  <Down>   <NOP>
-  inoremap  <Left>   <NOP>
-  inoremap  <Right>  <NOP>
-  noremap   <Up>     <NOP>
-  noremap   <Down>   <NOP>
-  noremap   <Left>   <NOP>
-  noremap   <Right>  <NOP>
-
   " When you've writen : (colon), press %% very fast and it'll write the current
   " file's directory
   cnoremap %% <C-R>=expand('%:h').'/'<cr>
   map <leader>e :edit %%
   map <leader>v :view %%
+
+  " MARKDOWN
+  let g:table_mode_corner='|'
+  let g:table_mode_disable_mappings = 0
+  autocmd BufRead,BufNewFile *.md setlocal textwidth=80
+  autocmd BufRead,BufNewFile *.md exec ":silent TableModeEnable"
 
   " RUBY & RAILS
 
@@ -689,16 +723,16 @@ endfunction
 " MULTIPURPOSE TAB KEY
 " Indent if we're at the beginning of a line. Else, do completion.
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! InsertTabWrapper()
-    let col = col('.') - 1
-    if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
-    else
-        return "\<c-p>"
-    endif
-endfunction
-" imap <tab> <c-r>=InsertTabWrapper()<cr>
-inoremap <s-tab> <c-n>
+"function! InsertTabWrapper()
+"    let col = col('.') - 1
+"    if !col || getline('.')[col - 1] !~ '\k'
+"        return "\<tab>"
+"    else
+"        return "\<c-p>"
+"    endif
+"endfunction
+"" imap <tab> <c-r>=InsertTabWrapper()<cr>
+"inoremap <s-tab> <c-n>
 
 
 " PLUGINS

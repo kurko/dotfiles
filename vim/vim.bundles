@@ -22,12 +22,14 @@ Plugin 'kristijanhusak/vim-carbon-now-sh'
 " NAVIGATION & FILE CONFIGURATION
 Plugin 'scrooloose/nerdtree'
 Plugin 'thisivan/vim-bufexplorer'
-Plugin 'vim-scripts/taglist.vim' " To use CTags
-Plugin 'bogado/file-line' " Open file:line
+Plugin 'vim-scripts/taglist.vim'      " To use CTags
+Plugin 'ludovicchabant/vim-gutentags' " Auto indexes ctags in the background
+Plugin 'bogado/file-line'             " Open file:line
 
 " EDITING & MOVEMENTS
 Plugin 'unblevable/quick-scope'     " Highlights letters for <f>
 Plugin 'easymotion/vim-easymotion'  " Motion highlights in line, across windows
+Plugin 'dhruvasagar/vim-table-mode.git' " Automatically adjust markdown tables
 
 " SEARCH
 Plugin 'ctrlpvim/ctrlp.vim.git'
@@ -106,6 +108,8 @@ Plugin 'tomtom/tlib_vim.git'
 Plugin 'MarcWeber/vim-addon-mw-utils.git'
 Plugin 'garbas/vim-snipmate.git'
 Plugin 'honza/vim-snippets.git'
+Plugin 'lifepillar/vim-mucomplete' " Autocomplete
+" Plugin 'ajh17/VimCompletesMe'      " Autocomplete
 " Plugin 'ervandew/supertab.git'
 
 " Plugin 'tpope/vim-obsession.git'

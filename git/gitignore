@@ -10,3 +10,5 @@ custom_plan.rb
 zeus.log
 *.smartest*
 data.pg_dump
+tags.temp
+tags.lock
