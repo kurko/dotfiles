@@ -508,8 +508,11 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   " Spacebar saves
   "
   " If current file is .vimrc, it will then reload it to refresh the changes
-  nnoremap <Space> :exec ":write" \| if match(expand('%'), "\.vimrc") >= 1 \| exec ":so %" \| endif<cr>
-  " nnoremap <Space> :exec ":write"<cr>
+  " Disable <Space> in normal mode
+  nnoremap <Space> <NOP>
+  "nnoremap <Space> :exec ":write"<cr>
+  "nnoremap <Space> if match(expand('%'), "\.vimrc") >= 1 || match(expand('%'), 'vim$') \| exec ":so %" \| endif<cr>
+  nnoremap <expr> <Space> (match(expand('%'), 'vim') >= 1 ? ":write \| source %<cr>" : ":write<cr>")
 
   " Resizing windows
   nnoremap <C-h> :vertical resize +5<cr>
