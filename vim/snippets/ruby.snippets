@@ -13,3 +13,23 @@ snippet ap-
 snippet pbcopy
 	# Write below the string variable you to copy to clipboard
 	IO.popen("pbcopy", "w") { |pipe| pipe.puts "#{$0}" }
+snippet! descm
+	describe "#${1:method_name}" do
+	  # subject { described_class.new(${8:arg}) }
+
+		context "when ${2} is ${3:context}" do
+		  let(:${2:object}) { ${4:value} }
+
+			it "returns ${6:true}" do
+				expect(subject.${1}).to eq $6
+			end
+		end
+
+		context "when ${2} is not ${3}" do
+		  let(:${2}) { ${5:value2} }
+
+			it "returns ${7:false}" do
+				expect(subject.${1}).not_to eq ${7:false}
+			end
+		end
+	end

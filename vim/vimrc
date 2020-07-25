@@ -65,38 +65,46 @@ set wildmode=full                 " Complete files like a shell.
   set belloff+=ctrlg " If Vim beeps during completion
   set omnifunc=syntaxcomplete#Complete
   autocmd FileType ruby setl omnifunc=syntaxcomplete#Complete
-  let g:snipMate = {}
+
+  " There's a series of configurations for snipMate to work properly with
+  " MUComplete.
+  if !exists("g:snipMate")
+    let g:snipMate = {}
+  endif
   let g:snipMate['no_match_completion_feedkeys_chars'] = ''
-  " Add snipmate to MUcomplete chain
+  let g:snipMate['always_choose_first'] = 1
+  " Give priority to the snippets in $VIM/after/snippets/ over vim-snippets
+  let g:snipMate['override'] = 1
+  let g:snipMate['snippet_version'] = 1
+
+  " " Add snipmate to MUcomplete chain
   let g:mucomplete#chains = { 'default': ['snip', 'keyn'] }
 
-  " Expand automatically when you accept a menu entry with Enter
-  inoremap <plug>MyEnter <cr>
-  imap <silent> <expr> <plug>MyCR (pumvisible()
-      \ ? "\<c-y>\<plug>snipMateTrigger"
-      \ : "\<plug>MyEnter")
-  imap <cr> <plug>MyCR
-
-  " UltiSnips conflicts with MUcomplete
-  let g:UltiSnipsExpandTrigger = "<f6>"        " Do not use <tab>
-	let g:UltiSnipsJumpForwardTrigger = "<c-b>"  " Do not use <c-j>
-
   " Expand snippets or complete text using only <tab>
+  "
+  " In case snipMate is doing its thing, don't use MUComplete. For instance, we
+  " want MUComplete to not activate when snipMate is jumping tab stops.
   fun! MyTabAction()
-    let reservedSnippets = ['pp', 'ap', 'pp-', 'clog']
-    let wordBelowCursor = snipMate#WordBelowCursor()
-	  if (index(reservedSnippets, wordBelowCursor) >= 0)
-    "  if wordBelowCursor == 'pp'
-      echo 'worked'
-    "  endif
-	    return "\<plug>snipMateNextOrTrigger"
-	  else
-	    return "\<plug>(MyFwd)"
-	  endif
-	endf
+    if snipMate#CanBeTriggered() >= 1 || exists("b:snip_state")
+      return "\<plug>snipMateNextOrTrigger"
+    else
+      return "\<plug>(MyFwd)"
+    endif
+  endf
 
-	imap <plug>(MyFwd) <plug>(MUcompleteFwd)
-	imap <expr> <silent> <tab> MyTabAction()
+  " To avoid redefining the same triggers over and over.
+  if !exists("g:mycr_defined")
+    " Expand automatically when you accept a menu entry with Enter
+    inoremap <plug>MyEnter <cr>
+    imap <silent> <expr> <plug>MyCR (pumvisible()
+        \ ? "\<c-y>\<plug>snipMateTrigger"
+        \ : "\<plug>MyEnter")
+    imap <cr> <plug>MyCR
+
+    imap <plug>(MyFwd) <plug>(MUcompleteFwd)
+    imap <expr> <silent> <tab> MyTabAction()
+    let g:mycr_defined = 1
+  endif
 
 set ignorecase                    " Case-insensitive searching.
 set smartcase                     " But case-sensitive if expression contains a capital letter.

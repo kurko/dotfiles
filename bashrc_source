@@ -37,7 +37,8 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
   ln -nfs ~/.dotfiles/vim/vim.bundles ~/.vim.bundles
   ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.vim/colors/
-  ln -nfs ~/.dotfiles/vim/snippets ~/.vim/
+  mkdir -p ~/.vim/after/
+  ln -nfs ~/.dotfiles/vim/snippets ~/.vim/after/
 
   ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
   ln -nfs ~/.dotfiles/tmux/tmux.versioning.conf ~/.tmux.versioning.conf
