@@ -82,7 +82,6 @@
 [web]
 	browser = open
 [commit]
-  template = ~/.gitmessage
 	verbose = true
 [log]
 	date = iso
