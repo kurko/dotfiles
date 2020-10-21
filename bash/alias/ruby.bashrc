@@ -75,13 +75,17 @@ function dbrollback() {
 
 function spn(){ time rspec $*; }
 function be(){ time bundle exec $*; }
-function t(){
-  SPEC_PATH='spec/'
-  if [ ! -z "$*" ]; then
-    SPEC_PATH="$*"
+function testcode(){
+  if file-exists "Gemfile" ; then
+    SPEC_PATH='spec/'
+    if [ ! -z "$*" ]; then
+      SPEC_PATH="$*"
+    fi
+    echo-command "Running all tests in $SPEC_PATH"
+    time bundle exec rspec $SPEC_PATH --format progress --color # 2> >(grep -v CoreText 1>&2);
+  else
+    echo "Don't know how to test."
   fi
-  echo-command "Running all tests in $SPEC_PATH"
-  time bundle exec rspec $SPEC_PATH --format progress --color # 2> >(grep -v CoreText 1>&2);
 }
 function tchanged() {
   CHANGED=$(rspec_changed_files)
