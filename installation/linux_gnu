@@ -1,0 +1,104 @@
+#! /bin/bash
+
+INSTALLED_PACKAGE_LIST=$(sudo apt list --installed)
+
+function update_linux_package_manager() {
+  echo "Updating package manager (apt-get):"
+  sudo apt-get update
+}
+
+function install_linux_package() {
+  echo -n "> $1: "
+  echo $INSTALLED_PACKAGE_LIST | grep $1 &> /dev/null
+
+  if [[ $? -eq 1 ]]
+  then
+    echo "apt-get installing... "
+    sudo apt install -y $1;
+    echo "done."
+    return 0
+  else
+    echo "already installed."
+    return 1
+  fi
+}
+
+function install_linux_gnu_packages() {
+  echo "> Installing applications..."
+
+  printf "> rbenv: "
+  rbenv --version &> /dev/null
+  if [[ $? -eq 0 ]]
+  then
+    printf "already installed.\n"
+  else
+    echo "installing with ruby-build... "
+    git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
+    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+    echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+    source ~/.bash_profile
+    type rbenv
+    git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+    echo "done!\n"
+    LAST_RUBY="$(rbenv install -l | grep -v - | tail -1)"
+    echo "> Ruby ${LAST_RUBY}: installing... "
+    rbenv install $LAST_RUBY
+    rbenv global $LAST_RUBY
+    echo "done!\n"
+    echo "> bundler: installing... "
+    gem install bundler
+    echo "done!\n"
+    ruby -v
+  fi
+
+  update_linux_package_manager
+  install_linux_package build-essential
+  install_linux_package wget
+  install_linux_package curl
+  install_linux_package tree
+  install_linux_package tmux
+  install_linux_package silversearcher-ag
+  install_linux_package postgresql
+  install_linux_package redis-server
+  install_linux_package bash-completion
+  install_linux_package coreutils
+  install_linux_package hub
+  if [[ "$(which vim)" == "/usr/bin/vim" ]]; then
+    install_linux_package vim --override-system-vi
+  else
+    echo "> vim: already installed."
+  fi
+  install_linux_package pkg-config
+  install_linux_package mosh
+  install_linux_package ctags
+  install_linux_package node
+  install_linux_package yarn
+  install_linux_package jq
+  # For Docker
+  install_linux_package apt-transport-https
+  install_linux_package ca-certificates
+  install_linux_package gnupg-agent
+  install_linux_package software-properties-common
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  sudo apt-key fingerprint 0EBFCD88
+  sudo add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
+  sudo apt-get update
+  sudo apt-get install docker-ce docker-ce-cli containerd.io
+  sudo groupadd docker; sudo usermod -aG docker $USER; newgrp docker
+
+  printf "> fzf: "
+  fzf --version &> /dev/null
+  if [[ $? -eq 0 ]]; then
+    printf "already installed.\n"
+  else
+    printf "installing... "
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install
+    printf "done.\n"
+  fi
+
+  printf "\n"
+}

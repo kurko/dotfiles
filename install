@@ -43,8 +43,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo "Installing MacOS software... "
   source $DOTFILES/installation/macos
   install_macos
-#elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-  # ...
+elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+  echo ""
+  echo "Installing Linux GNU software... "
+  source $DOTFILES/installation/linux_gnu
+  install_linux_gnu_packages
 fi
-
-

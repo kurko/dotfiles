@@ -1,12 +1,12 @@
 #! /bin/bash
 
-BREW_LIST=$(brew list -l)
+INSTALLED_PACKAGE_LIST=$(brew list -l)
 BREW_CASK_LIST=$(brew cask list -1)
 
 function brew_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
-  echo $BREW_LIST | grep $1 &> /dev/null
+  echo $INSTALLED_PACKAGE_LIST | grep $1 &> /dev/null
 
   if [[ $? -eq 1 ]]
   then
