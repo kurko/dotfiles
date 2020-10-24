@@ -20,23 +20,6 @@ echo ""
 echo "Updating aliases, links and scripts... "
 update_dotfiles
 
-if [ ! -d ~/.vim/bundle/Vundle.vim ]
-then
-  echo ""
-  echo "Install Vim's Vundle on ~/.vim/bundle/Vundle.vim... "
-  git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-  vim +PluginInstall +qall
-fi
-
-if [ ! -d ~/.tmux/plugins/tpm ]
-then
-  echo ""
-  echo "Install Tmux Plugin Manager on ~/.tmux/plugins/tpm... "
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-  ~/.tmux/plugins/tpm/bin/install_plugins
-fi
-
-
 # MacOS?
 if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
@@ -49,3 +32,20 @@ elif [[ "$OSTYPE" == "linux-gnu" ]]; then
   source $DOTFILES/installation/linux_gnu
   install_linux_gnu_packages
 fi
+
+if [ ! -d ~/.vim/bundle/Vundle.vim ]
+then
+  echo ""
+  echo "Install Vim's Vundle on ~/.vim/bundle/Vundle.vim... "
+  git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+  vim +PluginInstall +qall >/dev/null 2>&1
+fi
+
+if [ ! -d ~/.tmux/plugins/tpm ]
+then
+  echo ""
+  echo "Install Tmux Plugin Manager on ~/.tmux/plugins/tpm... "
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+  ~/.tmux/plugins/tpm/bin/install_plugins
+fi
+
