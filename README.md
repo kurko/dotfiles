@@ -5,6 +5,8 @@ Use these files in your bash to improve it.
 **Important:** `git/gitconfig` has my nickname/email for Github. Please change
 it.
 
+If you're setting a new computer, ![here's how to setup](#setup-id-rsa) `~/.ssh/id_rsa.pub`.
+
 ### Setup
 
 Just run
@@ -40,3 +42,13 @@ To reload dotfiles, run:
 
 `ubp` will **U**pdate **B**ash **P**rofile with whatever is in the .dotfiles
 dir.
+
+<a href="#setup-id-rsa"></a>
+### Setup `id_rsa` for Github
+
+Run:
+
+    ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+    cat ~/.ssh/id_rsa.pub
+
+Then head to https://github.com/settings/keys/new.
