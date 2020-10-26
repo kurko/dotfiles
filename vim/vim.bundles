@@ -33,6 +33,8 @@ Plugin 'dhruvasagar/vim-table-mode.git' " Automatically adjust markdown tables
 
 " SEARCH
 Plugin 'ctrlpvim/ctrlp.vim.git'
+Plugin 'junegunn/fzf' " for Plug, { 'do': { -> fzf#install() } }
+Plugin 'junegunn/fzf.vim'
 Plugin 'vim-scripts/EasyGrep'
 Plugin 'google/vim-searchindex.git' " Adds info to search results (char /)
 

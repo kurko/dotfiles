@@ -605,18 +605,15 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     " deletes the remaining chars from a string
     nnoremap <Leader>ds vf"hd
 
-    map <leader>fa :CtrlPClearCache<cr>\|:CtrlP app/assets<cr>
-    map <leader>fj :CtrlPClearCache<cr>\|:CtrlP app/javascript<cr>
-    map <leader>fv :CtrlPClearCache<cr>\|:CtrlP app/views<cr>
-    map <leader>fc :CtrlPClearCache<cr>\|:CtrlP app/controllers<cr>
-    map <leader>fm :CtrlPClearCache<cr>\|:CtrlP app/models<cr>
-    map <leader>fl :CtrlPClearCache<cr>\|:CtrlP lib<cr>
-    map <leader>fs :CtrlPClearCache<cr>\|:CtrlP spec<cr>
-    map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
-    " map <leader>f :CtrlPClearCache<cr>\|:CtrlP<cr>
-    map <leader>f :CtrlP<cr>
-    nmap <leader>b :CtrlPBuffer<cr>
-    map <leader>F :CtrlPClearCache<cr>\|:CtrlP<cr>
+    map <leader>fa :Files app/assets<cr>
+    map <leader>fj :Files app/javascript<cr>
+    map <leader>fv :Files app/views<cr>
+    map <leader>fc :Files app/controllers<cr>
+    map <leader>fm :Files app/models<cr>
+    map <leader>fl :Files lib<cr>
+    map <leader>fs :Files spec<cr>
+    map <leader>f :Files<cr>
+    nmap <leader>b :Buffers<cr>
 
     let g:splitjoin_trailing_comma = 0
     let g:splitjoin_ruby_hanging_args = 0
