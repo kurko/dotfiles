@@ -222,6 +222,11 @@ endif
 " PLUGINS CONFIGURATIONS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" elzr/vim-json
+"
+" Why would anyone want to conceal characters in code?
+let g:vim_json_syntax_conceal = 0
+
 " Syntastic (not using currently)
 " let g:syntastic_mode_map = {
 " \ "mode": "active",
@@ -486,6 +491,7 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   "nnoremap <C-[> :<C-U>call PropheticTag()<CR>
 
 
+  nmap <leader>cat :!cat %<CR>
   nmap <leader>vim :e ~/.vimrc<CR>
 
   " Buffer
@@ -753,6 +759,7 @@ endfunction
 " PLUGINS
 "
 " Nerdtree
+let NERDTreeShowHidden=1
 map <C-n> :NERDTreeToggle<CR>
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
