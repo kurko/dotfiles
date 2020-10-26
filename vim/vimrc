@@ -50,6 +50,11 @@ set showmode                      " Display the mode you're in.
 
 set backspace=indent,eol,start    " Intuitive backspacing.
 set cursorline
+" For using gf with files which 'include' doesn't include `js` at the end,
+" e.g in Javascript projects, a `require('path')` won't attemp to load `path.js`
+" unless this option is set.
+set suffixesadd+=.js
+set suffixesadd+=.rb
 
 set hidden                        " Handle multiple buffers better.
 
