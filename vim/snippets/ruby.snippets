@@ -29,7 +29,19 @@ snippet! descm
 		  let(:${2}) { ${5:value2} }
 
 			it "returns ${7:false}" do
-				expect(subject.${1}).not_to eq ${7:false}
+				expect(subject.${1}).to eq ${7:false}
 			end
 		end
+	end
+snippet! cont
+	context "when $1" do
+		let(:${2:object}) { ${3:value} }
+
+		it "returns ${4:true}${6}" do
+			expect(subject.${5}).to eq ${4:true}
+		end
+	end
+snippet! it
+	it "$1" do
+	  $2
 	end
