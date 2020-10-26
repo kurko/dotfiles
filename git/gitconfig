@@ -22,8 +22,10 @@
   #
   mp = !git checkout master && git pull --rebase origin master
   ch-prev = checkout @{-1}
+  rebase-on-origin-master = "!git fetch && git rebase origin/master #"
   pr-rebase-on-master = "!git fetch && git rebase origin/master && git push --force #"
   amend = commit --amend
+  amend-push-force = "!git add . && git commit --amend && git push --force #"
 
   # branches
   reset-branch-from-origin = "!source ~/.githelpers && reset_from_github"
