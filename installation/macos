@@ -98,7 +98,13 @@ function install_macos() {
   brew_install_if_absent node
   brew_install_if_absent yarn
   brew_install_if_absent jq
+
+  # casks
+  brew tap kurko/homebrew-fonts-sanfrancisco
+  brew tap homebrew/cask-fonts
   brew_cask_install_if_absent font-sanfrancisco
+  brew_cask_install_if_absent font-hack
+  brew_cask_install_if_absent font-inconsolata
   brew_cask_install_if_absent fliqlo
   #brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred
