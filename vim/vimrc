@@ -1,5 +1,18 @@
 " Copy or symlink this file to ~/.vimrc
 
+" SETUP
+"
+" plug.vim: install it in case it doesn't exist.
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+call plug#begin('~/.vim/plugins')
+source ~/.vim.plugins
+call plug#end()
+
 " avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
 let g:table_mode_disable_mappings = 1
@@ -49,12 +62,15 @@ set showcmd                       " Display incomplete commands.
 set showmode                      " Display the mode you're in.
 
 set backspace=indent,eol,start    " Intuitive backspacing.
-set cursorline
+
 " For using gf with files which 'include' doesn't include `js` at the end,
 " e.g in Javascript projects, a `require('path')` won't attemp to load `path.js`
 " unless this option is set.
 set suffixesadd+=.js
 set suffixesadd+=.rb
+
+" Slow?
+" set cursorline
 
 set hidden                        " Handle multiple buffers better.
 
@@ -64,12 +80,13 @@ set wildmode=full                 " Complete files like a shell.
 " MUCOMPLETE Plugin
 "
 " Configuration for MUcomplete
-  set completeopt+=menuone
-  set completeopt+=noselect
-  set shortmess+=c   " Shut off completion messages
-  set belloff+=ctrlg " If Vim beeps during completion
-  set omnifunc=syntaxcomplete#Complete
-  autocmd FileType ruby setl omnifunc=syntaxcomplete#Complete
+  " Slow?
+  " set completeopt+=menuone
+  " set completeopt+=noselect
+  " set shortmess+=c   " Shut off completion messages
+  " set belloff+=ctrlg " If Vim beeps during completion
+  " set omnifunc=syntaxcomplete#Complete
+  " autocmd FileType ruby setl omnifunc=syntaxcomplete#Complete
 
   " There's a series of configurations for snipMate to work properly with
   " MUComplete.
@@ -143,10 +160,11 @@ set expandtab                    " Use spaces instead of tabs
 
 set laststatus=2                  " Show the status line all the time
 " Useful status information at bottom of screen
-set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c%V\ %)%P
-" let &statusline .= '%{cfi#format(" [%s()]", "")}'
+" Slow?
+" set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c%V\ %)%P
 
 set formatoptions+=j
+" Slow?
 set foldmethod=indent
 set fillchars=fold:\
 set foldlevelstart=99
@@ -227,19 +245,13 @@ endif
 " Why would anyone want to conceal characters in code?
 let g:vim_json_syntax_conceal = 0
 
-" Syntastic (not using currently)
-" let g:syntastic_mode_map = {
-" \ "mode": "active",
-" \ "passive_filetypes": ["cucumber"] }
-" let g:syntastic_ruby_checkers = ["mri", "rubocop", "reek"]
-
 " ACK + AG
 if executable('ag')
   let g:ackprg = 'ag --vimgrep --ignore-dir /*node_modules --ignore-dir /*public/packs-test/'
 endif
 
 " ALE plugin
-let g:ale_enabled = 1
+let g:ale_enabled = 0
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
@@ -300,7 +312,7 @@ endfunction
 "
 autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
 " When entering commit screen, automatically go into insert mode
-autocmd FileType gitcommit exec 'au VimEnter * startinsert'
+" autocmd FileType gitcommit exec 'au VimEnter * startinsert'
 
 " git
   highlight diffAdded   ctermfg=green
@@ -476,20 +488,6 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
 
   " Updates CTags
   map <F5> :exec "!ctags -R --exclude=.git --exclude=vendor/bundle"<CR>
-
-  function! PropheticTag()
-    if v:count1 == "1"
-      :echo "Not prophetic"
-      return ""
-    endif
-
-    execute "normal! " . v:count1 . "G"
-    execute ":tag '" . expand("<cword>") . "'"
-    return ""
-  endfunction
-
-  "nnoremap <C-[> :<C-U>call PropheticTag()<CR>
-
 
   nmap <leader>cat :!cat %<CR>
   nmap <leader>vim :e ~/.vimrc<CR>
@@ -715,8 +713,9 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
   highlight RedundantSpaces ctermbg=red guibg=red
   match RedundantSpaces /\s\+$/
   autocmd BufWinEnter * match RedundantSpaces /\s\+$/
-  autocmd InsertEnter * match RedundantSpaces /\s\+\%#\@<!$/
-  autocmd InsertLeave * match RedundantSpaces /\s\+$/
+  " Slow?
+  " autocmd InsertEnter * match RedundantSpaces /\s\+\%#\@<!$/
+  " autocmd InsertLeave * match RedundantSpaces /\s\+$/
   autocmd BufWinLeave * call clearmatches()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -735,41 +734,9 @@ function! PasteAndIndent()
   endif
 endfunction
 
-" nnoremap p :call PasteAndIndent()<cr>
-
-" ]p to paste and indent code automatically
-" nnoremap ]p p=`]
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" MULTIPURPOSE TAB KEY
-" Indent if we're at the beginning of a line. Else, do completion.
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"function! InsertTabWrapper()
-"    let col = col('.') - 1
-"    if !col || getline('.')[col - 1] !~ '\k'
-"        return "\<tab>"
-"    else
-"        return "\<c-p>"
-"    endif
-"endfunction
-"" imap <tab> <c-r>=InsertTabWrapper()<cr>
-"inoremap <s-tab> <c-n>
-
-
 " PLUGINS
 "
 " Nerdtree
 let NERDTreeShowHidden=1
 map <C-n> :NERDTreeToggle<CR>
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-
-" Vundle
-if filereadable(expand("~/.vim.bundles"))
-  set rtp+=~/.vim/bundle/Vundle.vim/
-  call vundle#begin()
-
-  source ~/.vim.bundles
-  call vundle#end()               " required
-  filetype plugin indent on       " required
-endif
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif

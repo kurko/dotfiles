@@ -1,0 +1,117 @@
+
+" This is halting the entire vim startup process
+" Plug 'jimmy-ai/jimmy-vim'
+
+Plug 'jceb/vim-orgmode'
+Plug 'mkitt/tabline.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
+" OS
+Plug 'enricobacis/paste.vim'
+
+" PROCESSING
+Plug 'skywind3000/asyncrun.vim'
+" Slow? Plug 'w0rp/ale'
+Plug 'tpope/vim-dispatch'
+Plug 'tpope/vim-unimpaired'
+
+Plug 'kristijanhusak/vim-carbon-now-sh'
+
+" NAVIGATION & FILE CONFIGURATION
+Plug 'scrooloose/nerdtree'
+Plug 'thisivan/vim-bufexplorer'
+Plug 'vim-scripts/taglist.vim'      " To use CTags
+Plug 'ludovicchabant/vim-gutentags' " Auto indexes ctags in the background
+Plug 'bogado/file-line'             " Open file:line
+
+" EDITING & MOVEMENTS
+Plug 'unblevable/quick-scope'     " Highlights letters for <f>
+Plug 'easymotion/vim-easymotion'  " Motion highlights in line, across windows
+Plug 'dhruvasagar/vim-table-mode' " Automatically adjust markdown tables
+
+" SEARCH
+Plug 'vim-scripts/EasyGrep'
+Plug 'google/vim-searchindex' " Adds info to search results (char /)
+
+" WINDOWS & TABS
+Plug 'wesQ3/vim-windowswap'   " Swap windows easily
+
+" GIT
+"
+Plug 'mhinz/vim-signify'        " Git diff in the gutter
+Plug 'airblade/vim-rooter'      " Set project root path
+Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-fugitive'   " Use Git inside vim
+Plug 'junegunn/gv.vim'
+Plug 'tpope/vim-rhubarb'
+Plug 'sjl/gundo.vim'
+Plug 'digitaltoad/vim-jade'
+Plug 'tpope/vim-ragtag'
+
+" CODING
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
+Plug 'kurko/autocoder.vim' " Generate new classes in Ruby projects
+Plug 'kurko/smartest.vim' " Run tests the fastest way possible
+
+" SYNTAX HIGHLIGHTING
+Plug 'vimtaku/hl_matchit.vim'
+Plug 'elixir-lang/vim-elixir'
+Plug 'keith/swift.vim'
+Plug 'rust-lang/rust.vim'
+Plug 'elzr/vim-json'
+Plug 'mustache/vim-mustache-handlebars'
+Plug 'tpope/vim-haml'
+Plug 'slim-template/vim-slim'
+Plug 'othree/html5.vim'
+" SLOW Plug 'gabrielelana/vim-markdown'
+" Plug 'tpope/vim-markdown'
+Plug 'cakebaker/scss-syntax.vim'
+
+" LANGUAGE SPECIFIC
+"
+" Rails & Ruby dev
+Plug 'AndrewRadev/splitjoin.vim'
+Plug 'tpope/vim-rails'
+Plug 'ciaranm/securemodelines'
+" Plug 'scrooloose/syntastic'
+" Plug 'asux/vim-capybara'
+" Plug 'altercation/vim-colors-solarized'
+
+" Javascript
+Plug 'pangloss/vim-javascript'
+
+" Typescript
+" Plug 'leafgarland/typescript-vim'   " Syntax Highlighting
+" Plug 'ianks/vim-tsx'            " Syntax highlighting and indenting for TSX
+" Plug 'peitalin/vim-jsx-typescript'
+" Plug 'maxmellon/vim-jsx-pretty'
+Plug 'HerringtonDarkholme/yats.vim'   " More complete HL for TSX
+Plug 'Quramy/tsuquyomi'               " Typescript client for TSServer
+
+Plug 'itspriddle/vim-jquery'
+Plug 'greyblake/vim-preview'
+Plug 'tpope/vim-rake'
+Plug 'tpope/vim-bundler'
+Plug 'chrismetcalf/vim-yankring'
+Plug 'tpope/vim-vividchalk'
+Plug 'mattn/emmet-vim'
+Plug 'mileszs/ack.vim'
+Plug 'tonchis/to-github-vim'
+
+" vim-snipmate requires tlib and vim-addon-mw-utils
+Plug 'tomtom/tlib_vim'
+Plug 'MarcWeber/vim-addon-mw-utils'
+Plug 'garbas/vim-snipmate'
+Plug 'honza/vim-snippets'
+Plug 'lifepillar/vim-mucomplete' " Autocomplete
+" Plug 'ajh17/VimCompletesMe'      " Autocomplete
+" Plug 'ervandew/supertab'
+
+" Plug 'tpope/vim-obsession'
+
+" This enables me to have cfi#format()
+"
+" let &statusline .= '%{cfi#format(" [%s()]", "")}'
+" Plug 'tyru/current-func-info.vim'
