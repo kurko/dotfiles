@@ -38,16 +38,16 @@ Plug 'google/vim-searchindex' " Adds info to search results (char /)
 Plug 'wesQ3/vim-windowswap'   " Swap windows easily
 
 " GIT
-"
 Plug 'mhinz/vim-signify'        " Git diff in the gutter
 Plug 'airblade/vim-rooter'      " Set project root path
 Plug 'tpope/vim-endwise'
-Plug 'tpope/vim-fugitive'   " Use Git inside vim
+Plug 'tpope/vim-fugitive'       " Use Git inside vim
 Plug 'junegunn/gv.vim'
 Plug 'tpope/vim-rhubarb'
 Plug 'sjl/gundo.vim'
 Plug 'digitaltoad/vim-jade'
 Plug 'tpope/vim-ragtag'
+Plug 'maxjacobson/vim-fzf-coauthorship' " :Coauthorship to add pair people to the commit
 
 " CODING
 Plug 'tpope/vim-surround'
