@@ -44,7 +44,7 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/tmux/tmux.versioning.conf ~/.tmux.versioning.conf
 
   ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
-  ln -nfs ~/.dotfiles/ag/agignore ~/.agignore
+  ln -nfs ~/.dotfiles/ag/ignore ~/.ignore
 
   # We don't use this directive anymore. We leave blank, which will default
   # to $HOME/.config/git/ignore.
