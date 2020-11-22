@@ -46,6 +46,10 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
   ln -nfs ~/.dotfiles/ag/ignore ~/.ignore
 
+  mkdir -p ~/.config/alacritty/
+  rm -f ~/.config/alacritty/alacritty.yml
+  ln -nfs ~/.dotfiles/alacritty/alacritty.yml ~/.alacritty.yml
+
   # We don't use this directive anymore. We leave blank, which will default
   # to $HOME/.config/git/ignore.
   #
