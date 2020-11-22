@@ -355,40 +355,9 @@ autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
   \  },
   \}
 
-" CtrlP
-set runtimepath^=~/.vim/bundle/ctrlp.vim
-let g:ctrlp_custom_ignore = 'tmp$\|deps\|_build\|log\/\|vendor/assets\|vendor/bundle\|vendor/plugins\|.jpg\|.png\|.jpeg\|.gif\|spec/vcr\|public/uploads\|public/themes/cloud\|spec/cassett\|\.git\|cassett\|/.git\|coverage\|.DS_STORE\|node_modules\|test_build\|bower_'
-let g:ctrlp_root_markers = ['ctrlp_root', 'Gemfile', 'package.json']
-let g:ctrlp_switch_buffer = 'et'
-let g:ctrlp_cache_dir = $HOME . '/.cache/ctrlp'
-let g:ctrlp_clear_cache_on_exit = 1
-set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/\.git/*
-set wildignorecase
-
-" https://github.com/JazzCore/ctrlp-cmatcher
-" let g:ctrlp_match_func = {'match' : 'matcher#cmatch' }
-
-let g:ctrlp_map = '<c-p>'
-"let g:ctrlp_user_command = 'find %s -type f'
-if executable('ag')
-  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-endif
-
 " Paste.vim
 let g:paste_no_mappings = 1
 " nnoremap <shortcut> :Paste<CR>
-
-function! SetCtrlPPathTheSameAsVim()
-  let new_dir = expand('%:h')
-  exec ':cd ' . new_dir
-  let g:ctrlp_working_path_mode=''
-  exec ':echo "Changed CtrlP and Vim path to current folder."'
-endfunction
-
-" When you go to another project inside of a Rails project (e.g Ember project
-" in app/assets/javascript/my_project), CtrlP still uses ./ as root. By typing
-" this command, CtrlP will :cd into this internal project.
-command! CtrlPVimPath call SetCtrlPPathTheSameAsVim()
 
 " vim-rooter
 let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
@@ -674,7 +643,6 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
       exec ':silent !find ' . old_directory . ' -type d -empty -exec rmdir {} +'
       redraw!
     endif
-    exec ':CtrlPClearCache'
   endfunction
 
   " Copy current file to a new location
@@ -687,7 +655,6 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
       exec ':saveas ' . new_name
       redraw!
     endif
-    exec ':CtrlPClearCache'
   endfunction
 
   map <leader>n :call RenameFile()<cr>
