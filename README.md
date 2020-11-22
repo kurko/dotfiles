@@ -5,7 +5,7 @@ Use these files in your bash to improve it.
 **Important:** `git/gitconfig` has my nickname/email for Github. Please change
 it.
 
-If you're setting a new computer, ![here's how to setup](#setup-id-rsa) `~/.ssh/id_rsa.pub`.
+If you're setting a new computer, [here's how to setup](#setup-id_rsa-for-github) `~/.ssh/id_rsa.pub`.
 
 ### Setup
 
