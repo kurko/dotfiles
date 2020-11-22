@@ -75,7 +75,7 @@ function dbrollback() {
 
 function spn(){ time rspec $*; }
 function be(){ time bundle exec $*; }
-function testcode(){
+function t(){
   if file-exists "Gemfile" ; then
     SPEC_PATH='spec/'
     if [ ! -z "$*" ]; then
