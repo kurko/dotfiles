@@ -261,14 +261,22 @@ key_bindings:
   - { key: W,      mods: Command,         action: Quit             }
   - { key: F,      mods: Command|Control, action: ToggleFullscreen }
 
-  - { key: Paste,                    action: Paste                            }
-  - { key: Copy,                     action: Copy                             }
-  - { key: L,         mods: Control, action: ClearLogNotice                   }
-  - { key: L,         mods: Control, chars: "\x0c"                            }
-  - { key: PageUp,    mods: Shift,   action: ScrollPageUp,   mode: ~Alt       }
-  - { key: PageDown,  mods: Shift,   action: ScrollPageDown, mode: ~Alt       }
-  - { key: Home,      mods: Shift,   action: ScrollToTop,    mode: ~Alt       }
-  - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt       }
+  - { key: Paste,                    action: Paste                           }
+  - { key: Copy,                     action: Copy                            }
+  - { key: L,         mods: Control, action: ClearLogNotice                  }
+  - { key: L,         mods: Control, chars: "\x0c"                           }
+  - { key: PageUp,    mods: Shift,   action: ScrollPageUp,   mode: ~Alt      }
+  - { key: PageDown,  mods: Shift,   action: ScrollPageDown, mode: ~Alt      }
+  - { key: Home,      mods: Shift,   action: ScrollToTop,    mode: ~Alt      }
+  - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt      }
+  - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt      }
+
+  # Move cursor back one word
+  - { key: F,         mods: Alt,     chars: "\x1bf"                          }
+  # Move cursor forward one word
+  - { key: B,         mods: Alt,     chars: "\x1bb"                          }
+  # Delete forward one word
+  - { key: D,  mods: Alt,           chars: "\x1bd"                           }
 
   - { key: NumpadEnter,             chars: "\n"                              }
   - { key: Key1,     mods: Command, chars: "\x1c\x31"                        }
