@@ -45,6 +45,7 @@ function update_symlinks(){
 
   ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
   ln -nfs ~/.dotfiles/ag/ignore ~/.ignore
+  ln -nfs ~/.dotfiles/ag/ignore ~/.agignore
 
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml

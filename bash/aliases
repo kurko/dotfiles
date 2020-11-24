@@ -121,7 +121,7 @@ function grepp(){
   grep -Rni --exclude=".//db/data*" --exclude=".//tmp*" --exclude=".//vendor*" --exclude=".//coverage*" --exclude=".//log*" --exclude=".//tag*" --exclude=".//spec*/vcr*" --exclude=".//spec*/cassett*" --exclude=".//public/*.js*" --exclude=".//.*" --exclude="./db/data*" --exclude="./tmp*" --exclude="./vendor*" --exclude="./coverage*" --exclude="./log*" --exclude="./tag*" --exclude="./spec*/cassett*" --exclude="./public/*.js*" --exclude="./.*" "$*" ./
 }
 
-alias ag="echo ------------------------------------------------------------------------ && ag $*"
+alias ag="echo ------------------------------------------------------------------------ && ag --path-to-ignore ~/.ignore $*"
 
 function findd(){
   find . -ipath "*$**";
