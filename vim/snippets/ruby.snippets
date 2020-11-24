@@ -45,3 +45,17 @@ snippet! it
 	it "$1" do
 	  $2
 	end
+snippet! spec
+  require "spec_helper"
+
+  describe Class do
+    describe "#method" do
+      subject { described_class.new() }
+
+      context "when x" do
+        it "returns true" do
+          expect(subject).to eq(true)
+        end
+      end
+    end
+  end
