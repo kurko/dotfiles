@@ -583,15 +583,16 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     " deletes the remaining chars from a string
     nnoremap <Leader>ds vf"hd
 
-    map <leader>fa :Files app/assets<cr>
-    map <leader>fj :Files app/javascript<cr>
-    map <leader>fv :Files app/views<cr>
-    map <leader>fc :Files app/controllers<cr>
-    map <leader>fm :Files app/models<cr>
-    map <leader>fl :Files lib<cr>
-    map <leader>fs :Files spec<cr>
-    map <leader>f :Files<cr>
-    nmap <leader>b :Buffers<cr>
+    let $FZF_DEFAULT_COMMAND = 'ag -l -g ""'
+    map <leader>fa :Files! app/assets<cr>
+    map <leader>fj :Files! app/javascript<cr>
+    map <leader>fv :Files! app/views<cr>
+    map <leader>fc :Files! app/controllers<cr>
+    map <leader>fm :Files! app/models<cr>
+    map <leader>fl :Files! lib<cr>
+    map <leader>fs :Files! spec<cr>
+    map <leader>f :Files!<cr>
+    nmap <leader>b :Buffers!<cr>
 
     let g:splitjoin_trailing_comma = 0
     let g:splitjoin_ruby_hanging_args = 0
