@@ -270,13 +270,15 @@ key_bindings:
   - { key: Home,      mods: Shift,   action: ScrollToTop,    mode: ~Alt      }
   - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt      }
   - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt      }
+  - { key: Left,      mods: Alt,     chars: ""                               }
+  - { key: Right,     mods: Alt,     chars: ""                               }
 
   # Move cursor back one word
   - { key: F,         mods: Alt,     chars: "\x1bf"                          }
   # Move cursor forward one word
   - { key: B,         mods: Alt,     chars: "\x1bb"                          }
   # Delete forward one word
-  - { key: D,  mods: Alt,           chars: "\x1bd"                           }
+  - { key: D,         mods: Alt,     chars: "\x1bd"                          }
 
   - { key: NumpadEnter,             chars: "\n"                              }
   - { key: Key1,     mods: Command, chars: "\x1c\x31"                        }
