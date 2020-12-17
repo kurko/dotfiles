@@ -45,6 +45,7 @@
 [user]
 	name = Alex Oliveira
 	email = kurko@users.noreply.github.com
+	signingkey = kurko@users.noreply.github.com
 
 [color]
   diff = auto
@@ -85,6 +86,7 @@
 	browser = open
 [commit]
 	verbose = true
+	gpgsign = true
 [log]
 	date = iso
 [http]
