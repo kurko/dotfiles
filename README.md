@@ -9,7 +9,9 @@ If you're setting a new computer, [here's how to setup](#setup-id_rsa-for-github
 
 ### Setup
 
-Just run
+**On MacOS:** run `chsh -s /bin/bash` to replace ZSH with Bash.
+
+Run
 
 `source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
 
