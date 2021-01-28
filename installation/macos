@@ -44,7 +44,7 @@ function install_macos() {
     echo "Homebrew already installed!"
   else
     echo "Homebrew... "
-    ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/install/master/install)"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     brew update
     echo "done!"
   fi
