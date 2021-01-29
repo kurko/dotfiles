@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# This script will uninstall and remove every trace of postgres from the
+# machine. Note that all your databases will be deleted so make a backup if you
+# need.
+#
+# It's based on
+# https://blog.testdouble.com/posts/2021-01-28-how-to-completely-uninstall-homebrew-postgres/
+#
+# This block will only run in MacOS.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  brew services stop postgresql
+  brew uninstall postgres
+  # In older Homebrew versions, /usr/local/var is used...
+  rm -rf /usr/local/var/postgres
+  rm -f  /usr/local/var/log/postgres.log
+  # ...whereas in more recent ones it's under /opt/homebrew/var.
+  rm -rf /opt/homebrew/var/postgres
+  rm -rf /opt/homebrew/var/log/postgres.log
+
+  # Not deleting ~/.psqlrc on purpose because that's my personal aliases and
+  # psql config.
+  rm -f ~/.psql_history
+
+  # Anything left after deleting everything above.
+  LEFTOVERS=$(brew list --formula | grep -e postgres -e psql)
+  if [[ $? -eq 0 ]]; then
+    puts "There are still Postgres related apps around: $LEFTOVERS"
+    exit 1 # halt
+  fi
+
+  brew update
+  brew doctor
+  brew install postgres
+  brew services start postgresql
+  createdb `whoami` >/dev/null 2>&1 || echo "Ops, database $(whoami) already exists but it should have been deleted."
+else
+  echo "Don't know how to run this on anything other than MacOS."
+fi

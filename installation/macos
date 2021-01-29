@@ -81,7 +81,9 @@ function install_macos() {
   brew_install_if_absent tmux
   brew_install_if_absent the_silver_searcher
   brew_install_if_absent postgresql
+  brew services restart postgresql
   brew_install_if_absent redis
+  brew services restart redis
   brew_install_if_absent bash-completion
   brew_install_if_absent coreutils
   brew_install_if_absent hub
