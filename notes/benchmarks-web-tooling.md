@@ -13,6 +13,7 @@ cd \
 - CPU: 2,6 GHz Dual-Core Intel Core i5
 - RAM: 8 GB 1600 MHz DDR3
 
+```
 Running Web Tooling Benchmark v0.5.3…
 -------------------------------------
          acorn:  6.84 runs/s
@@ -35,12 +36,14 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js:  4.63 runs/s
 -------------------------------------
 Geometric mean:  7.01 runs/s
+```
 
 ## Macbook Pro 2019 16"
 
 - CPU: 2,3 GHz 8-Core Intel Core i9
 - RAM: 16 GB 2667 MHz DDR4
 
+```
 Running Web Tooling Benchmark v0.5.3…
 -------------------------------------
          acorn: 11.92 runs/s
@@ -63,12 +66,14 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js:  5.98 runs/s
 -------------------------------------
 Geometric mean:  9.60 runs/s
+```
 
 ## Macbook Air M1 2020
 
 - M1, 8 CPU cores & 8 GPU cores
 - RAM: 16Gb
 
+```
 Running Web Tooling Benchmark v0.5.3…
 -------------------------------------
          acorn: 20.76 runs/s
@@ -91,3 +96,4 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js: 11.09 runs/s
 -------------------------------------
 Geometric mean: 14.90 runs/s
+```
