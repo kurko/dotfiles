@@ -63,3 +63,31 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js:  5.98 runs/s
 -------------------------------------
 Geometric mean:  9.60 runs/s
+
+## Macbook Air M1 2020
+
+- M1, 8 CPU cores & 8 GPU cores
+- RAM: 16Gb
+
+Running Web Tooling Benchmark v0.5.3…
+-------------------------------------
+         acorn: 20.76 runs/s
+         babel: 14.03 runs/s
+  babel-minify: 19.42 runs/s
+       babylon: 19.98 runs/s
+         buble: 10.11 runs/s
+          chai: 26.91 runs/s
+  coffeescript: 13.95 runs/s
+        espree:  3.94 runs/s
+       esprima: 15.28 runs/s
+        jshint: 18.77 runs/s
+         lebab: 17.65 runs/s
+       postcss: 10.57 runs/s
+       prepack: 14.19 runs/s
+      prettier: 11.50 runs/s
+    source-map: 14.51 runs/s
+        terser: 34.34 runs/s
+    typescript: 15.96 runs/s
+     uglify-js: 11.09 runs/s
+-------------------------------------
+Geometric mean: 14.90 runs/s
