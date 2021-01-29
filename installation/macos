@@ -1,7 +1,7 @@
 #! /bin/bash
 
-INSTALLED_PACKAGE_LIST=$(brew list -l)
-BREW_CASK_LIST=$(brew cask list -1)
+INSTALLED_PACKAGE_LIST=$(brew list -1 --formula)
+BREW_CASK_LIST=$(brew list -1 --cask)
 
 function brew_install_if_absent() {
   echo -n "> $1: "
@@ -28,7 +28,7 @@ function brew_cask_install_if_absent() {
   if [[ $? -eq 1 ]]
   then
     echo "brew installing... "
-    brew cask install $1
+    brew install cask $1
     echo "done."
     return 0
   else
@@ -86,7 +86,7 @@ function install_macos() {
   brew_install_if_absent coreutils
   brew_install_if_absent hub
   if [[ "$(which vim)" == "/usr/bin/vim" ]]; then
-    brew install vim --override-system-vi
+    brew install vim
   else
     echo "> vim: already installed."
   fi
@@ -106,9 +106,10 @@ function install_macos() {
   brew_cask_install_if_absent font-hack
   brew_cask_install_if_absent font-inconsolata
   brew_cask_install_if_absent fliqlo
-  #brew_cask_install_if_absent slack
+  brew_cask_install_if_absent slack
   brew_cask_install_if_absent alfred
+  brew_cask_install_if_absent telegram
   #brew_cask_install_if_absent google-chrome
   #brew_cask_install_if_absent dropbox
-  #brew_cask_install_if_absent 1password
+  brew_cask_install_if_absent 1password
 }
