@@ -17,12 +17,6 @@ function tmuxn(){
     # Rails project?
     if file-exists "Gemfile" && file-exists "config.ru" ; then
       tmux neww -t $1
-      tmux neww -t $1
-      tmux neww -t $1
-      tmux neww -t $1
-      tmux neww -t $1
-      tmux neww -t $1
-      tmux neww -t $1
     fi
   fi
 

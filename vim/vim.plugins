@@ -43,7 +43,7 @@ Plug 'airblade/vim-rooter'      " Set project root path
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-fugitive'       " Use Git inside vim
 Plug 'junegunn/gv.vim'
-Plug 'tpope/vim-rhubarb'
+" Plug 'tpope/vim-rhubarb'
 Plug 'sjl/gundo.vim'
 Plug 'digitaltoad/vim-jade'
 Plug 'tpope/vim-ragtag'
@@ -54,6 +54,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'kurko/autocoder.vim' " Generate new classes in Ruby projects
 Plug 'kurko/smartest.vim' " Run tests the fastest way possible
+Plug 'axiaoxin/vim-json-line-format' " pj and wj to fix JSON format
 
 " SYNTAX HIGHLIGHTING
 Plug 'vimtaku/hl_matchit.vim'

@@ -375,7 +375,7 @@ let g:paste_no_mappings = 1
 " nnoremap <shortcut> :Paste<CR>
 
 " vim-rooter
-let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
+let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS
@@ -598,7 +598,7 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     " deletes the remaining chars from a string
     nnoremap <Leader>ds vf"hd
 
-    let $FZF_DEFAULT_COMMAND = 'ag -l -g ""'
+    " let $FZF_DEFAULT_COMMAND = 'ag -l -g ""'
     map <leader>fa :Files! app/assets<cr>
     map <leader>fj :Files! app/javascript<cr>
     map <leader>fv :Files! app/views<cr>
