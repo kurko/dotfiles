@@ -80,14 +80,18 @@ set wildmode=full                 " Complete files like a shell.
 " MUCOMPLETE Plugin
 "
 " Configuration for MUcomplete
-  " Slow?
-  " set completeopt+=menuone
-  " set completeopt+=noselect
-  " set shortmess+=c   " Shut off completion messages
-  " set belloff+=ctrlg " If Vim beeps during completion
-  " set omnifunc=syntaxcomplete#Complete
-  " autocmd FileType ruby setl omnifunc=syntaxcomplete#Complete
+  set completeopt=menu,menuone,noinsert,preview
+  set shortmess+=c   " Shut off completion messages
+  set belloff+=ctrlg " If Vim beeps during completion
+  set omnifunc=syntaxcomplete#Complete
 
+  let g:mucomplete#enable_auto_at_startup = 1
+  let g:mucomplete#completion_delay = 250
+  let g:mucomplete#reopen_immediately = 0
+  let g:mucomplete#minimum_prefix_length = 1
+
+  " MUComplete + SnipMate
+  "
   " There's a series of configurations for snipMate to work properly with
   " MUComplete.
   if !exists("g:snipMate")
@@ -100,18 +104,29 @@ set wildmode=full                 " Complete files like a shell.
   let g:snipMate['snippet_version'] = 1
 
   " " Add snipmate to MUcomplete chain
-  let g:mucomplete#chains = { 'default': ['snip', 'keyn'] }
+  let g:mucomplete#wordlist = {
+        \   'default': ['January', 'July', 'June'],
+        \   'typescript': ['console.log()', 'console.trace()']
+        \ }
+  let g:mucomplete#chains = {
+        \ 'vim': ['path', 'cmd', 'keyn'],
+        \   'default': {
+        \     'default': ['omni', 'snip', 'keyp', 'keyn', 'tags', 'list'],
+        \     '.*string.*': [],
+        \     '.*comment.*': [],
+        \   }
+        \ }
 
   " Expand snippets or complete text using only <tab>
   "
   " In case snipMate is doing its thing, don't use MUComplete. For instance, we
   " want MUComplete to not activate when snipMate is jumping tab stops.
   fun! MyTabAction()
-    if snipMate#CanBeTriggered() >= 1 || exists("b:snip_state")
-      return "\<plug>snipMateNextOrTrigger"
-    else
+    "if snipMate#CanBeTriggered() >= 1 || exists("b:snip_state")
+    "  return "\<plug>snipMateNextOrTrigger"
+    "else
       return "\<plug>(MyFwd)"
-    endif
+    "endif
   endf
 
   " To avoid redefining the same triggers over and over.
@@ -604,7 +619,10 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
     au FileType html,css,javascript.jsx,typescript EmmetInstall
 
   " TYPESCRIPT
-  let g:tsuquyomi_completion_detail = 1
+  " This option makes things really slow.
+  let g:tsuquyomi_completion_detail = 0
+  let g:tsuquyomi_completion_preview = 1
+  let g:tsuquyomi_use_local_typescript = 1
 
   augroup typescript
     au!
@@ -665,7 +683,7 @@ let g:rooter_patterns = ['Gemfile', 'Rakefile', '.git/']
 " TESTS & SPECS FUNCTIONS
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
   function! SleepForZeusToReload()
-    exec ':sleep 250m'
+    exec ':sleep 50m'
   endfunction
 
   nnoremap <cr> <ESC>:w<CR>\|:call SleepForZeusToReload()\|:call RunTestFile()<cr>
