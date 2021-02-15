@@ -80,7 +80,7 @@ set wildmode=full                 " Complete files like a shell.
 " MUCOMPLETE Plugin
 "
 " Configuration for MUcomplete
-  set completeopt=menu,menuone,noinsert,preview
+  set completeopt=menu,menuone,noinsert
   set shortmess+=c   " Shut off completion messages
   set belloff+=ctrlg " If Vim beeps during completion
   set omnifunc=syntaxcomplete#Complete
@@ -250,6 +250,25 @@ if has("autocmd")
   au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g`\"" | endif
 endif
+
+" Make the quickfix window the shortest possible given the content.
+" Without this, the window might have 10 lines, even though the content only has
+" 1 line. This is useful when working with e.g Typescript, as it's always
+" opening the qf window as you save files.
+au FileType qf call AdjustWindowHeight(3, 10)
+function! AdjustWindowHeight(minheight, maxheight)
+   let l = 1
+   let n_lines = 0
+   let w_width = winwidth(0)
+   while l <= line('$')
+       " number to float for division
+       let l_len = strlen(getline(l)) + 0.0
+       let line_width = l_len/w_width
+       let n_lines += float2nr(ceil(line_width))
+       let l += 1
+   endw
+   exe max([min([n_lines, a:maxheight]), a:minheight]) . "wincmd _"
+endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " PLUGINS CONFIGURATIONS
@@ -621,7 +640,7 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
   " TYPESCRIPT
   " This option makes things really slow.
   let g:tsuquyomi_completion_detail = 0
-  let g:tsuquyomi_completion_preview = 1
+  let g:tsuquyomi_completion_preview = 0
   let g:tsuquyomi_use_local_typescript = 1
 
   augroup typescript
