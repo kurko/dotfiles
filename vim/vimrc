@@ -80,7 +80,7 @@ set wildmode=full                 " Complete files like a shell.
 " MUCOMPLETE Plugin
 "
 " Configuration for MUcomplete
-  set completeopt=menu,menuone,noinsert
+  set completeopt+=menu,menuone,noinsert
   set shortmess+=c   " Shut off completion messages
   set belloff+=ctrlg " If Vim beeps during completion
   set omnifunc=syntaxcomplete#Complete
@@ -88,7 +88,7 @@ set wildmode=full                 " Complete files like a shell.
   let g:mucomplete#enable_auto_at_startup = 1
   let g:mucomplete#completion_delay = 250
   let g:mucomplete#reopen_immediately = 0
-  let g:mucomplete#minimum_prefix_length = 1
+  let g:mucomplete#minimum_prefix_length = 2
 
   " MUComplete + SnipMate
   "
@@ -108,10 +108,13 @@ set wildmode=full                 " Complete files like a shell.
         \   'default': ['January', 'July', 'June'],
         \   'typescript': ['console.log()', 'console.trace()']
         \ }
+
+  " Using `tags` in the chain isn't working. It's adding a " to almost all
+  " keywords, making development impossible.
   let g:mucomplete#chains = {
-        \ 'vim': ['path', 'cmd', 'keyn'],
+        \   'vim': ['path', 'cmd', 'keyn'],
         \   'default': {
-        \     'default': ['omni', 'snip', 'keyp', 'keyn', 'tags', 'list'],
+        \     'default': ['omni', 'snip', 'keyp', 'keyn', 'list'],
         \     '.*string.*': [],
         \     '.*comment.*': [],
         \   }
