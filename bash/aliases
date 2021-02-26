@@ -101,8 +101,7 @@ function response_size() {
 }
 
 
-alias startredis="redis-server /usr/local/etc/redis.conf & disown"
-alias redis_server_daemonized="redis-server /usr/local/etc/redis.conf & disown"
+alias redis_server_daemonized="redis-server /usr/local/etc/redis.conf --daemonize yes"
 alias rabbitmq_stop="sudo rabbitmqctl stop_app"
 alias rabbitmq_reset="sudo rabbitmqctl reset"
 alias rabbitmq_start="sudo rabbitmqctl start_app"
