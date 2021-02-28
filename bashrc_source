@@ -87,7 +87,7 @@ source $DOTFILES/bash/aliases_env_specific
 source $DOTFILES/bash/autocomplete/autocomplete
 source $DOTFILES/bash/dirmarks # This is neat
 
-export FZF_DEFAULT_COMMAND='rg --files --follow --no-ignore-vcs --hidden -g "!{node_modules/*,.git/*}"'
+export FZF_DEFAULT_COMMAND='rg --files --follow --ignore-vcs --hidden -g "!{.jest-cache*,*/node_modules/*,node_modules/*,.git/*}"'
 export HISTCONTROL=ignoreboth
 export PATH=$PATH:~/.dotfiles/bin
 export PATH=$PATH:~/.dotfiles/bin/macos_only
