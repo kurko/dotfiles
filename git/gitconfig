@@ -14,6 +14,8 @@
   dm-short = diff master --shortstat
   f = fetch --all
   l = "!source ~/.githelpers && git_log_simpler_titles"
+  log-search = "!source ~/.githelpers && git_log_simpler_titles | fzf --exact --no-sort --ansi --preview 'git show -p --stat --pretty=fuller --color=always {1}'"
+
   p = push
   s = status
 

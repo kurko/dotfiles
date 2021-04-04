@@ -36,7 +36,7 @@ git_log_simpler_titles() {
     --date=short    \
     --abbrev-commit \
     --color=always $1 \
-    | sed ''/Merge/s//`printf "\035[31mMerge\033[0m"`/''   \
+    | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/''   \
     | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' \
     | less -rX
 }
