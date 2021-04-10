@@ -113,6 +113,7 @@ set wildmode=full                 " Complete files like a shell.
   " keywords, making development impossible.
   let g:mucomplete#chains = {
         \   'vim': ['path', 'cmd', 'keyn'],
+        \   'gitcommit': ['path'],
         \   'default': {
         \     'default': ['omni', 'snip', 'keyp', 'keyn', 'list'],
         \     '.*string.*': [],
