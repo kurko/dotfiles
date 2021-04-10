@@ -15,3 +15,7 @@ _rake_migrate() {
 }
 
 complete -F _rake_migrate rake
+
+# This will autocomplete `make` tasks
+# complete -W "\`grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile | sed 's/[^a-zA-Z0-9_.-]*$//'\`" make
+complete -W "`([[ -r Makefile ]] && grep -oE '^[a-zA-Z0-9_.-]+:([^=]|$)' ?akefile || cat /dev/null) | sed 's/[^a-zA-Z0-9_.-]*$//'`" make
