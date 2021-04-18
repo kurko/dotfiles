@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# Based on https://seb.jambor.dev/posts/improving-shell-workflows-with-fzf/.
+# Here's a GIF showing how it looks like:
+#
+#   https://seb.jambor.dev/posts/improving-shell-workflows-with-fzf/pr-checkout.gif
+
+set -e
+
+function pr-checkout() {
+  local jq_template pr_number
+
+  jq_template='"'\
+'#\(.number) - \(.title)'\
+'\t'\
+'#\(.number) \(.title)\n'\
+'Author: \(.user.login)\n'\
+'Created: \(.created_at)\n'\
+'Updated: \(.updated_at)\n'\
+'Reviewers: \([.requested_reviewers[].login])\n\n'\
+'\(.body)'\
+'"'
+
+  pr_number=$(
+    gh api 'repos/:owner/:repo/pulls' |
+    jq ".[] | $jq_template" |
+    sed -e 's/"\(.*\)"/\1/' -e 's/\\t/\t/' |
+    fzf \
+      --with-nth=1 \
+      --delimiter='\t' \
+      --preview='echo -e {2}' \
+      --preview-window=top:wrap |
+    sed 's/^#\([0-9]\+\).*/\1/'
+  )
+
+  if [ -n "$pr_number" ]; then
+    gh pr checkout "$pr_number"
+  fi
+}
+
+pr-checkout
