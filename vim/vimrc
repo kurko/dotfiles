@@ -639,7 +639,7 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
     nmap sk :SplitjoinJoin<cr>
 
   " JAVASCRIPT
-    au FileType html,css,javascript.jsx,typescript EmmetInstall
+    au FileType html,css,erb,javascript.jsx,typescript EmmetInstall
 
   " TYPESCRIPT
   " This option makes things really slow.
@@ -661,7 +661,7 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
     autocmd FileType typescript,typescript.tsx nnoremap <leader>D :TsuTypeDefinition<cr>
   augroup END
 
-  let g:user_emmet_leader_key='<Tab>'
+  let g:user_emmet_leader_key='<C-y>'
   let g:user_emmet_settings = {
     \  'javascript.jsx' : {
     \      'extends' : 'jsx',
