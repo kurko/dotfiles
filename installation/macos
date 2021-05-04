@@ -101,6 +101,8 @@ function install_macos() {
   brew_install_if_absent yarn
   brew_install_if_absent jq
   brew_install_if_absent gh
+  # Like cat, but with syntax highlighting
+  brew_install_if_absent bat
 
   # casks
   brew tap kurko/homebrew-fonts-sanfrancisco

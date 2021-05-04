@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+# Show all files that can be staged.
+#
+# `bat` is a program for outputting
+# code, like cat, but with syntax highlighting.
+files=$(git ls-files . --modified --exclude-standard --others | fzf --multi --preview="bat -- color=always --style=numbers --line-range=:500 {}")
+
+[ ! -z "$files" ] && git add $files && git status
