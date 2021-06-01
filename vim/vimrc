@@ -197,7 +197,11 @@ au Filetype javascript.jsx    setlocal filetype=jsx
 au BufNewFile,BufRead *.tsx   set filetype=typescript
 au BufNewFile,BufRead *.ts    set filetype=typescript
 autocmd FileType gitcommit    set nosmartindent
-" autocmd FileType gitcommit    set nosmartindent | set formatoptions-=t
+
+au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig,gitconfig 	setf gitconfig
+au BufNewFile,BufRead */.config/git/config			setf gitconfig
+au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 
 hi CursorLineNR cterm=bold
 augroup CLNRSet
