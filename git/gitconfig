@@ -2,9 +2,16 @@
   #
   # Level 1
   #
-  a = "!git add $* && git status # "
-  c = "!git commit $*"
+  # MUTATION
+  #
+  c = commit
   ch = checkout
+  p = push
+
+  #
+  # READ
+  #
+  a = "!git add $* && git status # "
   br = branch
   d = diff
   dc = diff --cached
@@ -14,23 +21,21 @@
   dm-short = diff master --shortstat
   f = fetch --all
   l = "!source ~/.githelpers && git_log_simpler_titles"
-  log-search = "!source ~/.githelpers && git_log_simpler_titles | fzf --exact --no-sort --ansi --preview 'git show -p --stat --pretty=fuller --color=always {1}'"
-
-  p = push
   s = status
 
   #
   # Level 2
   #
-  mp = !git checkout master && git pull --rebase origin master
-  ch-prev = checkout @{-1}
-  rebase-on-origin-master = "!git fetch && git rebase origin/master #"
-  pr-checkout = "!git-pull-request-checkout #"
   a-fzf = "!git-add-fzf #"
-  pr-rebase-on-master = "!git fetch && git rebase origin/master && git push --force #"
   amend = commit --amend
   amend-push-force = "!git add . && git commit --amend && git push --force #"
+  ch-prev = checkout @{-1}
   delete-branches = "!git-delete-branches"
+  log-search = "!source ~/.githelpers && git_log_simpler_titles | fzf --exact --no-sort --ansi --preview 'git show -p --stat --pretty=fuller --color=always {1}'"
+  mp = !git checkout master && git pull --rebase origin master
+  rebase-on-origin-master = "!git fetch && git rebase origin/master #"
+  pr-checkout = "!git-pull-request-checkout #"
+  pr-rebase-on-master = "!git fetch && git rebase origin/master && git push --force #"
 
   # branches
   reset-branch-from-origin = "!source ~/.githelpers && reset_from_github"
@@ -39,10 +44,6 @@
   l-oneline-all = log --graph --decorate --pretty=oneline --abbrev-commit --all
   l-oneline = log --graph --decorate --pretty=oneline --abbrev-commit
   l-titles = log --pretty=format:%s
-
-  # Goodness (summary of diff lines added/removed/total)
-  gn = goodness
-  gnc = goodness --cached
 
   # Fancy logging.
   l-graph = log --graph --pretty=format:'%h -%d %s %n' --abbrev-commit --date=relative --branches

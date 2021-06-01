@@ -12,7 +12,7 @@ alias develop='git checkout develop'
 # specified.
 function g() {
   if [[ $# > 0 ]]; then
-    git $@
+    git "$@"
   else
     git status
   fi
