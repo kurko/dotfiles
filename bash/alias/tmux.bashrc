@@ -3,8 +3,24 @@ source "$DOTFILES/bash/alias/bash.bashrc"
 # Tmux
 #
 function tmuxa(){
-  tmux attach -t $*
+
+  # If there's a tmux session, attach to it, otherwise restore from tmux-ressurect
+  pgrep -x "tmux" > /dev/null
+
+  if [ ! $? -eq 0 ]; then
+    echo "Restoring Tmux..."
+    tmux new -d -s delete-me && \
+      tmux run-shell ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh && \
+      tmux kill-session -t delete-me
+  fi
+
+  if [ $# -eq 0 ]; then
+    tmux attach
+  else
+    tmux attach -t $*
+  fi
 }
+
 
 function tmuxn(){
   tmux has-session -t $1 >/dev/null 2>&1
@@ -35,9 +51,6 @@ function tmuxk(){ tmux kill-session -t $*; }
 function tmux-dir(){
   echo "run -> :attach-session -t . -c $1"
 }
-
-# If there's a tmux session, attach to it, otherwise restore from tmux-ressurect
-alias mux='tmux attach || { (while ! tmux run-shell ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh; do sleep 0.2; done)& tmux ; }'
 
 # These functions are only available within a Tmux session
 if [[ "$TERM" =~ "screen".* ]]; then
