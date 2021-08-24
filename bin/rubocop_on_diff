@@ -56,5 +56,5 @@ do
   FILES="${FILES} ${final_path}";
 done;
 
-echo "bundle exec rubocop $FILES --force-exclusion"
-bundle exec rubocop $FILES --force-exclusion
+echo "bundle exec rubocop $* $FILES --force-exclusion"
+bundle exec rubocop $* $FILES --force-exclusion
