@@ -30,6 +30,7 @@
   amend = commit --amend
   amend-push-force = "!git add . && git commit --amend && git push --force #"
   ch-prev = checkout @{-1}
+  ch-fzf = "!git-checkout-fzf #"
   delete-branches = "!git-delete-branches"
   log-search = "!source ~/.githelpers && git_log_simpler_titles | fzf --exact --no-sort --ansi --preview 'git show -p --stat --pretty=fuller --color=always {1}'"
   mp = !git checkout master && git pull --rebase origin master
