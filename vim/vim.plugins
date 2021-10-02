@@ -54,7 +54,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'kurko/autocoder.vim' " Generate new classes in Ruby projects
 Plug 'kurko/smartest.vim' " Run tests the fastest way possible
-Plug 'axiaoxin/vim-json-line-format' " pj and wj to fix JSON format
+" Broken for now: Plug 'axiaoxin/vim-json-line-format' " pj and wj to fix JSON format
 
 " SYNTAX HIGHLIGHTING
 Plug 'vimtaku/hl_matchit.vim'

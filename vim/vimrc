@@ -530,9 +530,9 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 
   " opens buffer list and writes ':b ', so you just have to type a number
   if has('perl')
-    nnoremap <leader>l :Ls<CR>:b<Space>
+    nnoremap <leader>l :Buffers<CR>
   else
-    nnoremap <leader>l :ls<CR>:b<Space>
+    nnoremap <leader>l :Buffers<CR>
   endif
 
   " Spacebar saves
