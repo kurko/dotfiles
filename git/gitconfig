@@ -19,7 +19,7 @@
   d-head1 = diff HEAD~1
   dm = diff master
   dm-short = diff master --shortstat
-  f = fetch --all
+  f = fetch
   l = "!source ~/.githelpers && git_log_simpler_titles"
   s = status
 
