@@ -564,6 +564,13 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 
   " RUBY & RAILS
 
+    " Plugin config: Splitjoin.vim
+    let g:splitjoin_trailing_comma = 0
+    let g:splitjoin_ruby_hanging_args = 0
+    let g:splitjoin_ruby_curly_braces = 0
+    autocmd FileType ruby nmap sj :SplitjoinSplit<cr>
+    autocmd FileType ruby nmap sk :SplitjoinJoin<cr>
+
     "CANDIDATES FOR PLUGIN
     "
     " duplicate current block
@@ -635,12 +642,6 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
     map <leader>fs :Files! spec<cr>
     map <leader>f :Files!<cr>
     nmap <leader>b :Buffers!<cr>
-
-    let g:splitjoin_trailing_comma = 0
-    let g:splitjoin_ruby_hanging_args = 0
-    let g:splitjoin_ruby_curly_braces = 0
-    nmap sj :SplitjoinSplit<cr>
-    nmap sk :SplitjoinJoin<cr>
 
   " JAVASCRIPT
     au FileType html,css,erb,javascript.jsx,typescript EmmetInstall
