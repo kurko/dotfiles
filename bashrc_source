@@ -89,10 +89,16 @@ source $DOTFILES/bash/dirmarks # This is neat
 
 export FZF_DEFAULT_COMMAND='rg --files --follow --ignore-vcs --hidden -g "!{.jest-cache*,*/node_modules/*,node_modules/*,.git/*}"'
 export HISTCONTROL=ignoreboth
-export PATH=$PATH:~/.dotfiles/bin
-export PATH=$PATH:~/.dotfiles/bin/macos_only
 export USER=`whoami`
 export BASH_SILENCE_DEPRECATION_WARNING=1
+
+export PATH=~/.dotfiles/bin:$PATH
+export PATH=~/.dotfiles/bin/macos_only:$PATH
+
+# MacOS only
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export PATH="/opt/homebrew/bin:$PATH"
+fi
 
 # disable XON/XOFF so I can use ctrl+s with `history`
 [[ $- == *i* ]] && stty -ixon

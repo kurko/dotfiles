@@ -21,7 +21,6 @@ Plug 'kristijanhusak/vim-carbon-now-sh'
 " NAVIGATION & FILE CONFIGURATION
 Plug 'scrooloose/nerdtree'
 Plug 'thisivan/vim-bufexplorer'
-Plug 'vim-scripts/taglist.vim'      " To use CTags
 Plug 'ludovicchabant/vim-gutentags' " Auto indexes ctags in the background
 Plug 'bogado/file-line'             " Open file:line
 
