@@ -568,8 +568,9 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
     let g:splitjoin_trailing_comma = 0
     let g:splitjoin_ruby_hanging_args = 0
     let g:splitjoin_ruby_curly_braces = 0
-    autocmd FileType ruby nmap sj :SplitjoinSplit<cr>
-    autocmd FileType ruby nmap sk :SplitjoinJoin<cr>
+    let g:splitjoin_ruby_options_as_arguments = 1
+    nmap sj :SplitjoinSplit<cr>
+    nmap sk :SplitjoinJoin<cr>
 
     "CANDIDATES FOR PLUGIN
     "
@@ -581,7 +582,8 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
       normal $V%y
       normal $%o
       normal p
-      normal zz10<C-e>
+      " For centralizing the screen, uncomment
+      " normal zz10<C-e>
     endfunction
     autocmd FileType ruby nmap <leader>D :call DuplicateRubyBlock()<cr>
 
