@@ -87,7 +87,12 @@ source $DOTFILES/bash/aliases_env_specific
 source $DOTFILES/bash/autocomplete/autocomplete
 source $DOTFILES/bash/dirmarks # This is neat
 
-export FZF_DEFAULT_COMMAND='rg --files --follow --ignore-vcs --hidden -g "!{.jest-cache*,*/node_modules/*,node_modules/*,.git/*}"'
+# FZF
+export FZF_DEFAULT_COMMAND='rg --files --follow --ignore-vcs --hidden --sortr modified -g "!{.jest-cache*,*/node_modules/*,node_modules/*,.git/*}"'
+export FZF_DEFAULT_OPTS='-i'
+# Shows `tree` as preview for the current directory
+export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
+
 export HISTCONTROL=ignoreboth
 export USER=`whoami`
 export BASH_SILENCE_DEPRECATION_WARNING=1

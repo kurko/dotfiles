@@ -130,10 +130,6 @@ function superkill(){
   kill -9 `ps aux | grep $* | awk '{print $2}'`
 }
 
-function vimf() {
-  vim $(git ls-files|selecta)
-}
-
 function openf() {
   open $(find * -type f | selecta)
 }
