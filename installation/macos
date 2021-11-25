@@ -1,5 +1,19 @@
 #! /bin/bash
 
+xcode-select --install &>2
+
+if command -v brew >/dev/null 2>&1; then
+  echo "Homebrew already installed!"
+else
+  echo "Homebrew... "
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.bash_profile
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  brew update
+  echo "done!"
+fi
+echo ""
+
 INSTALLED_PACKAGE_LIST=$(brew list -1 --formula)
 BREW_CASK_LIST=$(brew list -1 --cask)
 
@@ -40,16 +54,6 @@ function brew_cask_install_if_absent() {
 function install_macos() {
   echo "> Installing applications..."
 
-  if command -v brew >/dev/null 2>&1; then
-    echo "Homebrew already installed!"
-  else
-    echo "Homebrew... "
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-    brew update
-    echo "done!"
-  fi
-  echo ""
-
   printf "> rbenv: "
   rbenv --version &> /dev/null
   if [[ $? -eq 0 ]]
@@ -80,8 +84,13 @@ function install_macos() {
   brew_install_if_absent tree
   brew_install_if_absent tmux
   brew_install_if_absent the_silver_searcher
+  brew_install_if_absent rg
+
   brew_install_if_absent postgresql
-  brew services restart postgresql
+  if [[ $? -eq 0 ]]; then
+    brew services restart postgresql
+  fi
+
   brew_install_if_absent redis
   brew services restart redis
   brew_install_if_absent bash-completion
@@ -104,18 +113,47 @@ function install_macos() {
   # Like cat, but with syntax highlighting
   brew_install_if_absent bat
 
+  # Rustup (used to install Alacritty)
+  source $DOTFILES/installation/macos_features/rustup
+  source $DOTFILES/installation/macos_features/alacritty
+  source $DOTFILES/installation/macos_features/dock
+
   # casks
-  brew tap kurko/homebrew-fonts-sanfrancisco
   brew tap homebrew/cask-fonts
   brew tap homebrew/cask-versions
-  brew_cask_install_if_absent font-sanfrancisco
+  brew_cask_install_if_absent font-sf-pro
+  brew_cask_install_if_absent font-sf-compact
+  brew_cask_install_if_absent font-sf-mono
+  brew_cask_install_if_absent font-new-york
   brew_cask_install_if_absent font-hack
   brew_cask_install_if_absent font-inconsolata
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent slack
+  brew_cask_install_if_absent zoom
   brew_cask_install_if_absent alfred
   brew_cask_install_if_absent telegram
   brew_cask_install_if_absent firefox-developer-edition
   brew_cask_install_if_absent google-chrome
   brew_cask_install_if_absent 1password
+  brew_cask_install_if_absent sync
+  brew_cask_install_if_absent rectangle
+
+  # To hide items in the menubar
+  if [ ! -d "/Applications/Vanilla.app" ]; then
+    brew_cask_install_if_absent vanilla
+  fi
+
+  # Mac App Store
+  brew_install_if_absent mas
+  # Installing Things 3
+  if [ ! -d "/Applications/Things3.app" ]; then
+    mas install 904280696
+  fi
+
+  # Timery
+  if [ ! -d "/Applications/Timery.app" ]; then
+    mas install 1425368544
+  fi
+
+  mas install 1568262835 # Super Agent for Safari
 }

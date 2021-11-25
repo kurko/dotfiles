@@ -1,0 +1,17 @@
+#! /bin/bash
+# Alacritty
+
+if [ -d "/Applications/Alacritty.app" ]; then
+  echo "Alacritty already installed!"
+else
+  echo "Installing Alacritty...\n"
+  git clone https://github.com/alacritty/alacritty.git ~/.tmp-alacritty-clone
+  cd ~/.tmp-alacritty-clone
+  rustup target add x86_64-apple-darwin aarch64-apple-darwin
+  make app-universal
+  cp -r target/release/osx/Alacritty.app /Applications/
+  cd ~
+  rm -rf ~/.tmp-alacritty-clone
+
+  echo "Alacritty: installed."
+fi

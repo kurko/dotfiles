@@ -1,0 +1,9 @@
+if command -v rustup >/dev/null 2>&1; then
+  echo "Rustup already installed!"
+else
+  echo "Rustup-init... "
+  brew_install_if_absent rustup
+  rustup-init -y -q
+  source $HOME/.cargo/env
+  echo "done."
+fi

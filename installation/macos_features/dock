@@ -1,0 +1,13 @@
+brew_install_if_absent dockutil
+
+dockutil --remove all
+dockutil --add '/Applications' --view grid --display folder
+dockutil --add '~/Screenshots' --view grid --display stack
+
+# Moving the Dock to the left
+defaults write com.apple.dock orientation left
+defaults write com.apple.Dock autohide -bool TRUE
+
+# Size of the dock
+defaults write com.apple.dock tilesize -integer 36
+killall Dock &
