@@ -18,6 +18,7 @@
   d-stat = diff --stat=160,120
   d-head1 = diff HEAD~1
   dm = diff master
+  d1 = diff HEAD~1
   dm-short = diff master --shortstat
   f = fetch
   l = "!source ~/.githelpers && git_log_simpler_titles"

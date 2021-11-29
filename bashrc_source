@@ -105,6 +105,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   export PATH="/opt/homebrew/bin:$PATH"
 fi
 
+# Node - if nodenv exists, eval it
+nodenv --version &> /dev/null
+if [[ $? -eq 0 ]]; then
+  eval "$(nodenv init -)"
+fi
+
 # disable XON/XOFF so I can use ctrl+s with `history`
 [[ $- == *i* ]] && stty -ixon
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
