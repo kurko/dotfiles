@@ -98,7 +98,7 @@ Running Web Tooling Benchmark v0.5.3…
 Geometric mean: 14.90 runs/s
 ```
 
-## Macbook Pro M1 2021
+## Macbook Pro M1 Pro 2021
 
 - M1, 10 CPU cores & 16 GPU cores
 - RAM: 16Gb
