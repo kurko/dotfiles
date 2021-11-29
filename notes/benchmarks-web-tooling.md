@@ -127,4 +127,3 @@ Running Web Tooling Benchmark v0.5.3…
 -------------------------------------
 Geometric mean: 21.25 runs/s
 ```
-
