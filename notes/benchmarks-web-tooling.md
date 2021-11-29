@@ -127,3 +127,33 @@ Running Web Tooling Benchmark v0.5.3…
 -------------------------------------
 Geometric mean: 21.25 runs/s
 ```
+
+## Macmini M1 2020
+
+- M1, 8 CPU cores & 8 GPU cores
+- RAM: 8Gb
+
+```
+Running Web Tooling Benchmark v0.5.3…
+-------------------------------------
+         acorn: 27.97 runs/s
+         babel: 21.79 runs/s
+  babel-minify: 28.30 runs/s
+       babylon: 28.23 runs/s
+         buble: 12.46 runs/s
+          chai: 40.09 runs/s
+  coffeescript: 18.25 runs/s
+        espree:  7.88 runs/s
+       esprima: 19.14 runs/s
+        jshint: 28.56 runs/s
+         lebab: 28.24 runs/s
+       postcss: 16.65 runs/s
+       prepack: 20.10 runs/s
+      prettier: 16.99 runs/s
+    source-map: 19.52 runs/s
+        terser: 52.60 runs/s
+    typescript: 23.74 runs/s
+     uglify-js: 15.20 runs/s
+-------------------------------------
+Geometric mean: 21.70 runs/s
+```
