@@ -97,3 +97,34 @@ Running Web Tooling Benchmark v0.5.3…
 -------------------------------------
 Geometric mean: 14.90 runs/s
 ```
+
+## Macbook Pro M1 2021
+
+- M1, 10 CPU cores & 16 GPU cores
+- RAM: 16Gb
+
+```
+Running Web Tooling Benchmark v0.5.3…
+-------------------------------------
+         acorn: 27.78 runs/s
+         babel: 21.29 runs/s
+  babel-minify: 28.93 runs/s
+       babylon: 28.60 runs/s
+         buble: 11.82 runs/s
+          chai: 39.66 runs/s
+  coffeescript: 16.68 runs/s
+        espree:  7.59 runs/s
+       esprima: 20.40 runs/s
+        jshint: 28.62 runs/s
+         lebab: 28.32 runs/s
+       postcss: 17.01 runs/s
+       prepack: 19.19 runs/s
+      prettier: 15.87 runs/s
+    source-map: 18.71 runs/s
+        terser: 49.65 runs/s
+    typescript: 23.36 runs/s
+     uglify-js: 14.50 runs/s
+-------------------------------------
+Geometric mean: 21.25 runs/s
+```
+
