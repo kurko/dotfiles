@@ -1,12 +1,28 @@
-To run this benchmark:
+**What:** compare computers with V8's benchmarking tools.
+
+**How:** copy and paste the following (using a specific version of node, and
+outputting the OS version at the end):
 
 ```
-cd \
-  && git clone https://github.com/v8/web-tooling-benchmark.git \
+export NODENV_VERSION=14.18.1 \
+  && cd \
+  && git clone --quiet https://github.com/v8/web-tooling-benchmark.git || true \
   && cd web-tooling-benchmark \
-  && npm install \
-  && node dist/cli.js
+  && echo $NODENV_VERSION > .nvmrc \
+  && echo $NODENV_VERSION > .node-version \
+  && npm --quiet install \
+  && node dist/cli.js; \
+  echo "Node version: $(node -v)"; \
+  (sw_vers &> /dev/null && echo "OS: $(sw_vers -productName) $(sw_vers -productVersion)") || (printf "OS: " && cat /etc/*release 2>/dev/null | grep 'PRETTY_NAME.*' | sed 's/.*="\(.*\)"/\1/')
 ```
+
+Note: make sure other memory and CPU consuming apps are closed (e.g Docker).
+
+**Results:** we care about the `Geometric mean: n.nn runs/s` line, the node
+version and the OS.
+
+Feel free to run the test with other versions of node, but have at least one
+result with the version above.
 
 ## Macbook Pro Late 2013 13"
 
@@ -36,6 +52,14 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js:  4.63 runs/s
 -------------------------------------
 Geometric mean:  7.01 runs/s
+Node version: v14.18.1
+OS: macOS 11.6.1
+```
+
+```
+Geometric mean:  5.46 runs/s
+Node version: v17.0.1
+OS: macOS 11.6.1
 ```
 
 ## Macbook Pro 2019 16"
@@ -95,7 +119,53 @@ Running Web Tooling Benchmark v0.5.3…
     typescript: 15.96 runs/s
      uglify-js: 11.09 runs/s
 -------------------------------------
+Geometric mean: 21.27 runs/s
+Node version: v14.18.1
+OS: macOS 12.0.1
+```
+
+```
 Geometric mean: 14.90 runs/s
+Node version: v12.16.1
+OS: macOS 11.2.0
+```
+
+```
+Geometric mean: 20.33 runs/s
+Node version: v17.0.1
+OS: macOS 12.0.1
+```
+
+## Mac Mini M1 2020
+
+- M1, 8 CPU cores & 8 GPU cores
+- RAM: 8Gb
+
+```
+Running Web Tooling Benchmark v0.5.3…
+-------------------------------------
+         acorn: 27.97 runs/s
+         babel: 21.79 runs/s
+  babel-minify: 28.30 runs/s
+       babylon: 28.23 runs/s
+         buble: 12.46 runs/s
+          chai: 40.09 runs/s
+  coffeescript: 18.25 runs/s
+        espree:  7.88 runs/s
+       esprima: 19.14 runs/s
+        jshint: 28.56 runs/s
+         lebab: 28.24 runs/s
+       postcss: 16.65 runs/s
+       prepack: 20.10 runs/s
+      prettier: 16.99 runs/s
+    source-map: 19.52 runs/s
+        terser: 52.60 runs/s
+    typescript: 23.74 runs/s
+     uglify-js: 15.20 runs/s
+-------------------------------------
+Geometric mean: 21.70 runs/s
+Node version: v14.15.4
+OS: macOS 12.0.1
 ```
 
 ## Macbook Pro M1 Pro 2021
@@ -126,34 +196,6 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js: 14.50 runs/s
 -------------------------------------
 Geometric mean: 21.25 runs/s
-```
-
-## Macmini M1 2020
-
-- M1, 8 CPU cores & 8 GPU cores
-- RAM: 8Gb
-
-```
-Running Web Tooling Benchmark v0.5.3…
--------------------------------------
-         acorn: 27.97 runs/s
-         babel: 21.79 runs/s
-  babel-minify: 28.30 runs/s
-       babylon: 28.23 runs/s
-         buble: 12.46 runs/s
-          chai: 40.09 runs/s
-  coffeescript: 18.25 runs/s
-        espree:  7.88 runs/s
-       esprima: 19.14 runs/s
-        jshint: 28.56 runs/s
-         lebab: 28.24 runs/s
-       postcss: 16.65 runs/s
-       prepack: 20.10 runs/s
-      prettier: 16.99 runs/s
-    source-map: 19.52 runs/s
-        terser: 52.60 runs/s
-    typescript: 23.74 runs/s
-     uglify-js: 15.20 runs/s
--------------------------------------
-Geometric mean: 21.70 runs/s
+Node version: v14.18.1
+OS: macOS 12.0.1
 ```
