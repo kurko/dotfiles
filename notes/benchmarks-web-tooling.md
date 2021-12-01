@@ -90,7 +90,15 @@ Running Web Tooling Benchmark v0.5.3…
      uglify-js:  5.98 runs/s
 -------------------------------------
 Geometric mean:  9.60 runs/s
+OS: macOS 10.15
 ```
+
+```
+Geometric mean: 11.00 runs/s
+Node version: v15.5.0
+OS: macOS 11.6.1
+```
+
 
 ## Macbook Air M1 2020
 
