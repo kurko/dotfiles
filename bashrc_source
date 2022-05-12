@@ -90,6 +90,8 @@ source $DOTFILES/bash/dirmarks # This is neat
 # FZF
 export FZF_DEFAULT_COMMAND='rg --files --follow --ignore-vcs --hidden --sortr modified -g "!{.jest-cache*,*/node_modules/*,node_modules/*,.git/*}"'
 export FZF_DEFAULT_OPTS='-i'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
 # Shows `tree` as preview for the current directory
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 

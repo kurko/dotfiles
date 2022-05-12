@@ -106,6 +106,7 @@ function install_macos() {
   brew_install_if_absent mosh
   brew_install_if_absent ctags
   brew_install_if_absent fzf
+  brew_install_if_absent fd
 
   EVAL_NODENV=0
   nodenv --version &> /dev/null
