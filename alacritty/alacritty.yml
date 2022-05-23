@@ -18,6 +18,9 @@ window:
   # (changes require restart)
   dynamic_title: true
 
+  # Background opacity
+  opacity: 1.0
+
   dimensions:
     columns: 120
     lines: 40
@@ -156,9 +159,6 @@ colors:
 bell:
   animation: EaseOutExpo
   duration: 0
-
-# Background opacity
-background_opacity: 1.0
 
 # Mouse bindings
 #
