@@ -94,8 +94,17 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="$FZF_DEFAULT_COMMAND"
 # Shows `tree` as preview for the current directory
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
+# Loads FZF
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
+# BASH HISTORY
 export HISTCONTROL=ignoreboth
+# If we're using tmux, use a specific history file for that session.
+[[ -n "${TMUX+set}" ]] && export TMUX_SESSION=$(tmux display-message -p "#S")
+if [[ $TMUX_SESSION ]]; then
+  export HISTFILE=$HOME/.bash_history_tmux_${TMUX_SESSION}
+  touch $HISTFILE
+fi
 export USER=`whoami`
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
