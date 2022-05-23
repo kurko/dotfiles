@@ -54,7 +54,7 @@ filetype plugin indent on         " Turn on file type detection.
 runtime macros/matchit.vim        " Load the matchit plugin.
 
 " highlight ColorColumn guibg=darkgray ctermbg=darkgray
-" set colorcolumn=80
+set colorcolumn=80
 "let &colorcolumn=join(range(81,999),",")
 "let &colorcolumn="80,".join(range(120,999),",")
 set pastetoggle=<F2>
@@ -293,19 +293,19 @@ if executable('ag')
 endif
 
 " ALE plugin
-let g:ale_enabled = 0
+let g:ale_enabled = 1
 let g:ale_sign_error = 'E'
 let g:ale_sign_warning = 'W'
 let g:ale_sign_column_always = 1
 let g:ale_lint_on_save = 1
 let g:ale_lint_on_text_changed = 'never' " always  never
-let g:ale_lint_on_insert_leave = 0 " default 0
+let g:ale_lint_on_insert_leave = 1 " default 0
 let g:ale_echo_msg_format = '%linter% says %code%: %s'
 let g:ale_lint_delay = 1000 " defaults to 200
-let g:ale_echo_delay = 100 " defaults 10
+let g:ale_echo_delay = 10 " defaults 10
 let g:ale_completion_delay = 400 "defaults 100
 let g:ale_set_highlights = 1
-let g:ale_fix_on_save = 0
+let g:ale_fix_on_save = 1
 
 nmap <F8> <Plug>(ale_fix)
 
@@ -344,11 +344,11 @@ function! SetAleBufferFixers()
   \}
 endfunction
 
-"augroup AleGroup
-"  autocmd!
-"  autocmd FileType,BufEnter * call SetAleBufferFixers()
-"  autocmd FileType,BufEnter * call SetAleBufferLinters()
-"augroup END
+augroup AleGroup
+  autocmd!
+  autocmd FileType,BufEnter * call SetAleBufferFixers()
+  autocmd FileType,BufEnter * call SetAleBufferLinters()
+augroup END
 
 " vim-surround
 "

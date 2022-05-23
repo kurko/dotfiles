@@ -12,7 +12,7 @@ Plug 'enricobacis/paste.vim'
 
 " PROCESSING
 Plug 'skywind3000/asyncrun.vim'
-" Slow? Plug 'w0rp/ale'
+Plug 'dense-analysis/ale' " maybe slow?
 Plug 'tpope/vim-dispatch'
 Plug 'tpope/vim-unimpaired'
 
@@ -106,6 +106,7 @@ Plug 'MarcWeber/vim-addon-mw-utils'
 Plug 'garbas/vim-snipmate'
 Plug 'honza/vim-snippets'
 Plug 'lifepillar/vim-mucomplete'   " Autocomplete
+" Plug 'neoclide/coc.nvim', {'branch': 'release'} " Problems for mucomplete?
 " Plug 'ajh17/VimCompletesMe'      " Autocomplete
 " Plug 'ervandew/supertab'
 
