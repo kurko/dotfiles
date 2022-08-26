@@ -7,7 +7,6 @@ PROMPT_COMMAND=""
 # - Makes sure the command is not already in PROMPT_COMMAND
 addToPromptCommand() {
   if [[ ":$PROMPT_COMMAND:" != *":$1:"* ]]; then
-    #PROMPT_COMMAND="${PROMPT_COMMAND:+"$PROMPT_COMMAND:"}; $1"
     if [[ "$PROMPT_COMMAND" == "" ]]; then
       PROMPT_COMMAND="$1"
     else

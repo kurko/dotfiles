@@ -104,6 +104,10 @@ export HISTCONTROL=ignoreboth
 if [[ $TMUX_SESSION ]]; then
   export HISTFILE=$HOME/.bash_history_tmux_${TMUX_SESSION}
   touch $HISTFILE
+  shopt -s histappend
+  # this makes history flush out to file after every command. Without it,
+  # history is only flushed when the session is closed.
+  export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -n"
 fi
 export USER=`whoami`
 export BASH_SILENCE_DEPRECATION_WARNING=1
