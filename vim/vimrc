@@ -498,7 +498,7 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
   autocmd FileType ruby command! Apfn call ApFn()
 
   " Updates CTags
-  map <F5> :exec "!ctags -R --exclude=.git --exclude=node_modules --exclude=vendor/bundle --exclude=public/packs* --exclude=coverage *"<CR>
+  map <F5> :exec "!ctags -R --exclude=.git --exclude=node_modules --exclude=./vendor/bundle --exclude=public/packs* --exclude=coverage *"<CR>
 
   nmap <leader>cat :!cat %<CR>
   nmap <leader>vim :e ~/.vimrc<CR>

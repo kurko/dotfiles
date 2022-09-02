@@ -7,7 +7,7 @@ public/packs/
 public/packs-test/
 tmp/
 tags
-vendor/
+./vendor/
 bundle/
 spec/vcr/
 spec/cassettes/
