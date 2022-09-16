@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# Often times I will join a new project and will need to focus my attention on
+# some set of concepts that engineers interact with much more often than others.
+#
+# This file helps visualizing those files.
+
+set -e
+
+TIMERANGE_MONTHS="6"
+RESULT_LINE_COUNT="25"
+
+IGNORED_CHURN_FILES="Gemfile.lock|Gemfile|structure.sql"
+
+GIT_LOG_RESULTS_FOR_PERIOD="$(git log \
+  --since="$TIMERANGE_MONTHS months ago" \
+  --pretty=format: --name-only
+)"
+
+echo "Files changed most in the last $TIMERANGE_MONTHS months (by churn):"
+
+ # by number of changes per file
+echo "$GIT_LOG_RESULTS_FOR_PERIOD" \
+  | sort \
+  | uniq -c \
+  | grep -Ev "($IGNORED_CHURN_FILES)" \
+  | sort --reverse --general-numeric-sort \
+  | head -$RESULT_LINE_COUNT \
+  | tail -n $(( $RESULT_LINE_COUNT - 1 ))
+
