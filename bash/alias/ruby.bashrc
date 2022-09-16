@@ -10,6 +10,17 @@ alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
 function ruby_server() { ruby -run -ehttpd . -p$1; }
 
+# For some very rare occasions, we need to use a separate Gemfile that is not
+# checked in git for running gems only locally. This is an alias for running
+# bundler with that file. Usage:
+#
+#     local-bundle bundle exec rspec spec
+#
+# For more details, see https://github.com/gerrywastaken/Gemfile.local
+function local-bundle() {
+  BUNDLE_GEMFILE="Gemfile.local" $*
+}
+
 # Removes the redirection from port 80 to 3000
 alias railsnoton80='sudo ipfw flush'
 alias last_migration='vim $(ls db/migrate/* | tail -n1)'

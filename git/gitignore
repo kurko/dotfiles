@@ -1,3 +1,5 @@
+Gemfile.local
+Gemfile.local.lock
 .DS_STORE
 Session.vim
 tags
