@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # MacOS?
 if [[ "$OSTYPE" == "darwin"* ]]; then
   if [ ! -f ~/.ssh/id_rsa.pub ]
