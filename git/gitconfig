@@ -94,7 +94,7 @@
 	browser = open
 [commit]
 	verbose = true
-	gpgsign = true
+	gpgsign = false
 [log]
 	date = iso
 [http]

@@ -1,19 +1,32 @@
 #!/bin/bash
 
-set -e
+# Given this is running inside a bash script, some of the errors are swallowed, so
+# settings -e here might make it harder to debug stuff when errors happen. Given how
+# the code is written, modular, it's totally fine if a piece of it fails. No reason to
+# halt the entire process.
+#
+#   set -e
+
+# This is for making it possible to use stdin for user input during the installation.
+exec < /dev/tty
 
 # MacOS?
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  if [ ! -f ~/.ssh/id_rsa.pub ]
-  then
-    echo "No id_rsa.pub found. Generating one right now."
-    read -p "Enter the email address on Github: " some_input
-    read github_email
+
+  if [ ! -f ~/.bash_profile ]; then
+    echo "Creating ~/.bash_profile"
+    touch ~/.bash_profile
+  fi
+
+  if [ ! -f ~/.ssh/id_rsa.pub ]; then
+    echo "No id_rsa.pub found. This is used to authenticate with Github/Gitlab. Let's generate a new key now."
+    read -p "Enter your email address on Github: " github_email
     ssh-keygen -t rsa -b 4096 -C "$github_email"
     
+    echo ""
     echo "Copy the text below and upload to https://github.com/settings/ssh/new:"
     echo ""
-    cat ~/.id_rsa.pub
+    cat ~/.ssh/id_rsa.pub
     echo ""
     read -n 1 -s -r -p "Press any key to continue"
   fi
