@@ -5,17 +5,24 @@ Use these files in your bash to improve it.
 **Important:** `git/gitconfig` has my nickname/email for Github. Please change
 it.
 
-If you're setting a new computer, [here's how to setup](#setup-id_rsa-for-github) `~/.ssh/id_rsa.pub`.
 
-### Setup
 
-**On MacOS:** run `chsh -s /bin/bash` to replace ZSH with Bash.
 
-Run
+### New Computer Checklist
 
-`source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
+1. Download [1Password](https://1password.com/downloads/mac/)
+1. **On MacOS:** run `chsh -s /bin/bash` to replace ZSH with Bash.
+1. [Setup RSA key](#setup-id_rsa-for-github) `~/.ssh/id_rsa.pub` and upload to Github.
+1. Run `source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
 
-that's all. If it doesn't work, 
+### More details
+
+You can run the follow command and it will show up errors that you can adjust, one by one
+
+    source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"
+
+If it doesn't work, you can clone the files and use it directly (which is mostly what the command
+above does):
 
 ```
 git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
