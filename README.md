@@ -5,15 +5,27 @@ Use these files in your bash to improve it.
 **Important:** `git/gitconfig` has my nickname/email for Github. Please change
 it.
 
+## Installation
 
+The `./install` executable will install everything needed for a new computer. It
+includes:
 
+* cloning this repo, setting up symlinks for `gitconfig`, `tmux`, `bash`
+aliases, Allacritty configurations, and more
+* installs all software via Homebrew (e.g `rbenv`, `vim`, `ctags`, `1password`,
+`slack`, `google chrome`)
 
-### New Computer Checklist
+### New Computer Checklist (`./install`)
 
-1. Download [1Password](https://1password.com/downloads/mac/)
 1. **On MacOS:** run `chsh -s /bin/bash` to replace ZSH with Bash.
-1. [Setup RSA key](#setup-id_rsa-for-github) `~/.ssh/id_rsa.pub` and upload to Github.
 1. Run `source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
+
+Notes:
+
+* the script should prompt you to generate your RSA keys the first time.  If
+you're having trouble, [setup the RSA key manually](#setup-id_rsa-for-github)
+(`~/.ssh/id_rsa.pub`) and upload to Github.
+* the script should install 1Password but if it doesn't, download it manually.
 
 ### More details
 

@@ -94,6 +94,7 @@ function install_macos() {
   if [[ $? -eq 0 ]]; then
     brew services restart postgresql
   fi
+  brew_install_if_absent libpq # For Postgres
 
   brew_install_if_absent redis
   brew services restart redis

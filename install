@@ -22,7 +22,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "No id_rsa.pub found. This is used to authenticate with Github/Gitlab. Let's generate a new key now."
     read -p "Enter your email address on Github: " github_email
     ssh-keygen -t rsa -b 4096 -C "$github_email"
-    
+
     echo ""
     echo "Copy the text below and upload to https://github.com/settings/ssh/new:"
     echo ""
