@@ -79,6 +79,9 @@ function install_macos() {
     ruby -v
   fi
 
+  brew_cask_install_if_absent rectangle
+  brew_cask_install_if_absent slack
+  brew_cask_install_if_absent 1password
   brew_install_if_absent wget
   brew_install_if_absent curl
   brew_install_if_absent tree
@@ -141,15 +144,12 @@ function install_macos() {
   brew_cask_install_if_absent font-hack
   brew_cask_install_if_absent font-inconsolata
   brew_cask_install_if_absent fliqlo
-  brew_cask_install_if_absent slack
   brew_cask_install_if_absent zoom
-  brew_cask_install_if_absent alfred
+  brew_cask_install_if_absent alfred4
   brew_cask_install_if_absent telegram
   brew_cask_install_if_absent firefox-developer-edition
   brew_cask_install_if_absent google-chrome
-  brew_cask_install_if_absent 1password
   brew_cask_install_if_absent sync
-  brew_cask_install_if_absent rectangle
 
   # To hide items in the menubar
   if [ ! -d "/Applications/Vanilla.app" ]; then
