@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# MacOS?
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  if [ ! -f ~/.ssh/id_rsa.pub ]
+  then
+    echo "No id_rsa.pub found. Generating one right now."
+    echo "Enter the email address on Github: "  
+    read github_email
+    ssh-keygen -t rsa -b 4096 -C "$github_email"
+    
+    echo "Copy the text below and upload to https://github.com/settings/ssh/new:"
+    echo ""
+    cat ~/.id_rsa.pub
+  fi
+fi
+
 if [ -d ~/.dotfiles ]
 then
   LAST_DIR=$(pwd)
@@ -9,8 +24,8 @@ then
   git pull --rebase origin master
   cd $LAST_DIR
 else
-  echo "Cloning git@github.com:kurko/.dotfiles.git into ~/.dotfiles"
-  git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
+  echo "Cloning git@github.com:kurko/dotfiles.git into ~/.dotfiles"
+  git clone git@github.com:kurko/dotfiles.git ~/.dotfiles
 fi
 
 echo ""
