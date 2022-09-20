@@ -82,6 +82,7 @@ function install_macos() {
   brew_cask_install_if_absent rectangle
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent 1password
+  brew_install_if_absent meetingbar
   brew_install_if_absent wget
   brew_install_if_absent curl
   brew_install_if_absent tree
