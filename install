@@ -5,13 +5,15 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   if [ ! -f ~/.ssh/id_rsa.pub ]
   then
     echo "No id_rsa.pub found. Generating one right now."
-    echo "Enter the email address on Github: "  
+    read -p "Enter the email address on Github: " some_input
     read github_email
     ssh-keygen -t rsa -b 4096 -C "$github_email"
     
     echo "Copy the text below and upload to https://github.com/settings/ssh/new:"
     echo ""
     cat ~/.id_rsa.pub
+    echo ""
+    read -n 1 -s -r -p "Press any key to continue"
   fi
 fi
 
