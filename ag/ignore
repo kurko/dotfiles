@@ -20,3 +20,4 @@ spec/cassettes/
 *.plist
 *.pdf
 *.log
+/.git/
