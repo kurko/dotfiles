@@ -288,6 +288,8 @@ endfunction
 let g:vim_json_syntax_conceal = 0
 
 " ACK + AG
+" For cases where :Ag is used, the ignore paths are in Ag's global ignore file,
+" For example, https://github.com/kurko/dotfiles/blob/2054ca0924ebc2c926e81d6d981b18cfaaaffec8/ag/ignore
 if executable('ag')
   let g:ackprg = 'ag --vimgrep --ignore-dir /*node_modules --ignore-dir /*public/packs-test/ --ignore-dir /*sorbet'
 endif
