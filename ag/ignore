@@ -9,6 +9,7 @@ tmp/
 tags
 ./vendor/
 bundle/
+sorbet/
 spec/vcr/
 spec/cassettes/
 *.tags*

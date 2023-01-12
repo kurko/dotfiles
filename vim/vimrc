@@ -289,7 +289,7 @@ let g:vim_json_syntax_conceal = 0
 
 " ACK + AG
 if executable('ag')
-  let g:ackprg = 'ag --vimgrep --ignore-dir /*node_modules --ignore-dir /*public/packs-test/'
+  let g:ackprg = 'ag --vimgrep --ignore-dir /*node_modules --ignore-dir /*public/packs-test/ --ignore-dir /*sorbet'
 endif
 
 " ALE plugin
