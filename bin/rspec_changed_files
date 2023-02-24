@@ -22,13 +22,13 @@
 # match the conventional path name "spec/#{lib_path_to_file}".
 #
 # With this, you can run `rspec $(rspec_changed_files)`
-base_branch = ARGV[0] || 'master'
+base_branch = ARGV[0] || `git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`.strip
 
 # Returns all files modified in the last commit, including what isn't committed
 # yet.
 all_modified_files = `git ls-files --modified --others --exclude-standard`.split("\n")
 
-# Returns all files from previous commits that are not on master.
+# Returns all files from previous commits that are not on master or main.
 all_modified_files << `git diff #{base_branch} --name-only --relative`.split("\n")
 all_modified_files = all_modified_files.flatten.uniq
 

@@ -4,7 +4,13 @@ alias git_update_submodules="git submodule init && git submodule update && git p
 # creates pull request and opens it in the browser
 function pr() { gpush -u && hub pull-request -o $*; }
 
+function git_repo_default_branch() {
+  git symbolic-ref refs/remotes/origin/HEAD \
+  | sed 's@^refs/remotes/origin/@@' \
+  | sed -e 's/\\n//'
+}
 alias master='git checkout master'
+alias main='git checkout main'
 alias dev='git checkout develop'
 alias develop='git checkout develop'
 
@@ -19,9 +25,9 @@ function g() {
 }
 
 function mgpr() {
-  git checkout master
-  git fetch origin
-  git pull --rebase origin master
+  echo "DEPRECATED: use git mp alias instead"
+  git checkout "$(git_repo_default_branch)"
+  git pull --rebase origin "$(git_repo_default_branch)"
 }
 
 alias gt='git tag --sort=creatordate'
@@ -39,10 +45,10 @@ alias gl="glsimpler | sed ''/Merge/s//`printf "\035[31mMerge\033[0m"`/'' | sed '
 
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
-alias gdm='git diff master'
+alias gdm="git diff $(git_repo_default_branch)"
 alias gdd='git diff develop'
 #alias gdelete_merged_branches='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
-alias gdelete_merged_branches="git checkout master; git branch --merged | egrep -v ^master$ | sed 's/^[ *]*//' | sed 's/^/git branch -D /' | bash"
+alias gdelete_merged_branches="git checkout $(git_repo_default_branch); git branch --merged | egrep -v ^$(git_repo_default_branch)$ | sed 's/^[ *]*//' | sed 's/^/git branch -D /' | bash"
 alias gshow_unmerged_branches='git branch --no-merged'
 
 	# Commit pending changes and quote all args as message

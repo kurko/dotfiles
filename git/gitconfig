@@ -1,4 +1,5 @@
 [alias]
+  default-branch = "!git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'  | sed -e 's/\\n//'"
   #
   # Level 1
   #
@@ -17,9 +18,10 @@
   dc = diff --cached
   d-stat = diff --stat=160,120
   d-head1 = diff HEAD~1
-  dm = diff master
+  # This gets the default repo branch, either master or main
   d1 = diff HEAD~1
-  dm-short = diff master --shortstat
+  dm = "!git diff $(git default-branch)"
+  dm-short = "!git diff $(git default-branch) --shortstat"
   f = fetch
   l = "!source ~/.githelpers && git_log_simpler_titles"
   s = status
@@ -34,10 +36,10 @@
   ch-fzf = "!git-checkout-fzf #"
   delete-branches = "!git-delete-branches"
   log-search = "!source ~/.githelpers && git_log_simpler_titles | fzf --exact --no-sort --ansi --preview 'git show -p --stat --pretty=fuller --color=always {1}'"
-  mp = !git checkout master && git pull --rebase origin master
-  rebase-on-origin-master = "!git fetch && git rebase origin/master #"
+  mp = "!git checkout $(git default-branch) && git pull --rebase origin $(git default-branch)"
+  rebase-on-origin-default-branch = "!git fetch && git rebase origin/$(git default-branch) #"
   pr-checkout = "!git-pull-request-checkout #"
-  pr-rebase-on-master = "!git fetch && git rebase origin/master && git push --force #"
+  pr-rebase-on-default-branch = "!git fetch && git rebase origin/$(git default-branch) && git push --force #"
 
   # branches
   reset-branch-from-origin = "!source ~/.githelpers && reset_from_github"

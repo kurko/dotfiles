@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 
-# Runs rubocop against changed files against master. It works even when
+# Runs rubocop against changed files against master or main. It works even when
 # user is inside subdirs
 
 root_path="$(pwd)"
 removable_string_set=0
 match=""
 matching_done=0
+function git_repo_default_branch() {
+  git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' | tr -d '\n'
+}
 
 FILES=''
-for changed_file in `git diff master --name-only`;
+for changed_file in `git diff $(git_repo_default_branch) --name-only`;
 do
   if [[ $matching_done == 0 ]];
   then
