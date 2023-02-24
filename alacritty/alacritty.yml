@@ -285,13 +285,13 @@ key_bindings:
 
   - { key: A,         mods: Alt,       chars: "\x1ba"                       }
   # Move cursor forward one word
-  - { key: B,         mods: Alt,       chars: "\x1bb"                       }
+  - { key: B,         mods: Alt,       chars: "\x1BB"                       }
   - { key: C,         mods: Alt,       chars: "\x1bc"                       }
   # Delete forward one word
   - { key: D,         mods: Alt,       chars: "\x1bd"                       }
   - { key: E,         mods: Alt,       chars: "\x1be"                       }
   # Move cursor back one word
-  - { key: F,         mods: Alt,       chars: "\x1bf"                       }
+  - { key: F,         mods: Alt,       chars: "\x1BF"                       }
   - { key: G,         mods: Alt,       chars: "\x1bg"                       }
   - { key: H,         mods: Alt,       chars: "\x1bh"                       }
   - { key: I,         mods: Alt,       chars: "\x1bi"                       }
