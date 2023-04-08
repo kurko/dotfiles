@@ -2,6 +2,11 @@
 " This is halting the entire vim startup process
 " Plug 'jimmy-ai/jimmy-vim'
 
+if has('nvim')
+  Plug 'github/copilot.vim'
+  Plug 'aduros/ai.vim'
+endif
+
 Plug 'jceb/vim-orgmode'
 Plug 'mkitt/tabline.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }

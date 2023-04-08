@@ -37,6 +37,12 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/vim/vimrc ~/.vimrc
   ln -nfs ~/.dotfiles/vim/vim.plugins ~/.vim.plugins
   ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.vim/colors/
+
+  # neovim
+  ln -nfs ~/.dotfiles/vim/nvimrc ~/.config/nvim/init.vim
+  mkdir -p ~/.config/nvim/colors/
+  ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.config/nvim/colors/
+
   mkdir -p ~/.vim/after/
   ln -nfs ~/.dotfiles/vim/snippets ~/.vim/after/
 

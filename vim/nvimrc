@@ -1,0 +1,2 @@
+" Copy or symlink this file to ~/.config/nvim/init.vim
+source ~/.vimrc
