@@ -97,6 +97,6 @@ if [[ "$TERM" =~ "screen".* ]]; then
     __tmux_command_with_host ssh "$@"
   }
   function mosh() {
-    __tmux_command_with_host ec2ssh "$@"
+    __tmux_command_with_host mosh "$@"
   }
 fi
