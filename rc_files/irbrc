@@ -1,0 +1,13 @@
+# WITH RBENV
+#
+# Adds awesome_print gem path to $LOAD_PATH
+gems_path = `rbenv exec gem environment | grep INSTALLATION`
+gems_path = gems_path.scan(/DIRECTORY: (.*)\Z/).flatten[0]
+
+awesome_print_listing = Dir["#{gems_path}/gems/*"].keep_if { |d| d.match("amazing_print") }.last
+if awesome_print_listing.nil?
+  puts "amazing_print not installed"
+else
+  require "amazing_print"
+  AmazingPrint.irb!
+end

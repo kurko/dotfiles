@@ -49,7 +49,9 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/tmux/tmux.conf ~/.tmux.conf
   ln -nfs ~/.dotfiles/tmux/tmux.versioning.conf ~/.tmux.versioning.conf
 
-  ln -nfs ~/.dotfiles/pry/pryrc ~/.pryrc
+  ln -nfs ~/.dotfiles/rc_files/pryrc ~/.pryrc
+  ln -nfs ~/.dotfiles/rc_files/irbrc ~/.irbrc
+  ln -nfs ~/.dotfiles/rc_files/amazing_print ~/.aprc
   ln -nfs ~/.dotfiles/ag/ignore ~/.ignore
   ln -nfs ~/.dotfiles/ag/ignore ~/.agignore
 
