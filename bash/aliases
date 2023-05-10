@@ -31,8 +31,13 @@ alias vimdotfiles='vim ~/.dotfiles/bash/'
 
 alias fix_cinema_display_camera="sudo killall VDCAssistant"
 
+#
 # Mac
+#
 mac_notify="reattach-to-user-namespace terminal-notifier -message"
+# This helps with situations in which Safari doesn't load pages but other
+# browsers do
+alias kill_macdnsagent="sudo killall -9 mDNSResponder"
 
 # General
 alias speedtest="wget -O /dev/null http://speedtest.wdc01.softlayer.com/downloads/test10.zip"
