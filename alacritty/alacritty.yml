@@ -265,8 +265,8 @@ key_bindings:
   - { key: Home,      mods: Shift,   action: ScrollToTop,    mode: ~Alt      }
   - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt      }
   - { key: End,       mods: Shift,   action: ScrollToBottom, mode: ~Alt      }
-  - { key: Left,      mods: Alt,     chars: ""                               }
-  - { key: Right,     mods: Alt,     chars: ""                               }
+  - { key: Left,      mods: Alt,     chars: "\x1bb"                          }
+  - { key: Right,     mods: Alt,     chars: "\x1bf"                          }
   - { key: NumpadEnter,             chars: "\n"                              }
   - { key: Key1,     mods: Command, chars: "\x1c\x31"                        }
   - { key: Key2,     mods: Command, chars: "\x1c\x32"                        }
