@@ -23,6 +23,7 @@ source ~/.dotfiles/bash/alias/bash_files.bashrc
 source ~/.dotfiles/bash/alias/macos.bashrc
 source ~/.dotfiles/bash/alias/postgres.bashrc
 source ~/.dotfiles/bash/alias/qmk.bashrc
+source ~/.dotfiles/bash/alias/microsoft.bashrc
 
 alias install-dotfiles='update_dotfiles'
 alias ubp='update_dotfiles'
