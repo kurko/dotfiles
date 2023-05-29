@@ -64,6 +64,15 @@ function install_macos() {
     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
     echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
     echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+    # For some reason, latest versions of Rub will install gems in $HOME/.gems and
+    # that breaks how Rbenv expects it to work (with gems referenced from inside
+    # Rbenv's directory).
+    #
+    # There's a drawback with this approach is that now gems  are shared among
+    # different Ruby versions and that some times breaks (e.g "incompatible version"),
+    # but for now it's fine locally. I need to find a better solution later.
+    echo 'export GEM_HOME="$\(ruby -e '"'"'puts Gem.user_dir'"'"')"' >> ~/.bash_profile
+    echo 'export PATH="$GEM_HOME/bin:$PATH"' >> ~/.bash_profile
     source ~/.bash_profile
     type rbenv
     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
