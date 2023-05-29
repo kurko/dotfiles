@@ -323,7 +323,7 @@ let g:ale_lint_delay = 1000 " defaults to 200
 let g:ale_echo_delay = 10 " defaults 10
 let g:ale_completion_delay = 400 "defaults 100
 let g:ale_set_highlights = 1
-let g:ale_fix_on_save = 1
+let g:ale_fix_on_save = 0
 
 nmap <F8> <Plug>(ale_fix)
 
@@ -673,6 +673,11 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
   let g:tsuquyomi_completion_preview = 0
   let g:tsuquyomi_use_local_typescript = 1
 
+  augroup syntax
+    au!
+    autocmd BufNewFile,BufRead Gemfile,Gemfile.tt,Gemfile.backup    set syntax=ruby
+  augroup END
+
   augroup typescript
     au!
     autocmd BufNewFile,BufRead *.tsx   set re=0
@@ -775,3 +780,10 @@ endfunction
 let NERDTreeShowHidden=1
 map <C-n> :NERDTreeToggle %<CR>
 "autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" AI.Vim
+let g:ai_no_mappings=1
+let g:ai_completions_model="gpt-3.5-turbo"
+let g:ai_edits_model="gpt-4"
+let g:ai_timeout=20
+vnoremap <silent> <leader>aif :AI fix grammar and spelling and replace slang and contractions with a formal academic writing style<CR>

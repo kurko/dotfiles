@@ -4,7 +4,7 @@
 
 if has('nvim')
   Plug 'github/copilot.vim'
-  Plug 'aduros/ai.vim'
+  Plug 'madox2/vim-ai'
 endif
 
 Plug 'jceb/vim-orgmode'
