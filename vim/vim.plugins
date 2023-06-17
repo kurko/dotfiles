@@ -95,7 +95,14 @@ Plug 'pangloss/vim-javascript'
 " Plug 'peitalin/vim-jsx-typescript'
 " Plug 'maxmellon/vim-jsx-pretty'
 Plug 'HerringtonDarkholme/yats.vim'   " More complete HL for TSX
+
+" tsuquyomi
 Plug 'Quramy/tsuquyomi'               " Typescript client for TSServer
+
+" tsuquyomi: dependency for neovim
+if has('nvim')
+  Plug 'Shougo/vimproc.vim', {'do' : 'make'}
+endif
 
 Plug 'itspriddle/vim-jquery'
 Plug 'greyblake/vim-preview'
