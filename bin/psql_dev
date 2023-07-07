@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# This bash function opens a PostgreSQL (psql) session against a local database
+# used in a Rails app. It reads the name of the database from
+# 'development.database' in 'config/database.yml' of the Rails app. If
+# 'config/database.yml' does not exist or if the 'development.database' value is
+# not found, it shows an error message.
+#
+# Require Ruby 3+ (because of psych's `aliases: true` argument)
+psql_dev() {
+  # Define the path to the YAML configuration file
+  local yaml_file=config/database.yml
+  local db_name
+
+  # Check if the configuration file exists
+  if [ ! -f $yaml_file ]; then
+      echo "File $yaml_file does not exist. Unable to open database."
+      return 1
+  fi
+
+  # Parse the configuration file and extract the name of the development
+  # database.
+  #
+  # Try to use Python to parse the YAML file
+  if command -v python &> /dev/null
+  then
+    db_name=$(python -c "import yaml; print(yaml.safe_load(open('$yaml_file'))['development']['database'])")
+
+  # If Python is not available, try to use Ruby
+  elif command -v ruby &> /dev/null
+  then
+    db_name=$(ruby -ryaml -e "puts YAML::load(File.open('$yaml_file'), aliases: true)['development']['database']")
+
+  # If neither Python nor Ruby is available, use a shell script method to parse the YAML file
+  else
+    db_name=$(grep 'database:' $yaml_file | awk '{print $2}' | head -n 1)
+  fi
+
+  if [ $? -ne 0 ]; then
+      echo "Failed to parse $yaml_file. Make sure it's a valid YAML file."
+      return 1
+  fi
+
+  # Check if the name of the database is found
+  if [ -z "$db_name" ]; then
+      echo "Unable to find 'development.database' in $yaml_file."
+      return 1
+  fi
+
+  # If the name of the database is found, open a psql session against it
+  psql "$db_name"
+}
+
+psql_dev

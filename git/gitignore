@@ -15,3 +15,4 @@ data.pg_dump
 tags.temp
 tags.lock
 troubleshooting_vimrc.vim
+vendor/bundle
