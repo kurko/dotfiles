@@ -55,8 +55,8 @@ function dbmigrate() {
     echo-command 'zeus rake db:migrate db:test:prepare'
     zeus-and-retry "rake db:migrate db:test:prepare"
   else
-    echo-command 'rake db:migrate db:test:prepare'
-    bundle exec rake db:migrate db:test:prepare
+    echo-command 'bin/rails db:migrate && RAILS_ENV=test bin/rails db:migrate'
+    bin/rails db:migrate && RAILS_ENV=test bin/rails db:migrate
   fi
 }
 
@@ -67,8 +67,8 @@ function dbmigratedown() {
     [[ -n "$version" ]] && zeus-and-retry "rake db:migrate:down VERSION=$version"
     zeus-and-retry "rake db:test:prepare"
   else
-    echo-command "rake db:migrate:down VERSION=$version && rake db:test:prepare"
-    bundle exec rake db:migrate:down VERSION=$version && bundle exec rake db:test:prepare
+    echo-command "bin/rails db:migrate:down VERSION=$version && RAILS_ENV=test bin/rails db:migrate:down VERSION=$version"
+    bin/rails db:migrate:down VERSION=$version && RAILS_ENV=test bin/rails db:migrate:down VERSION=$version
   fi
 }
 
@@ -77,8 +77,8 @@ function dbrollback() {
     echo-command 'zeus rake db:rollback db:test:prepare'
     zeus-and-retry "rake db:rollback db:test:prepare"
   else
-    echo-command 'rake db:rollback db:test:prepare'
-    bundle exec rake db:rollback db:test:prepare
+    echo-command 'bin/rails db:rollback && RAILS_ENV=test bin/rails db:rollback'
+    bin/rails db:rollback && RAILS_ENV=test bin/rails db:rollback
   fi
 }
 
