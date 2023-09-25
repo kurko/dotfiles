@@ -25,13 +25,12 @@ source ~/.dotfiles/bash/alias/macos.bashrc
 source ~/.dotfiles/bash/alias/postgres.bashrc
 source ~/.dotfiles/bash/alias/qmk.bashrc
 source ~/.dotfiles/bash/alias/microsoft.bashrc
+source ~/.dotfiles/bash/alias/fixes.bashrc
 
 alias install-dotfiles='update_dotfiles'
 alias ubp='update_dotfiles'
 alias dotfiles='cd ~/.dotfiles'
 alias vimdotfiles='vim ~/.dotfiles/bash/'
-
-alias fix_cinema_display_camera="sudo killall VDCAssistant"
 
 #
 # Mac
