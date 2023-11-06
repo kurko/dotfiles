@@ -92,7 +92,13 @@ set hidden                        " Handle multiple buffers better.
 set wildmenu                      " Enhanced command line completion.
 set wildmode=full                 " Complete files like a shell.
 
-" MUCOMPLETE Plugin
+" AUTOCOMPLETE
+"
+" It looks like vim bounds <c-c> in insert mode to SQL completion, which is very
+" slow. This line doesn't deactivate the whole plugin but the keymap.
+let g:omni_sql_no_default_maps = 1
+
+" AUTOCOMPLETE -> MUCOMPLETE Plugin
 "
 " Configuration for MUcomplete
   set completeopt+=menu,menuone,noinsert
