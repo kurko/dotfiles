@@ -35,6 +35,7 @@ git_log_simpler_titles() {
     --pretty=format:'%C(yellow)%h %C(black)%ad%Creset %s %C(blue)<%an> %Creset' \
     --date=short    \
     --abbrev-commit \
+    --full-history  \
     --color=always $1 \
     | sed ''/Merge/s//`printf "\033[31mMerge\033[0m"`/''   \
     | sed ''/Revert/s//`printf "\033[31mRevert\033[0m"`/'' \
