@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source $DOTFILES/bash/alias/bash.bashrc
+source $DOTFILES/bash/autocomplete/make.bashrc
 PROMPT_COMMAND=""
 
 # - Add command to PROMPT_COMMAND (runs before each command)
