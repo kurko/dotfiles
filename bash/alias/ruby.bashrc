@@ -98,6 +98,14 @@ function t(){
     echo "Don't know how to test."
   fi
 }
+
+function tcop(){
+  t \
+    && echo-command "\nRunning rubocop -A" \
+    && time bundle exec rubocop -A \
+    && echo "All good"
+}
+
 function tchanged() {
   CHANGED=$(rspec_changed_files)
   if file-exists ".zeus.sock" ; then
@@ -116,6 +124,8 @@ function zt(){
   fi
   echo-command "[Zeus] Running all tests in $SPEC_PATH" && time zeus rspec $SPEC_PATH --format progress --color 2> >(grep -v CoreText 1>&2);
 }
+
+# test only failing tests
 function tf(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then
@@ -125,6 +135,7 @@ function tf(){
 }
 alias ztf="echo Running all tests with --only-failure && zeus rspec spec/ --only-failure --color 2> >(grep -v CoreText 1>&2);"
 
+# test --fail-fast
 function tff(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then
@@ -137,6 +148,7 @@ function tsay(){
   echo-command 'Running all tests in spec/ and then shouting at you' && time bundle exec rspec spec/ $* --color && say 'SPECS ARE DONE! GET BACK HERE!';
 }
 
+# test & notify
 function tn() {
   echo-command 'Running tests then notifying'
   time bundle exec rspec spec/ $* --color
