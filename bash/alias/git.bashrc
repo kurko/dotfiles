@@ -74,43 +74,9 @@ alias gshow_unmerged_branches='git branch --no-merged'
 		git push --force origin $CURRENT_BRANCH
 	}
 
-	function gpush(){
-		# Defines the current git branch
-    export_git_branch_variable
-
-		echo Pushing to origin $CURRENT_BRANCH $*
-		git push origin $CURRENT_BRANCH $*
-	}
-
-	function gpr(){
-		# Defines the current git branch
-    export_git_branch_variable
-
-		echo Pulling origin/$CURRENT_BRANCH, rebasing on it and fetching origin...
-		git pull --rebase origin $CURRENT_BRANCH && git fetch origin
-	}
-
-	function gprs(){
-		# Defines the current git branch
-    export_git_branch_variable
-
-		echo Pulling origin/$CURRENT_BRANCH, rebasing on it and fetching origin, then running git_update_submodules...
-		git pull --rebase origin $CURRENT_BRANCH && git fetch origin && git_update_submodules
-	}
-
-	function gpul(){
-		# Defines the current git branch
-    export_git_branch_variable
-
-		echo Pulling from origin $CURRENT_BRANCH...
-		git pull origin $CURRENT_BRANCH
-	}
-
   function git_current_branch() {
     git branch 2> /dev/null | grep -e ^* | sed -e 's/^* \(.*\)/\1/'
   }
-
-	alias gpull=gpul
 
 # Development
 alias tdiff="git diff --name-only spec/**/*_spec.rb | xargs bin/rspec"
