@@ -60,10 +60,12 @@ alias gl="glsimpler | sed ''/Merge/s//`printf "\035[31mMerge\033[0m"`/'' | sed '
 
 alias gamend='git commit --amend'
 alias gamendc='git commit --amend --no-edit'
-alias gdm="git diff $(git_repo_default_branch)"
 alias gdd='git diff develop'
-#alias gdelete_merged_branches='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
-alias gdelete_merged_branches="git checkout $(git_repo_default_branch); git branch --merged | egrep -v ^$(git_repo_default_branch)$ | sed 's/^[ *]*//' | sed 's/^/git branch -D /' | bash"
+
+function gdelete_merged_branches() {
+  git checkout $(git_repo_default_branch)
+  git branch --merged | egrep -v ^$(git_repo_default_branch)$ | sed 's/^[ *]*//' | sed 's/^/git branch -D /' | bash
+}
 alias gshow_unmerged_branches='git branch --no-merged'
 
 	# Commit pending changes and quote all args as message
