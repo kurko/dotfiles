@@ -123,16 +123,22 @@ function install_macos() {
   brew_install_if_absent fd
   $(brew --prefix)/opt/fzf/install --completion --key-bindings --no-bash --no-zsh --no-fish
 
+  # NODENV
   EVAL_NODENV=0
   nodenv --version &> /dev/null
   if [[ $? -ne 0 ]]; then EVAL_NODENV=1; fi
   brew_install_if_absent nodenv
+
   if [[ $EVAL_NODENV -eq 1 ]]; then
     eval "$(nodenv init -)"
     echo "Running: eval \"\$(nodenv init -)\""
-    nodenv install 14.0.0
+    nodenv install 20.9.0
   fi
 
+  # Some projects don't use universal files, like .node-version. This pluging
+  # makes .nvmrc files work with nodenv.
+  brew tap nodenv/nodenv
+  brew_install_if_absent nodenv-nvmrc
 
   brew_install_if_absent yarn
   brew_install_if_absent jq
