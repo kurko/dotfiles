@@ -5,12 +5,27 @@ alias git_update_submodules="git submodule init && git submodule update && git p
 function pr() { gpush -u && hub pull-request -o $*; }
 
 function git_repo_default_branch() {
-  git symbolic-ref refs/remotes/origin/HEAD \
-  | sed 's@^refs/remotes/origin/@@' \
-  | sed -e 's/\\n//'
+  # Attempt to get the default branch using git symbolic-ref for speed
+  branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' | tr -d '\n')
+
+  # If the branch variable is empty, fall back to the slower git remote show origin
+  if [ -z "$branch" ]; then
+    branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
+
+    # Optionally, set the symbolic-ref locally for future use
+    git symbolic-ref refs/remotes/origin/HEAD "refs/remotes/origin/$branch"
+  fi
+
+  # Output the default branch name
+  echo "$branch"
 }
-alias master='git checkout master'
-alias main='git checkout main'
+
+function master() {
+  git checkout "$(git_repo_default_branch)"
+}
+function main() {
+  git checkout "$(git_repo_default_branch)"
+}
 alias dev='git checkout develop'
 alias develop='git checkout develop'
 
