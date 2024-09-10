@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Check if an argument is passed and set the search mode accordingly
+if [ "$1" == "diff" ]; then
+  # If 'diff' is passed, search only in changed files
+  echo "Searching in changed files only..."
+
+  # Get the list of committed changed files in the current branch compared to the main branch
+  changed_files=$(git diff --name-only $(git merge-base HEAD main) HEAD)
+
+  # Get the list of uncommitted changed files (staged and unstaged)
+  uncommitted_files=$(git diff --name-only)
+
+  # Combine both lists and remove duplicates
+  all_files=$(echo -e "${changed_files}\n${uncommitted_files}" | sort | uniq)
+else
+  # If no argument is passed, search in all files
+  echo "Searching in all files..."
+
+  # Get the list of all files in the repository
+  all_files=$(git ls-files)
+fi
+
+# Loop through each changed file
+for file in $all_files; do
+
+  # Multi-line if condition to check for specific file extensions
+  if [[ $file == *".js"   ||
+        $file == *".jsx"  ||
+        $file == *".ts"   ||
+        $file == *".tsx"  ||
+        $file == *".rb"   ||
+        $file == *".py"   ||
+        $file == *".java" ||
+        $file == *".cpp"  ||
+        $file == *".c"    ||
+        $file == *".go"   ||
+        $file == *".sh"   ||
+        $file == *".php" ]]; then
+
+    # Search for TODO or FIXME comments and display the filename, line number, and the comment
+    grep -nH -E "TODO|FIXME" "$file"
+  fi
+done
