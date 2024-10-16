@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# Useful when I'm doing something slow (e.g deploying, compiling) and I need to
+# be reminded to get back to the terminal afterwards.
+
+# On Mac, you can use terminal-notifier to send a notification
+if [ "$(uname)" == "Darwin" ]; then
+  if ! command -v terminal-notifier &> /dev/null; then
+    echo "Please install terminal-notifier with 'brew install terminal-notifier'"
+    exit 1
+  fi
+  echo 'Ping' | terminal-notifier -sound default
+
+# On Linux, you can use notify-send
+elif [ "$(uname)" == "Linux" ]; then
+  if ! command -v notify-send &> /dev/null; then
+    echo "Please install notify-send with 'sudo apt install libnotify-bin'"
+    exit 1
+  fi
+  notify-send "Ping"
+fi
+
