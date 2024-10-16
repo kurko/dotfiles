@@ -1,0 +1,20 @@
+#! /bin/bash
+
+# If the package is already installed, it will be upgraded if possible.
+function pip_install_or_update() {
+  echo -n "> $1: "
+  if pip show $1 > /dev/null; then
+    print "already installed, upgrading..."
+    pip install --upgrade $1
+  else
+    echo "installing..."
+    pip install $1
+  fi
+  printf "\n"
+}
+
+function install_os_agnostic_packages() {
+  pip_install_or_update 'files-to-prompt'
+
+  printf "\n"
+}

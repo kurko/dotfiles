@@ -66,6 +66,9 @@ elif [[ "$OSTYPE" == "linux-gnu" ]]; then
   install_linux_gnu_packages
 fi
 
+source $DOTFILES/installation/os_agnostic_packages
+install_os_agnostic_packages
+
 if [ ! -f ~/.vim/autoload/plug.vim ]
 then
   echo ""
