@@ -163,7 +163,7 @@ function install_macos() {
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent zoom
   brew_cask_install_if_absent alfred5
-  brew_cask_install_if_absent telegram
+  brew_cask_install_if_absent terminal-notifier
   brew_cask_install_if_absent firefox-developer-edition
   brew_cask_install_if_absent google-chrome
   brew_cask_install_if_absent sync
