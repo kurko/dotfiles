@@ -66,7 +66,7 @@ set re=0
 set ttyfast
 set lazyredraw
 
-set synmaxcol=500
+set synmaxcol=1500
 filetype plugin on
 filetype plugin indent on         " Turn on file type detection.
 
@@ -563,13 +563,6 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
    \ }
    \ <CR>
 
-  " opens buffer list and writes ':b ', so you just have to type a number
-  if has('perl')
-    nnoremap <leader>l :Buffers<CR>
-  else
-    nnoremap <leader>l :Buffers<CR>
-  endif
-
   " Spacebar saves
   "
   " If current file is .vimrc, it will then reload it to refresh the changes
@@ -699,6 +692,8 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
     map <leader>fs :Files! spec<cr>
     map <leader>f :Files!<cr>
     nmap <leader>b :Buffers!<cr>
+    " opens buffer list and writes ':b ', so you just have to type a number
+    nnoremap <leader>l :Buffers<CR>
 
   " JAVASCRIPT
     au FileType html,css,erb,javascript.jsx,typescript EmmetInstall
@@ -777,6 +772,8 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
   endfunction
 
   nnoremap <cr> <ESC>:w<CR>\|:call SleepForZeusToReload()\|:call RunTestFile()<cr>
+  " When entering the command-line window, remove the mapping so it won't conflict
+  autocmd CmdwinEnter * silent! unmap <CR>
   nnoremap <Bslash> <ESC>:w<CR>\|:sleep 50m<CR>\|:call RunNearestTest()<cr>
   map <leader>t :call RunTestFile()<cr>
   map <leader>r :call RunNearestTest()<cr>
