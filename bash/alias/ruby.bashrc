@@ -99,6 +99,23 @@ function t(){
   fi
 }
 
+# Runs fzf so I can select a file to run tests, and then run the tests with
+# xargs bundle exec rspec --format progress --color
+#
+# fzf will also only show files ending in _spec or _test
+function tfzf(){
+  selected_file=$(find spec -type f -name "*_spec.rb" | fzf)
+  command="bundle exec rspec --format progress --color $selected_file"
+
+  echo "Running: $command"
+  # Add command to shell history
+  if [ -n "$selected_file" ]; then
+    echo "$command" >> ~/.bash_history  # For Bash
+    history -s "$command"               # Works in Bash & Zsh
+  fi
+  eval "$command"
+}
+
 function tcop(){
   t \
     && echo-command "\nRunning rubocop -A" \
