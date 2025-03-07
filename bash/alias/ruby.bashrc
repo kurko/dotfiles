@@ -134,6 +134,22 @@ function tchanged() {
     bundle exec rspec $CHANGED
   fi
 }
+
+function changed_cop_t() {
+  CHANGED=$(git_changed_files_versus_main)
+  TESTS_FOR_CHANGED=$(rspec_changed_files)
+
+  if [ -z "$CHANGED" ]; then
+    echo "No changes found."
+    return
+  fi
+
+  echo-command "Running rubocop -A on changed files"
+  time bundle exec rubocop -A $CHANGED
+
+  echo-command "bundle exec rspec $CHANGED"
+  t $TESTS_FOR_CHANGED
+}
 function zt(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then
