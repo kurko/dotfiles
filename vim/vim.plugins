@@ -34,6 +34,12 @@ Plug 'unblevable/quick-scope'     " Highlights letters for <f>
 Plug 'easymotion/vim-easymotion'  " Motion highlights in line, across windows
 Plug 'dhruvasagar/vim-table-mode' " Automatically adjust markdown tables
 
+" VSCODE / CURSOR
+" These two plugins connect to Cursor to move cursor in tandem via websockets.
+" Use :ShareEditStart in Vim, then head over to Cursor and Cmd+Shift+p.
+" Plug 'vim-denops/denops.vim'
+" Plug 'kbwo/vim-shareedit'
+
 " SEARCH
 Plug 'vim-scripts/EasyGrep'
 Plug 'google/vim-searchindex' " Adds info to search results (char /)

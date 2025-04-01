@@ -31,6 +31,8 @@ source ~/.dotfiles/bash/alias/code.bashrc
 alias install-dotfiles='update_dotfiles'
 alias ubp='update_dotfiles'
 alias dotfiles='cd ~/.dotfiles'
+alias fotfiles='cd ~/.dotfiles'
+alias dtofiles='cd ~/.dotfiles'
 alias vimdotfiles='vim ~/.dotfiles/bash/'
 
 #
