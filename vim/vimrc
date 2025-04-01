@@ -291,6 +291,8 @@ if has("autocmd")
     \| exe "normal! g`\"" | endif
 endif
 
+" QUICKFIX
+"
 " Make the quickfix window the shortest possible given the content.
 " Without this, the window might have 10 lines, even though the content only has
 " 1 line. This is useful when working with e.g Typescript, as it's always
@@ -309,6 +311,12 @@ function! AdjustWindowHeight(minheight, maxheight)
    endw
    exe max([min([n_lines, a:maxheight]), a:minheight]) . "wincmd _"
 endfunction
+
+" adds ,q to remove all lines from the quickfix window
+augroup QuickfixCommands
+  autocmd!
+  autocmd FileType qf nnoremap <buffer> <leader>q :set modifiable<CR>:g//d<left><left>
+augroup END
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " PLUGINS CONFIGURATIONS
@@ -436,6 +444,14 @@ autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
 let g:paste_no_mappings = 1
 " nnoremap <shortcut> :Paste<CR>
 
+command! PasteClean call PasteAndClean()
+
+function! PasteAndClean()
+    Paste
+    '[,']g/^\s*$/s/.*//
+endfunction
+nnoremap <leader>p :PasteClean<CR>
+
 " vim-rooter
 let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 
@@ -537,6 +553,7 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 
   nmap <leader>cat :!cat %<CR>
   nmap <leader>vim :e ~/.vimrc<CR>
+  nmap <leader>vimplugin :e ~/.vim.plugins<CR>
 
   " Buffer
   "
