@@ -47,9 +47,18 @@ draw_bold_text_with_bright_colors: true
 
 # Font configuration (changes require restart)
 font:
-  # The normal (roman) font face to use.
   normal:
-    family: Hack
+    family: "Hack Nerd Font Mono"  # Use the Nerd Font explicitly
+    style: "Regular"
+  bold:
+    family: "Hack Nerd Font Mono"
+    style: "Bold"
+  italic:
+    family: "Hack Nerd Font Mono"
+    style: "Italic"
+  bold_italic:
+    family: "Hack Nerd Font Mono"
+    style: "Bold Italic"
     #family: Cascadia Code PL
 
   # Point size of the font
