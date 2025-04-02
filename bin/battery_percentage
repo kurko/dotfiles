@@ -1,7 +1,53 @@
 #!/bin/bash
 
+# Outputs battery levels.
+#
+# Usage:
+#
+#   battery_percentage [options]
+#
+# Example:
+#
+#   battery_percentage --with-icons # Outputs the battery level with nerd font
+#                                   # icons.
+#
+#   battery_percentage              # Outputs the battery level as a percentage.
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  pmset -g batt | grep -E -o '[0-9]+%'
+  LEVEL=$(pmset -g batt | grep -E -o '[0-9]+%' | sed 's/%//')
+
+  if [ "$1" == "--with-icons" ]; then
+    # if the level is above 90%, show full battery
+    if [ $LEVEL -gt 90 ]; then
+      printf '\xef\x89\x80'
+
+    # if the level is above 80%, show 3/4 battery
+    elif [ $LEVEL -gt 80 ]; then
+      printf '\xef\x89\x81'
+
+    # if the level is above 50%, show 1/2 battery
+    elif [ $LEVEL -gt 50 ]; then
+      printf '\xef\x89\x82'
+
+    # if the level is above 30%, show 1/4 battery
+    elif [ $LEVEL -gt 30 ]; then
+      printf '\xef\x89\x83'
+
+    # if the level is above 10%, show empty battery
+    elif [ $LEVEL -gt 10 ]; then
+      printf '\xef\x89\x84'
+
+    # if the level is below 10%, show empty battery
+    else
+      printf '\xf3\xb1\x89\x9e'
+    fi
+
+  else
+    echo "$LEVEL%"
+  fi
+
+  exit 0
+
 else
   exit 1
 fi
