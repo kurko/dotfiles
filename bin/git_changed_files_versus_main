@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+# This will return only modified files versus git main or master. This is useful
+# for running linting tools (e.g Rubocop).
+#
+# Given we have these files:
+#
+# - lib/a.rb
+# - lib/b.rb
+# - lib/c.rb
+# - spec/lib/a_spec.rb
+# - spec/lib/b_spec.rb
+# - spec/c_spec.rb
+#
+# When lib/a.rb and spec/b_spec.rb are changed, then the following files will be
+# returned:
+#
+# - lib/a.rb
+# - spec/b_spec.rb
+#
+base_branch = ARGV[0] || `git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'`.strip
+
+# Returns all files modified in the last commit, including what isn't committed
+# yet.
+all_modified_files = `git ls-files --modified --others --exclude-standard`.split("\n")
+
+# Returns all files from previous commits that are not on master or main.
+all_modified_files << `git diff #{base_branch} --name-only --relative`.split("\n")
+all_modified_files = all_modified_files.flatten.uniq
+
+puts all_modified_files.uniq.join(" ")
