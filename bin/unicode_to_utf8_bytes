@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Convert a Unicode code point to UTF-8 bytes. Useful for generating UTF-8 bytes
+# for use in a string in a C++ program, for example.
+#
+# Another usage is embedding Nerd Font characters in bash scripts <4.2, which
+# doesn't support Unicode characters directly. For example, to embed the
+# character at code point U+F240 in a bash script, you can use:
+#
+#  echo -e "\xf0\x9f\x8d\x80"
+#
+# Usage:
+#
+#   unicode_to_utf8_bytes f240
+#
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <unicode_code_point> (e.g., '\uf240' or 'f240')"
+  exit 1
+fi
+
+CODE="${1//\\u/}"
+
+python3 -c "print(''.join([r'\\x{:02x}'.format(byte) for byte in chr(int('$CODE', 16)).encode('utf-8')]))"
