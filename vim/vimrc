@@ -4,6 +4,11 @@
 "
 " Installation: copy or symlink this file to ~/.vimrc
 
+
+" It looks like vim bounds <c-c> in insert mode to SQL completion (dbext), which
+" is very slow. This line doesn't deactivate the whole plugin but the keymap.
+let g:omni_sql_no_default_maps = 1
+
 " SETUP
 "
 " plug.vim: install it in case it doesn't exist.
@@ -97,10 +102,6 @@ set wildmenu                      " Enhanced command line completion.
 set wildmode=full                 " Complete files like a shell.
 
 " AUTOCOMPLETE
-"
-" It looks like vim bounds <c-c> in insert mode to SQL completion, which is very
-" slow. This line doesn't deactivate the whole plugin but the keymap.
-let g:omni_sql_no_default_maps = 1
 
 " AUTOCOMPLETE -> MUCOMPLETE Plugin
 "
