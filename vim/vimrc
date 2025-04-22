@@ -36,7 +36,6 @@ call plug#begin('~/.vim/plugins')
 source ~/.vim.plugins
 call plug#end()
 
-
 " avoiding annoying CSApprox warning message
 let g:CSApprox_verbose_level = 0
 let g:table_mode_disable_mappings = 1
@@ -78,7 +77,9 @@ filetype plugin indent on         " Turn on file type detection.
 runtime macros/matchit.vim        " Load the matchit plugin.
 
 " highlight ColorColumn guibg=darkgray ctermbg=darkgray
-set colorcolumn=80
+" set colorcolumn=80
+autocmd WinEnter * if win_gettype() != 'popup' | set colorcolumn=80 | endif
+" autocmd WinLeave * if win_gettype() != 'popup' | set colorcolumn= | endif
 "let &colorcolumn=join(range(81,999),",")
 "let &colorcolumn="80,".join(range(120,999),",")
 set pastetoggle=<F2>
@@ -121,7 +122,7 @@ set wildmode=full                 " Complete files like a shell.
   " There's a series of configurations for snipMate to work properly with
   " MUComplete.
   if !exists("g:snipMate")
-    let g:snipMate = {}
+    let g:snipMate = { 'trigger': '<C-Tab>' }
   endif
   let g:snipMate['no_match_completion_feedkeys_chars'] = ''
   let g:snipMate['always_choose_first'] = 1
@@ -152,11 +153,7 @@ set wildmode=full                 " Complete files like a shell.
   " In case snipMate is doing its thing, don't use MUComplete. For instance, we
   " want MUComplete to not activate when snipMate is jumping tab stops.
   fun! MyTabAction()
-    "if snipMate#CanBeTriggered() >= 1 || exists("b:snip_state")
-    "  return "\<plug>snipMateNextOrTrigger"
-    "else
-      return "\<plug>(MyFwd)"
-    "endif
+    return "\<plug>(MyFwd)"
   endf
 
   " To avoid redefining the same triggers over and over.
@@ -279,7 +276,9 @@ augroup END
 " "Theme
 colorscheme alex_ir_black
 
-"railscasts
+" Added this for Avante but stayed for other floating windows
+highlight NormalFloat guibg=#222222 guifg=#ffffff
+highlight FloatBorder guibg=#3c3836 guifg=#ebdbb2
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -838,3 +837,4 @@ let g:ai_completions_model="gpt-3.5-turbo"
 let g:ai_edits_model="gpt-4"
 let g:ai_timeout=20
 vnoremap <silent> <leader>aif :AI fix grammar and spelling and replace slang and contractions with a formal academic writing style<CR>
+
