@@ -283,8 +283,8 @@ colorscheme alex_ir_black
 highlight NormalFloat guibg=#222222 guifg=#ffffff
 highlight FloatBorder guibg=#3c3836 guifg=#ebdbb2
 " Make sure you can see the ghost-text with dark themes (e.g Copilot)
-highlight CopilotSuggestion guifg=#555555 ctermfg=8 gui=italic
-highlight CopilotSuggestion guifg=#555555 ctermfg=245 gui=italic " fallback
+highlight CopilotSuggestion guifg=#555555 ctermfg=8   guibg=NONE  ctermbg=NONE gui=italic
+highlight CopilotSuggestion guifg=#555555 ctermfg=245 guibg=NONE  ctermbg=NONE gui=italic " fallback
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " DEFAULT BEHAVIORS
