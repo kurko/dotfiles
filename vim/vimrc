@@ -274,12 +274,17 @@ augroup LargeFile
 augroup END
 
 " "Theme
+if has('termguicolors')
+  set termguicolors
+endif
 colorscheme alex_ir_black
 
 " Added this for Avante but stayed for other floating windows
 highlight NormalFloat guibg=#222222 guifg=#ffffff
 highlight FloatBorder guibg=#3c3836 guifg=#ebdbb2
-
+" Make sure you can see the ghost-text with dark themes (e.g Copilot)
+highlight CopilotSuggestion guifg=#555555 ctermfg=8 gui=italic
+highlight CopilotSuggestion guifg=#555555 ctermfg=245 gui=italic " fallback
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " DEFAULT BEHAVIORS
@@ -838,3 +843,18 @@ let g:ai_edits_model="gpt-4"
 let g:ai_timeout=20
 vnoremap <silent> <leader>aif :AI fix grammar and spelling and replace slang and contractions with a formal academic writing style<CR>
 
+if has("nvim") " neovim?
+  " Avante.vim
+  " autocmd VimEnter * lua require('avante').setup()
+  lua require('avante').setup()
+  lua require('copilot').setup({ filetypes = { ruby = true }, suggestion = { auto_trigger = true, hide_during_completion = false, keymap = { accept  = "<M-l>", next = false, prev = false, dismiss = "<C-\\>" } }, panel = { auto_refresh = true } })
+
+  inoremap <silent><M-j> <Cmd>lua require('copilot.suggestion').next()<CR>
+  inoremap <silent><M-k> <Cmd>lua require('copilot.suggestion').prev()<CR>
+
+  " Disable MUcomplete only for Ruby so the pop-up doesn’t fight Copilot
+  augroup copilot_no_mucomplete
+    autocmd!
+    autocmd FileType ruby let b:mucomplete_disable = 1
+  augroup END
+endif

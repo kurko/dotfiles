@@ -1,12 +1,3 @@
-
-" This is halting the entire vim startup process
-" Plug 'jimmy-ai/jimmy-vim'
-
-if has('nvim')
-  Plug 'github/copilot.vim'
-  Plug 'madox2/vim-ai'
-endif
-
 Plug 'jceb/vim-orgmode'
 Plug 'mkitt/tabline.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -136,3 +127,24 @@ Plug 'lifepillar/vim-mucomplete'   " Autocomplete
 "
 " let &statusline .= '%{cfi#format(" [%s()]", "")}'
 " Plug 'tyru/current-func-info.vim'
+
+if has('nvim')
+  " Plug 'github/copilot.vim'
+  " Plug 'madox2/vim-ai'
+
+  " Avante.vim Deps
+  Plug 'nvim-treesitter/nvim-treesitter'
+  Plug 'stevearc/dressing.nvim'
+  Plug 'nvim-lua/plenary.nvim'
+  Plug 'MunifTanjim/nui.nvim'
+  Plug 'MeanderingProgrammer/render-markdown.nvim'
+
+  " Avante.vim optional deps
+  Plug 'hrsh7th/nvim-cmp'
+  Plug 'nvim-tree/nvim-web-devicons' "or Plug 'echasnovski/mini.icons'
+  Plug 'HakonHarnes/img-clip.nvim'
+  Plug 'zbirenbaum/copilot.lua'
+
+  Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
+endif
+
