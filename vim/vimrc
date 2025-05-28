@@ -75,6 +75,9 @@ filetype plugin on
 filetype plugin indent on         " Turn on file type detection.
 
 runtime macros/matchit.vim        " Load the matchit plugin.
+" In your .vimrc or init.vim
+set runtimepath+=~/.dotfiles/vim
+helptags ~/.dotfiles/vim/doc
 
 " highlight ColorColumn guibg=darkgray ctermbg=darkgray
 " set colorcolumn=80
@@ -101,6 +104,22 @@ set hidden                        " Handle multiple buffers better.
 
 set wildmenu                      " Enhanced command line completion.
 set wildmode=full                 " Complete files like a shell.
+
+" TAB completion
+"
+" - primary usage is through Copilot
+" - if Copilot is not visible, it will use auto completion from MuComplete
+function! SmartTab()
+  if luaeval("require('copilot.suggestion').is_visible()")
+    return "\<Cmd>lua require('copilot.suggestion').accept()<CR>"
+  elseif pumvisible()
+    return "\<C-n>"
+  else
+    return "\<Tab>"
+  endif
+endfunction
+
+inoremap <expr> <Tab> SmartTab()
 
 " AUTOCOMPLETE
 
@@ -157,18 +176,18 @@ set wildmode=full                 " Complete files like a shell.
   endf
 
   " To avoid redefining the same triggers over and over.
-  if !exists("g:mycr_defined")
-    " Expand automatically when you accept a menu entry with Enter
-    inoremap <plug>MyEnter <cr>
-    imap <silent> <expr> <plug>MyCR (pumvisible()
-        \ ? "\<c-y>\<plug>snipMateTrigger"
-        \ : "\<plug>MyEnter")
-    imap <cr> <plug>MyCR
+  " if !exists("g:mycr_defined")
+  "   " Expand automatically when you accept a menu entry with Enter
+  "   inoremap <plug>MyEnter <cr>
+  "   imap <silent> <expr> <plug>MyCR (pumvisible()
+  "       \ ? "\<c-y>\<plug>snipMateTrigger"
+  "       \ : "\<plug>MyEnter")
+  "   imap <cr> <plug>MyCR
 
-    imap <plug>(MyFwd) <plug>(MUcompleteFwd)
-    imap <expr> <silent> <tab> MyTabAction()
-    let g:mycr_defined = 1
-  endif
+  "   imap <plug>(MyFwd) <plug>(MUcompleteFwd)
+  "   imap <expr> <silent> <tab> MyTabAction()
+  "   let g:mycr_defined = 1
+  " endif
 
 set ignorecase                    " Case-insensitive searching.
 set smartcase                     " But case-sensitive if expression contains a capital letter.
@@ -213,18 +232,19 @@ set foldlevelstart=99
 set foldlevel=99
 
 " Filetypes
-au BufRead,BufNewFile *.scss  set filetype=scss
-au BufRead,BufNewFile *.ejs   set filetype=html
-au BufNewFile,BufRead *.slim  setlocal filetype=slim
-au Filetype javascript.jsx    setlocal filetype=jsx
-au BufNewFile,BufRead *.tsx   set filetype=typescript
-au BufNewFile,BufRead *.ts    set filetype=typescript
+autocmd BufRead,BufNewFile *.scss  set filetype=scss
+autocmd BufRead,BufNewFile *.ejs   set filetype=html
+autocmd BufNewFile,BufRead *.slim  setlocal filetype=slim
+autocmd Filetype javascript.jsx    setlocal filetype=jsx
+autocmd BufNewFile,BufRead *.tsx   set filetype=typescript
+autocmd BufNewFile,BufRead *.ts    set filetype=typescript
 autocmd FileType gitcommit    set nosmartindent
 
-au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
-au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig,gitconfig 	setf gitconfig
-au BufNewFile,BufRead */.config/git/config			setf gitconfig
-au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
+autocmd BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
+autocmd BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig,gitconfig 	setf gitconfig
+autocmd BufNewFile,BufRead */.config/git/config			setf gitconfig
+autocmd BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
+autocmd BufNewFile,BufRead */bashrc* set filetype=sh
 
 hi CursorLineNR cterm=bold
 augroup CLNRSet
@@ -277,6 +297,7 @@ augroup END
 if has('termguicolors')
   set termguicolors
 endif
+
 colorscheme alex_ir_black
 
 " Added this for Avante but stayed for other floating windows
@@ -445,17 +466,13 @@ autocmd FileType ruby let b:surround_111 = "\1block: \1 do\r end"
   \  },
   \}
 
-" Paste.vim
+" Paste.vim plugin
 let g:paste_no_mappings = 1
-" nnoremap <shortcut> :Paste<CR>
-
-command! PasteClean call PasteAndClean()
-
 function! PasteAndClean()
-    Paste
+    call Paste() " from Paste.vim plugin
     '[,']g/^\s*$/s/.*//
 endfunction
-nnoremap <leader>p :PasteClean<CR>
+nnoremap <leader>p :call PasteAndClean()<CR>
 
 " vim-rooter
 let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
@@ -847,14 +864,24 @@ if has("nvim") " neovim?
   " Avante.vim
   " autocmd VimEnter * lua require('avante').setup()
   lua require('avante').setup()
-  lua require('copilot').setup({ filetypes = { ruby = true }, suggestion = { auto_trigger = true, hide_during_completion = false, keymap = { accept  = "<M-l>", next = false, prev = false, dismiss = "<C-\\>" } }, panel = { auto_refresh = true } })
+  lua require('copilot').setup({ copilot_model = "gpt-4o-copilot", filetypes = { ruby = true, markdown = true, gitcommit = true }, suggestion = { auto_trigger = true, hide_during_completion = false, keymap = { accept  = "<Tab>", next = false, prev = false, dismiss = "<C-\\>" } }, panel = { auto_refresh = true } })
 
   inoremap <silent><M-j> <Cmd>lua require('copilot.suggestion').next()<CR>
   inoremap <silent><M-k> <Cmd>lua require('copilot.suggestion').prev()<CR>
 
-  " Disable MUcomplete only for Ruby so the pop-up doesn’t fight Copilot
-  augroup copilot_no_mucomplete
+  " When using MUComplete, it will automatically disable itself when Copilot is
+  " enabled. This is done by the Copilot plugin.
+  command! CopilotOn lua require('copilot').enable()
+              \ | let g:mucomplete#enable_auto_at_startup = 0
+              \ | let b:mucomplete_disable = 1
+
+  command! CopilotOff lua require('copilot').disable()
+              \ | let g:mucomplete#enable_auto_at_startup = 1
+              \ | let b:mucomplete_disable = 0
+
+  augroup mucomplete_copilot_toggle
     autocmd!
-    autocmd FileType ruby let b:mucomplete_disable = 1
+    autocmd BufEnter * lua local ok, copilot = pcall(require, "copilot"); if ok and copilot and copilot.is_enabled and copilot.is_enabled() then vim.b.mucomplete_disable = 1; vim.g.mucomplete_enable_auto_at_startup = 0 else vim.b.mucomplete_disable = 0; vim.g.mucomplete_enable_auto_at_startup = 1 end
   augroup END
+
 endif
