@@ -1,8 +1,13 @@
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 
-export EDITOR="vim"
+export EDITOR="nvim"
+
+# Postgres
 export PSQL_EDITOR="vim_within_temp_tmux" # "vim -u NONE"
+# Postgres: without this flag, on my local machine (MacOS M1), I'm seeing a
+# segmentation fault whenever I make a request to a `rails server` process.
+export PGGSSENCMODE=disable
 
 # RUBY
 export DISABLE_SPRING=1

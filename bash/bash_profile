@@ -20,3 +20,6 @@ _rake_migrate() {
 }
 
 complete -F _rake_migrate rake
+
+# Modelines
+# vim: set filetype=sh :
