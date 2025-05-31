@@ -8,7 +8,13 @@
   c = commit
   ch = checkout
   p = push
-  pull-rebased = "!git pull --rebase origin && git fetch origin"
+  # pull-rebased = "!git pull --rebase --autostash"
+
+  pull-rebased = "!f() { \
+    remote=${1:-origin}; \
+    branch=${2:-$(git symbolic-ref --short HEAD)}; \
+    git pull --rebase --autostash $remote $branch; \
+  }; f"
 
   #
   # READ
