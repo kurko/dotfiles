@@ -1,0 +1,26 @@
+# Sample: https://aider.chat/docs/config/aider_conf.html
+
+alias:
+  - "fast:gpt-4o-mini"
+  - "smart:o3"
+  - "coder:claude-4-sonnet-latest"
+
+#############
+# Main model:
+
+## Specify the model to use for the main chat
+model: o3
+editor-model: anthropic/claude-4-sonnet-latest
+
+## Enable/disable automatic acceptance of architect changes (default: True)
+auto-accept-architect: false
+
+## Enable/disable auto commit of LLM changes (default: True)
+auto-commits: false # nope
+auto-test: true
+
+## Enable/disable watching files for ai coding comments (default: False)
+watch-files: true
+
+chat-language: english
+

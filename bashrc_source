@@ -1,3 +1,6 @@
+# This file is sourced by .bashrc or .bash_profile. It works across MacOS and
+# Linux.
+
 function update_dotfiles() {
   echo "Updating ~/.bash_profile..."
   if [ -f ~/.bashrc ]; then
@@ -59,6 +62,8 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/rc_files/amazing_print ~/.aprc
   ln -nfs ~/.dotfiles/ag/ignore ~/.ignore
   ln -nfs ~/.dotfiles/ag/ignore ~/.agignore
+
+  ln -nfs ~/.dotfiles/ai/aider.conf.yml ~/.aider.conf.yml
 
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml
@@ -147,3 +152,6 @@ fi
 check_missing_binary 'bc'
 check_missing_binary 'fzf'
 check_missing_binary 'jq'
+
+# Modelines
+# vim: set filetype=sh :

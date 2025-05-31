@@ -80,7 +80,7 @@
   auto = 1
 
 [core]
-	editor = vim
+	editor = nvim
 
 [merge]
   tool = vimdiff

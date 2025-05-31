@@ -16,3 +16,14 @@ tags.temp
 tags.lock
 troubleshooting_vimrc.vim
 vendor/bundle
+.aider.*
+
+**/.claude/settings.local.json
+
+**/.claude/settings.local.json
+
+**/.claude/settings.local.json
+
+**/.claude/settings.local.json
+
+**/.claude/settings.local.json
