@@ -1,0 +1,15 @@
+[Unit]
+Description=App Docker Compose Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/devops/app
+ExecStart=/usr/local/bin/docker-compose -f docker-compose.base.yml -f docker-compose.production.yml up -d web
+ExecStop=/usr/local/bin/docker-compose -f docker-compose.base.yml -f docker-compose.production.yml stop web
+ExecReload=/usr/local/bin/docker-compose -f docker-compose.base.yml -f docker-compose.production.yml reload web
+
+[Install]
+WantedBy=multi-user.target
