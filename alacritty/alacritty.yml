@@ -311,6 +311,7 @@ key_bindings:
   - { key: Key8,     mods: Command, chars: "\x1c\x38"                        }
   - { key: Key9,     mods: Command, chars: "\x1c\x39"                        }
   - { key: T,        mods: Command, chars: "\x1c\x63"                        }
+  - { key: N,        mods: Command, action: CreateNewWindow                  }
   - { key: RBracket, mods: Command|Shift, chars: "\x1c\x6e"                  }
   - { key: LBracket, mods: Command|Shift, chars: "\x1c\x70"                  }
 
