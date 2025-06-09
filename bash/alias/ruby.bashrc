@@ -28,6 +28,8 @@ alias deploystaging='echo "Running be cap staging deploy:migrations" && be cap s
 alias deployprod="echo \"Running be 'cap production deploy:migrations'\" && be cap production deploy:migrations"
 alias pushdeployprod="echo \"git pushing & Running 'be cap production deploy:migrations'\" && gpush && be cap production deploy:migrations"
 
+# DEPRECATED - we don't use zeus anymore
+#
 # Zeus fails with `Terminated: 15` for a year now and no one knows how to fix
 # it, so this will check for success and run that again.
 function zeus-and-retry() {
@@ -41,6 +43,7 @@ function zeus-and-retry() {
 }
 
 function dbmigratestatus() {
+  # DEPRECATED - we don't use zeus anymore
   if file-exists ".zeus.sock" ; then
     echo-command "zeus rake db:migrate:status"
     zeus-and-retry "rake db:migrate:status"
@@ -51,17 +54,21 @@ function dbmigratestatus() {
 }
 
 function dbmigrate() {
+  # DEPRECATED - we don't use zeus anymore
   if file-exists ".zeus.sock" ; then
     echo-command 'zeus rake db:migrate db:test:prepare'
     zeus-and-retry "rake db:migrate db:test:prepare"
   else
-    echo-command 'bin/rails db:migrate && RAILS_ENV=test bin/rails db:migrate'
-    bin/rails db:migrate && RAILS_ENV=test bin/rails db:migrate
+    echo-command "bin/rails db:migrate$1 && RAILS_ENV=test bin/rails db:migrate$1"
+    bin/rails db:migrate$1 && \
+      RAILS_ENV=test bin/rails db:migrate$1
   fi
 }
 
 function dbmigratedown() {
   version=$(ls db/migrate | fzf | awk -F _ '{print $1}')
+
+  # DEPRECATED - we don't use zeus anymore
   if file-exists ".zeus.sock" ; then
     echo-command "zeus rake db:migrate:down VERSION=$version && zeus rake db:test:prepare"
     [[ -n "$version" ]] && zeus-and-retry "rake db:migrate:down VERSION=$version"
