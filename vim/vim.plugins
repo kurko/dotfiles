@@ -137,7 +137,8 @@ if has('nvim')
   Plug 'stevearc/dressing.nvim'
   Plug 'nvim-lua/plenary.nvim'
   Plug 'MunifTanjim/nui.nvim'
-  Plug 'MeanderingProgrammer/render-markdown.nvim'
+  " This plugin is verbose and a candidate for removal
+  " Plug 'MeanderingProgrammer/render-markdown.nvim'
 
   " Avante.vim optional deps
   Plug 'hrsh7th/nvim-cmp'

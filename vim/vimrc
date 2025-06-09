@@ -238,7 +238,7 @@ autocmd BufNewFile,BufRead *.slim  setlocal filetype=slim
 autocmd Filetype javascript.jsx    setlocal filetype=jsx
 autocmd BufNewFile,BufRead *.tsx   set filetype=typescript
 autocmd BufNewFile,BufRead *.ts    set filetype=typescript
-autocmd FileType gitcommit    set nosmartindent
+autocmd FileType gitcommit         set nosmartindent
 
 autocmd BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
 autocmd BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig,gitconfig 	setf gitconfig
