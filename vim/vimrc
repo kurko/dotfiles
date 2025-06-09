@@ -265,7 +265,9 @@ function! AdjustTextWidth()
   return "tw = " . &textwidth
 endfunction
 
-
+" For txt files and todo files (with or without extension)
+autocmd FileType text setlocal comments=fb:-\ [\ ],fb:-\ [x],b:- formatoptions+=cro
+autocmd BufRead,BufNewFile todo,TODO,*.todo.txt setlocal comments=b:-\ [\ ]\ ,b:-\ [x]\ ,b:- formatoptions=tcql filetype=text
 
 " LARGE FILES
 "
