@@ -109,6 +109,7 @@ set wildmode=full                 " Complete files like a shell.
 "
 " - primary usage is through Copilot
 " - if Copilot is not visible, it will use auto completion from MuComplete
+let g:mucomplete#no_mappings = 1   " tell MUcomplete to leave keys alone
 function! SmartTab()
   if luaeval("require('copilot.suggestion').is_visible()")
     return "\<Cmd>lua require('copilot.suggestion').accept()<CR>"
@@ -119,7 +120,18 @@ function! SmartTab()
   endif
 endfunction
 
+" <Enter> will accept MUComplete entries (autocomplete), otherwise fallback to
+" standard behavior.
+function! SmartCR() abort
+  if pumvisible()
+    return "\<C-y>" " confirms the highlighted menu item
+  else
+    return "\<CR>" " plain newline
+  endif
+endfunction
+
 inoremap <expr> <Tab> SmartTab()
+inoremap <expr> <CR> SmartCR()
 
 " AUTOCOMPLETE
 
