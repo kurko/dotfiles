@@ -748,6 +748,7 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
   augroup syntax
     au!
     autocmd BufNewFile,BufRead Gemfile,Gemfile.tt,Gemfile.backup    set syntax=ruby
+    autocmd BufNewFile,BufRead *.bashrc   set syntax=sh
   augroup END
 
   augroup typescript
@@ -824,9 +825,9 @@ let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 " ENVIRONMENT CONFIGURATIONS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
   " taken from http://vim.wikia.com/wiki/Highlight_unwanted_spaces
-  highlight RedundantSpaces ctermbg=red guibg=red
-  match RedundantSpaces /\s\+$/
-  autocmd BufWinEnter * match RedundantSpaces /\s\+$/
+  " highlight RedundantSpaces ctermbg=red guibg=red
+  " match RedundantSpaces /\s\+$/
+  " autocmd BufWinEnter * match RedundantSpaces /\s\+$/
   " Slow?
   " autocmd InsertEnter * match RedundantSpaces /\s\+\%#\@<!$/
   " autocmd InsertLeave * match RedundantSpaces /\s\+$/
@@ -866,7 +867,7 @@ if has("nvim") " neovim?
   " Avante.vim
   " autocmd VimEnter * lua require('avante').setup()
   lua require('avante').setup()
-  lua require('copilot').setup({ copilot_model = "gpt-4o-copilot", filetypes = { ruby = true, markdown = true, gitcommit = true }, suggestion = { auto_trigger = true, hide_during_completion = false, keymap = { accept  = "<Tab>", next = false, prev = false, dismiss = "<C-\\>" } }, panel = { auto_refresh = true } })
+  lua require('copilot').setup({ copilot_model = "gpt-4o-copilot", filetypes = { ruby = true, markdown = true, gitcommit = true, ["*"] = true }, suggestion = { auto_trigger = true, hide_during_completion = false, keymap = { accept  = "<Tab>", next = false, prev = false, dismiss = "<C-\\>" } }, panel = { auto_refresh = true } })
 
   inoremap <silent><M-j> <Cmd>lua require('copilot.suggestion').next()<CR>
   inoremap <silent><M-k> <Cmd>lua require('copilot.suggestion').prev()<CR>
