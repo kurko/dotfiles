@@ -8,6 +8,7 @@ alias update_hosts='dscacheutil -flushcache'
 source ~/.dotfiles/bash/git-completion.bash
 source ~/.dotfiles/bash/alias/bash.bashrc
 source ~/.dotfiles/bash/alias/bash_environment.bashrc
+source ~/.dotfiles/bash/alias/internet.bashrc
 source ~/.dotfiles/bash/alias/tmux.bashrc
 source ~/.dotfiles/bash/alias/heroku.bashrc
 source ~/.dotfiles/bash/alias/swift.bashrc
