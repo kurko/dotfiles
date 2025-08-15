@@ -6,5 +6,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   }
 
   alias set_ttl65="sudo sysctl -w net.inet.ip.ttl=65"
+
+  function textexp() {
+    /usr/libexec/PlistBuddy -c 'Print :NSUserDictionaryReplacementItems' \
+      ~/Library/Preferences/.GlobalPreferences.plist |
+      awk -F'= ' '/replace =/{r=$2} /with =/{w=$2; sub(/;$/, "", w); gsub(/"/,"",r); gsub(/"/,"",w); print r "\t→\t" w}' |
+      sort -f
+  }
 fi
 
