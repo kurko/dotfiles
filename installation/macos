@@ -156,6 +156,11 @@ function install_macos() {
   # casks
   brew tap homebrew/cask-fonts
   brew tap homebrew/cask-versions
+
+  # Litra glow
+  brew tap timrogers/tap
+  brew_cask_install_if_absent litra
+
   brew_cask_install_if_absent font-sf-pro
   brew_cask_install_if_absent font-sf-compact
   brew_cask_install_if_absent font-sf-mono
