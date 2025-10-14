@@ -8,6 +8,8 @@
 " It looks like vim bounds <c-c> in insert mode to SQL completion (dbext), which
 " is very slow. This line doesn't deactivate the whole plugin but the keymap.
 let g:omni_sql_no_default_maps = 1
+" Tell SQLComplete to stick to static (syntax-based) completion
+let g:omni_sql_default_compl_type = 'syntax'
 
 " SETUP
 "
@@ -85,7 +87,10 @@ autocmd WinEnter * if win_gettype() != 'popup' | set colorcolumn=80 | endif
 " autocmd WinLeave * if win_gettype() != 'popup' | set colorcolumn= | endif
 "let &colorcolumn=join(range(81,999),",")
 "let &colorcolumn="80,".join(range(120,999),",")
-set pastetoggle=<F2>
+
+if !has('nvim')
+  set pastetoggle=<F2>
+endif
 set showcmd                       " Display incomplete commands.
 set showmode                      " Display the mode you're in.
 
@@ -112,7 +117,7 @@ set wildmode=full                 " Complete files like a shell.
 let g:mucomplete#no_mappings = 1   " tell MUcomplete to leave keys alone
 function! SmartTab()
   if luaeval("require('copilot.suggestion').is_visible()")
-    return "\<Cmd>lua require('copilot.suggestion').accept()<CR>"
+    return "\<Cmd>lua require('copilot.suggestion').accept()\<CR>"
   elseif pumvisible()
     return "\<C-n>"
   else
@@ -491,6 +496,12 @@ nnoremap <leader>p :call PasteAndClean()<CR>
 " vim-rooter
 let g:rooter_patterns = ['package.json', 'Gemfile', 'Rakefile', '.git/']
 
+" Window split and navigation
+"
+" Split vertically and jump into the new pane. This has to be hit fast,
+" within timeoutlen, otherwise it will split the current pane and keep
+" the original behavior.
+nnoremap <silent> <C-w>v <C-w>v<C-w>l
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CUSTOM SHORTCUTS & KEY BINDINGS
 "
