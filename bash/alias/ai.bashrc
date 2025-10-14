@@ -4,9 +4,20 @@
 # look into claude-new-worktree as entrypoint.
 function claude-new() {
 
-  if [[ -f "ai-notes/AI-README.md" ]]; then
-    INITIAL_PROMPT="$INITIAL_PROMPT
-    The AI notes are in ai-notes/AI-README.md. Please read them before starting."
+  INITIAL_PROMPT="$@"
+  if [[ -d "ai-notes" ]]; then
+    if [[ -f "ai-notes/AI-README.md" ]]; then
+      README_FILE="ai-notes/README.md"
+    elif [[ -f "ai-notes/README.md" ]]; then
+      README_FILE="ai-notes/README.md"
+    else
+      README_FILE=""
+    fi
+
+    # Injects whatever is passed into claude-new as the initial prompt.
+    INITIAL_PROMPT="$INITIAL_PROMPT.
+
+    The AI notes are in ai-notes/. Read $README_FILE. Please read them before starting."
   fi
 
   echo "Running claude"
@@ -17,8 +28,6 @@ function claude-new() {
       Bash(mkdir:*) \
       ,Bash(curl:*) \
       ,Bash(ls:*) \
-      ,Bash(bundle) \
-      ,Bash(bundle:*) \
       ,Bash(bundle install) \
       ,Bash(bundle install:*) \
       ,Bash(bundle exec:*) \
@@ -53,10 +62,11 @@ function claude-new-worktree() {
 
   INITIAL_PROMPT="This is a worktree for task $1"
 
-  INITIAL_PROMPT="$INITIAL_PROMPT. This is a worktree for task $1.
-    Please run bundle (or language equivalent) to install dependencies. Then run
-    a single test to make sure the repository is working. After that, you can
-    wait for instructions before start coding."
+  INITIAL_PROMPT="$INITIAL_PROMPT.
+    Take a look around (README, ai-notes, etc.) to understand the context of the
+    repository. You can also run some commands to get a feel of the repository.
+    Once you understand what kind of codebase this is, wait for instructions before start coding.
+  "
 
   # Passes the initial prompt to claude-new function, as well as $1
   claude-new "$INITIAL_PROMPT"
