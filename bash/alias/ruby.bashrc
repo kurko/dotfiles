@@ -8,6 +8,22 @@ alias zs="zeus server"
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
 alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
 
+# Wrapper for `rbenv install`, but always runs this before each command:
+#
+#   git -C ~/.rbenv/plugins/ruby-build pull
+function rbenv_install() {
+  if [ -d ~/.rbenv/plugins/ruby-build ]; then
+    echo "Updating ruby-build plugin..."
+    git -C ~/.rbenv/plugins/ruby-build pull
+  else
+    echo "ruby-build plugin not found, skipping update."
+  fi
+
+  echo "Installing Ruby version..."
+  rbenv install $*
+  rbenv rehash
+}
+
 function ruby_server() { ruby -run -ehttpd . -p$1; }
 
 # For some very rare occasions, we need to use a separate Gemfile that is not
