@@ -1,0 +1,452 @@
+#!/usr/bin/env ruby
+#
+# meeting_prep — build 1-1 bullets for today
+#
+# Requires: icalBuddy (brew install ical-buddy)
+#
+# Usage:
+#
+#   bin/meeting_prep
+#
+# ***
+# 
+# This script helps manage my 1-1 notes in Obsidian. In summary, it:
+#
+# - reads all events for today from the MacOS calendar
+# - filters for 1-on-1s, or any meeting with more than a single
+#   person. Besides the obvious "1-on-1" and "one on one", it also
+#   checks for "some name / Alex" and "Alex / some name", format
+#   used by Clockwise.
+# - formats them for Obsidian’s daily note, as markdown. It uses
+#   bullet points.
+#
+# The template generated looks like this:
+# 
+#     - [[@John Doe]] {summary}
+#       - Previous discussions: {previous_topics_summary}
+#       - Follow-ups: {a, b, c}
+#       - Agenda: {a, b, c}
+#
+# Some details about the template:
+#
+# - The `[[` and `]]` are Obsidian’s wiki links, which will link to
+#   the note for that person. The `@` indicates it's a person or place.
+# - The `{summary}` is a placeholder for the meeting summary, which I
+#   fill in later.
+# - Previous discussions are topics we discussed in the past. These can
+#   be filled manually, or via LLMs (by reading previous notes).
+# - Follow-ups are previous topics we discussed and we need to get back
+#   to.
+# - Agenda is a list of topics I have put for discussing.
+#
+# ---
+#
+# For development debugging, you'll probably want to see the full event
+# information.
+#
+#   icalBuddy -npn -ps " | " -f eventsToday
+#
+
+# encoding: UTF-8
+# frozen_string_literal: true
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+ENV['LANG']  ||= 'en_US.UTF-8'   # for any sub-processes
+ENV['LC_ALL'] ||= 'en_US.UTF-8'
+
+require "date"
+require "optparse"
+require "json"
+require "net/http"
+require "uri"
+
+CALENDAR_TITLE_FILTER = /\b1\s*[:\-]\s*1\b|\bone\s*on\s*one\b|\/| with /i
+CALENDAR_TITLE_EXCLUSION = /\b(OOO|vacation)\b/i
+
+generate_summary_prompt = ->(person_name, notes) {
+  <<~PROMPT
+    You are helping me prepare for a 1-on-1 meeting with #{person_name}.
+
+    Below are my notes from previous meetings and interactions with them (most recent first):
+
+    #{notes.join("\n")}
+
+    Please provide a concise summary in bullet point format covering:
+    - Brief summary of what we've discussed
+    - Any life updates they mentioned (so I can follow up)
+    - Projects/work they're involved in
+    - Any feedback I gave them
+    - Other relevant information to remember
+
+    Keep it SHORT - aim for 3-5 concise bullet points total. Focus on the most important and recent information.
+  PROMPT
+}
+
+# Parse command-line arguments
+days_back = 30
+verbose = false
+OptionParser.new do |opts|
+  opts.banner = "Usage: meeting_prep [options]"
+  opts.on("--days N", Integer, "Number of days to look back (default: 30)") do |n|
+    days_back = n
+  end
+  opts.on("-v", "--verbose", "Show detailed debug information") do
+    verbose = true
+  end
+end.parse!
+
+# Validate required ENV vars
+work_notes_path = ENV['WORK_NOTES_PATH']
+openai_api_key = ENV['OPENAI_API_KEY']
+
+if work_notes_path.nil? || work_notes_path.empty?
+  $stderr.puts "ERROR: WORK_NOTES_PATH environment variable not set"
+  $stderr.puts "Please set it to your work notes directory:"
+  $stderr.puts "  export WORK_NOTES_PATH='/Users/alex/Documents/Work'"
+  exit 1
+end
+
+if openai_api_key.nil? || openai_api_key.empty?
+  $stderr.puts "ERROR: OPENAI_API_KEY environment variable not set"
+  $stderr.puts "Please set your OpenAI API key:"
+  $stderr.puts "  export OPENAI_API_KEY='sk-...'"
+  exit 1
+end
+
+unless Dir.exist?(work_notes_path)
+  $stderr.puts "ERROR: Work notes path does not exist: #{work_notes_path}"
+  exit 1
+end
+
+ME = /alex/i
+
+# "John Doe / Alex" → ["John Doe"]
+def extract_other_parties(raw_title)
+  raw_title.split(%r{\s*/\s*| with }).reject { |p| p =~ ME }.map(&:strip)
+end
+
+# Find journal files within the last N days (excluding today)
+def find_journal_files(work_notes_path, days_back)
+  cutoff_date = Date.today - days_back
+  today = Date.today
+  journal_path = File.join(work_notes_path, "journal")
+
+  Dir.glob(File.join(journal_path, "**", "*.md")).select do |file|
+    # Try to extract date from filename or file modification time
+    mtime = File.mtime(file).to_date
+    mtime >= cutoff_date && mtime < today
+  end.sort_by { |f| File.mtime(f) }.reverse
+end
+
+# Extract all person mentions and their indented notes from a file
+# Returns a hash: { "Person Name" => ["note 1", "note 2", ...] }
+def extract_person_notes(file_path)
+  content = File.read(file_path, encoding: 'UTF-8').scrub
+  lines = content.lines
+
+  person_notes = Hash.new { |h, k| h[k] = [] }
+  current_person = nil
+  current_indent = nil
+
+  lines.each do |line|
+    # Check if this line contains a [[@Person]] mention
+    if line =~ /\[\[@([^\]]+)\]\]/
+      person_name = $1.strip
+      current_person = person_name
+      current_indent = nil # Reset indent tracking
+    elsif current_person && line =~ /^(\s+)(.+)/
+      # This is an indented line - capture it
+      indent = $1
+      content = $2.strip
+
+      # If we haven't set the base indent yet, set it
+      if current_indent.nil?
+        current_indent = indent.length
+      end
+
+      # Only capture lines that are indented at least as much as the first indented line
+      if indent.length >= current_indent && !content.empty?
+        person_notes[current_person] << content
+      end
+    elsif current_person && line.strip.empty?
+      # Empty line - continue but don't reset current_person yet
+      next
+    elsif current_person && line =~ /^\S/
+      # Non-indented, non-empty line - stop capturing for this person
+      current_person = nil
+      current_indent = nil
+    end
+  end
+
+  person_notes
+end
+
+# Match calendar person to canonical name using email or exact name
+# Returns canonical person name if found, nil otherwise
+def match_person_by_email_or_name(attendee_emails, calendar_name, email_to_person)
+  # Try email matching first
+  attendee_emails.each do |email|
+    canonical_name = email_to_person[email.downcase]
+    return canonical_name if canonical_name
+  end
+
+  # Fallback: try exact case-insensitive name match against canonical names
+  cal_normalized = calendar_name.downcase.strip
+  email_to_person.values.find { |name| name.downcase.strip == cal_normalized }
+end
+
+# Extract email(s) from frontmatter in a person document
+# Returns array of emails (empty if no email found)
+def extract_emails_from_frontmatter(file_path)
+  content = File.read(file_path, encoding: 'UTF-8').scrub
+
+  # Check if file starts with frontmatter (---)
+  return [] unless content.start_with?('---')
+
+  # Extract frontmatter section
+  parts = content.split(/^---\s*$/, 3)
+  return [] if parts.length < 3
+
+  frontmatter = parts[1]
+  emails = []
+
+  # Look for email field
+  frontmatter.lines.each do |line|
+    if line =~ /^\s*email:\s*(.+)$/
+      email_value = $1.strip
+      # Handle array format: ["email1", "email2"] or just a single email
+      if email_value.start_with?('[')
+        # Parse array
+        email_value.scan(/"([^"]+)"/).each do |match|
+          emails << match[0].strip
+        end
+      elsif email_value.start_with?('-')
+        # YAML array item
+        emails << email_value.sub(/^-\s*/, '').strip.gsub(/["']/, '')
+      else
+        # Single email - strip any surrounding quotes
+        emails << email_value.gsub(/["']/, '')
+      end
+    elsif line =~ /^\s*-\s+(.+@.+)$/
+      # Array continuation line - strip any surrounding quotes
+      emails << $1.strip.gsub(/["']/, '')
+    end
+  end
+
+  emails.compact.uniq
+end
+
+# Build email -> canonical person name mapping from person documents
+# Returns: { "email@example.com" => "Person Name" }
+def build_email_to_person_mapping(work_notes_path)
+  email_to_person = {}
+
+  # Find all person documents (@*.md)
+  person_files = Dir.glob(File.join(work_notes_path, "**", "@*.md"))
+
+  person_files.each do |file|
+    # Extract canonical name from filename: "@Person Name.md" -> "Person Name"
+    canonical_name = File.basename(file, ".md").sub(/^@/, '')
+
+    # Extract emails from frontmatter
+    emails = extract_emails_from_frontmatter(file)
+
+    # Map each email to this person
+    emails.each do |email|
+      email_to_person[email.downcase] = canonical_name
+    end
+  end
+
+  email_to_person
+end
+
+# Extract attendee emails from icalBuddy event line
+# Format: "Event Title|email1, email2, email3"
+# Returns: ["email1", "email2"] (excluding your own email)
+def extract_attendee_emails(event_line)
+  parts = event_line.split('|')
+  return [] if parts.length < 2
+
+  attendees_str = parts[1].strip
+  emails = attendees_str.split(',').map(&:strip)
+
+  # Filter out alex's email
+  emails.reject { |email| email =~ /alex@/i }
+end
+
+# Call OpenAI API to generate summary
+def call_openai(api_key, prompt)
+  uri = URI.parse("https://api.openai.com/v1/chat/completions")
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  http.read_timeout = 60
+
+  request = Net::HTTP::Post.new(uri.path, {
+    'Content-Type' => 'application/json',
+    'Authorization' => "Bearer #{api_key}"
+  })
+
+  request.body = JSON.generate({
+    model: "gpt-5",
+    messages: [
+      { role: "user", content: prompt }
+    ]
+  })
+
+  response = http.request(request)
+  result = JSON.parse(response.body)
+
+  if response.code == "200"
+    result.dig("choices", 0, "message", "content")
+  else
+    $stderr.puts "OpenAI API error: #{result['error']['message']}" if result['error']
+    nil
+  end
+rescue => e
+  $stderr.puts "Error calling OpenAI: #{e.message}"
+  nil
+end
+
+# Grab today's events with titles and attendees
+def events_today_command
+  '/opt/homebrew/bin/icalBuddy -f -npn -nc -b "" --noAnsi -iep "title,attendees" -ps " | " eventsToday'
+end
+
+# Get events with titles and attendees
+event_lines =
+  `#{events_today_command}`
+  .force_encoding('UTF-8')
+  .scrub
+  .lines
+  .map(&:strip)
+
+if verbose
+  $stderr.puts "\n=== RAW CALENDAR EVENTS ==="
+  event_lines.each_with_index do |line, i|
+    $stderr.puts "#{i+1}. #{line}"
+  end
+  $stderr.puts "=" * 40
+end
+
+# Helper method to strip ANSI escape codes
+def strip_ansi(str)
+  str.gsub(/\e\[\d+(?:;\d+)*m/, '')
+end
+
+# Clean up event lines and extract title portion for filtering
+events_with_metadata = event_lines.map do |line|
+  # Extract title from "Title|attendees" format
+  title = line.split('|').first || line
+  clean_title = strip_ansi(title)
+    .sub(/\A[•\p{So}\p{P}\s]+/, '')  # Drops bullet/emoji/punct
+    .gsub(/❇️\s*/, '')                # Remove Clockwise emoji
+
+  { raw_line: line, clean_title: clean_title }
+end
+
+# Filter for 1-on-1s
+one_on_ones = events_with_metadata.select do |event|
+  # Match 1:1, 1-1, or "one on one" (word-boundary safe, ignores timestamps)
+  event[:clean_title].match?(CALENDAR_TITLE_FILTER) &&
+    !event[:clean_title].match?(CALENDAR_TITLE_EXCLUSION)
+end
+
+puts "Found #{one_on_ones.size} 1-on-1s for today:"
+puts one_on_ones.map { |e| e[:clean_title] }.join(", ")
+
+# Build email -> canonical person name mapping
+$stderr.puts "\nBuilding person directory from documents..."
+email_to_person = build_email_to_person_mapping(work_notes_path)
+
+if verbose
+  $stderr.puts "\n=== EMAIL TO PERSON MAPPING ==="
+  if email_to_person.empty?
+    $stderr.puts "(No email mappings found)"
+  else
+    email_to_person.each do |email, person|
+      $stderr.puts "  #{email} => #{person}"
+    end
+  end
+  $stderr.puts "=" * 40
+end
+
+# Load and parse journal entries
+$stderr.puts "Analyzing journal entries from the last #{days_back} days..."
+journal_files = find_journal_files(work_notes_path, days_back)
+
+# Aggregate all person notes from all journal files
+all_person_notes = Hash.new { |h, k| h[k] = [] }
+journal_files.each do |file|
+  person_notes = extract_person_notes(file)
+  person_notes.each do |person, notes|
+    all_person_notes[person].concat(notes)
+  end
+end
+
+md = +"## One-on-ones – #{Date.today}\n\n"
+
+# For each 1-on-1, match person and generate summary
+one_on_ones.each do |event|
+  # Extract attendee emails from the raw line
+  attendee_emails = extract_attendee_emails(event[:raw_line])
+
+  # Also extract person name from title for fallback matching
+  calendar_names = extract_other_parties(event[:clean_title])
+
+  if verbose
+    $stderr.puts "\n=== MATCHING: #{event[:clean_title]} ==="
+    $stderr.puts "Raw line: #{event[:raw_line]}"
+    $stderr.puts "Attendee emails extracted: #{attendee_emails.inspect}"
+    $stderr.puts "Calendar names extracted: #{calendar_names.inspect}"
+  end
+
+  calendar_names.each do |calendar_name|
+    # Strip any remaining ANSI codes from calendar name
+    clean_calendar_name = strip_ansi(calendar_name)
+
+    # Match by email first, then by exact name
+    canonical_name = match_person_by_email_or_name(attendee_emails, clean_calendar_name, email_to_person)
+
+    if verbose
+      $stderr.puts "  Trying to match: '#{clean_calendar_name}'"
+      if canonical_name
+        $stderr.puts "    ✓ Matched to canonical name: '#{canonical_name}'"
+      else
+        $stderr.puts "    ✗ No match found (will use calendar name as-is)"
+      end
+    end
+
+    # Use canonical name if found, otherwise use cleaned calendar name
+    display_name = canonical_name || clean_calendar_name
+
+    md << "- [[#{display_name}]]\n"
+
+    # Look for notes using canonical name
+    if canonical_name && all_person_notes[canonical_name] && all_person_notes[canonical_name].any?
+      # Generate AI summary
+      notes = all_person_notes[canonical_name]
+      prompt = generate_summary_prompt.call(canonical_name, notes)
+      summary = call_openai(openai_api_key, prompt)
+
+      if summary
+        # Format the summary as indented bullet points
+        summary_lines = summary.split("\n").reject { |l| l.strip.empty? }
+        md << "  - Previous discussions:\n"
+        summary_lines.each do |line|
+          # Remove leading dash if present, then re-add with proper indentation
+          clean_line = line.strip.sub(/^\-\s*/, '')
+          md << "    - #{clean_line}\n"
+        end
+      else
+        md << "  - Previous discussions: (Error generating summary)\n"
+      end
+    else
+      md << "  - Previous discussions: No previous notes found in the last #{days_back} days\n"
+    end
+
+    md << "  - Follow-ups:\n"
+    md << "  - Agenda:\n"
+  end
+end
+
+puts "\n" + md
