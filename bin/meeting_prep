@@ -149,8 +149,9 @@ def extract_person_notes(file_path)
   current_indent = nil
 
   lines.each do |line|
-    # Check if this line contains a [[@Person]] mention
-    if line =~ /\[\[@([^\]]+)\]\]/
+    # Check if this line contains a [[...]] mention (e.g., [[@Person]] or [[Person]])
+    # Capture the full link target as-is, including @ if present
+    if line =~ /\[\[([^\]]+)\]\]/
       person_name = $1.strip
       current_person = person_name
       current_indent = nil # Reset indent tracking
@@ -238,6 +239,7 @@ end
 
 # Build email -> canonical person name mapping from person documents
 # Returns: { "email@example.com" => "Person Name" }
+# The "Person Name" is the document name without extension (e.g., "@Person Name")
 def build_email_to_person_mapping(work_notes_path)
   email_to_person = {}
 
@@ -245,15 +247,16 @@ def build_email_to_person_mapping(work_notes_path)
   person_files = Dir.glob(File.join(work_notes_path, "**", "@*.md"))
 
   person_files.each do |file|
-    # Extract canonical name from filename: "@Person Name.md" -> "Person Name"
-    canonical_name = File.basename(file, ".md").sub(/^@/, '')
+    # Extract document name from filename, preserving @ but removing extension
+    # "@Person Name.md" -> "@Person Name"
+    doc_name = File.basename(file, File.extname(file))
 
     # Extract emails from frontmatter
     emails = extract_emails_from_frontmatter(file)
 
-    # Map each email to this person
+    # Map each email to this document name
     emails.each do |email|
-      email_to_person[email.downcase] = canonical_name
+      email_to_person[email.downcase] = doc_name
     end
   end
 
@@ -361,7 +364,11 @@ one_on_ones = events_with_metadata.select do |event|
 end
 
 puts "Found #{one_on_ones.size} 1-on-1s for today:"
-puts one_on_ones.map { |e| e[:clean_title] }.join(", ")
+one_on_ones.each do |event|
+  attendee_emails = extract_attendee_emails(event[:raw_line])
+  email_display = attendee_emails.empty? ? "(no email found)" : attendee_emails.join(", ")
+  puts "  - #{event[:clean_title]} (#{email_display})"
+end
 
 # Build email -> canonical person name mapping
 $stderr.puts "\nBuilding person directory from documents..."
