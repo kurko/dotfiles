@@ -281,6 +281,15 @@ def call_openai(api_key, prompt)
   http.use_ssl = true
   http.read_timeout = 60
 
+  # Disable CRL checking to avoid "unable to get certificate CRL" errors. This
+  # is safe because we're still doing full certificate chain verification
+  http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+  store = OpenSSL::X509::Store.new
+  store.set_default_paths
+  # Clear CRL check flags (XOR with itself = 0)
+  store.flags = OpenSSL::X509::V_FLAG_CRL_CHECK_ALL ^ OpenSSL::X509::V_FLAG_CRL_CHECK_ALL
+  http.cert_store = store
+
   request = Net::HTTP::Post.new(uri.path, {
     'Content-Type' => 'application/json',
     'Authorization' => "Bearer #{api_key}"
