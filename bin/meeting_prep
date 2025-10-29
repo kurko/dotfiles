@@ -21,23 +21,27 @@
 #   bullet points.
 #
 # The template generated looks like this:
-# 
+#
 #     - [[@John Doe]] {summary}
-#       - Previous discussions: {previous_topics_summary}
-#       - Follow-ups: {a, b, c}
-#       - Agenda: {a, b, c}
+#         - Previous discussions: (YYYY-MM-DD to YYYY-MM-DD)
+#             - {previous_topics_summary}
+#         - Follow-ups: {a, b, c}
+#         - Agenda / Follow-up:
+#             - Updates:
 #
 # Some details about the template:
 #
-# - The `[[` and `]]` are Obsidian’s wiki links, which will link to
+# - The `[[` and `]]` are Obsidian's wiki links, which will link to
 #   the note for that person. The `@` indicates it's a person or place.
 # - The `{summary}` is a placeholder for the meeting summary, which I
 #   fill in later.
 # - Previous discussions are topics we discussed in the past. These can
-#   be filled manually, or via LLMs (by reading previous notes).
+#   be filled manually, or via LLMs (by reading previous notes). The date
+#   range shows when these discussions occurred.
 # - Follow-ups are previous topics we discussed and we need to get back
 #   to.
-# - Agenda is a list of topics I have put for discussing.
+# - Agenda / Follow-up contains both the agenda items and any updates to discuss.
+# - Uses 4-space indentation for Obsidian compatibility.
 #
 # ---
 #
@@ -63,13 +67,18 @@ require "uri"
 CALENDAR_TITLE_FILTER = /\b1\s*[:\-]\s*1\b|\bone\s*on\s*one\b|\/| with /i
 CALENDAR_TITLE_EXCLUSION = /\b(OOO|vacation)\b/i
 
-generate_summary_prompt = ->(person_name, notes) {
+generate_summary_prompt = ->(person_name, sessions) {
+  # Flatten sessions into dated notes
+  notes_with_dates = sessions.flat_map do |session|
+    session[:notes].map { |note| "[#{session[:date]}] #{note}" }
+  end
+
   <<~PROMPT
     You are helping me prepare for a 1-on-1 meeting with #{person_name}.
 
     Below are my notes from previous meetings and interactions with them (most recent first):
 
-    #{notes.join("\n")}
+    #{notes_with_dates.join("\n")}
 
     Please provide a concise summary in bullet point format covering:
     - Brief summary of what we've discussed
@@ -122,7 +131,10 @@ ME = /alex/i
 
 # "John Doe / Alex" → ["John Doe"]
 def extract_other_parties(raw_title)
-  raw_title.split(%r{\s*/\s*| with }).reject { |p| p =~ ME }.map(&:strip)
+  raw_title.split(%r{\s*/\s*| with }).reject { |p| p =~ ME }.map do |name|
+    # Strip whitespace and remove emoji/symbol characters (including variation selectors)
+    name.strip.gsub(/[\p{So}\p{Sk}\u{FE0F}]+/, '').strip
+  end
 end
 
 # Find journal files within the last N days (excluding today)
@@ -139,22 +151,30 @@ def find_journal_files(work_notes_path, days_back)
 end
 
 # Extract all person mentions and their indented notes from a file
-# Returns a hash: { "Person Name" => ["note 1", "note 2", ...] }
+# Returns a hash: { "Person Name" => [{date: "YYYY-MM-DD", notes: ["note 1", "note 2", ...]}, ...] }
 def extract_person_notes(file_path)
   content = File.read(file_path, encoding: 'UTF-8').scrub
   lines = content.lines
+  file_date = File.mtime(file_path).strftime("%Y-%m-%d")
 
   person_notes = Hash.new { |h, k| h[k] = [] }
   current_person = nil
   current_indent = nil
+  current_session_notes = []
 
   lines.each do |line|
     # Check if this line contains a [[...]] mention (e.g., [[@Person]] or [[Person]])
     # Capture the full link target as-is, including @ if present
     if line =~ /\[\[([^\]]+)\]\]/
+      # Save previous person's notes if any
+      if current_person && !current_session_notes.empty?
+        person_notes[current_person] << { date: file_date, notes: current_session_notes }
+      end
+
       person_name = $1.strip
       current_person = person_name
       current_indent = nil # Reset indent tracking
+      current_session_notes = []
     elsif current_person && line =~ /^(\s+)(.+)/
       # This is an indented line - capture it
       indent = $1
@@ -167,16 +187,25 @@ def extract_person_notes(file_path)
 
       # Only capture lines that are indented at least as much as the first indented line
       if indent.length >= current_indent && !content.empty?
-        person_notes[current_person] << content
+        current_session_notes << content
       end
     elsif current_person && line.strip.empty?
       # Empty line - continue but don't reset current_person yet
       next
     elsif current_person && line =~ /^\S/
-      # Non-indented, non-empty line - stop capturing for this person
+      # Non-indented, non-empty line - save and stop capturing for this person
+      if !current_session_notes.empty?
+        person_notes[current_person] << { date: file_date, notes: current_session_notes }
+      end
       current_person = nil
       current_indent = nil
+      current_session_notes = []
     end
+  end
+
+  # Don't forget the last person
+  if current_person && !current_session_notes.empty?
+    person_notes[current_person] << { date: file_date, notes: current_session_notes }
   end
 
   person_notes
@@ -352,6 +381,8 @@ events_with_metadata = event_lines.map do |line|
   clean_title = strip_ansi(title)
     .sub(/\A[•\p{So}\p{P}\s]+/, '')  # Drops bullet/emoji/punct
     .gsub(/❇️\s*/, '')                # Remove Clockwise emoji
+    .gsub(/[\p{So}\p{Sk}\u{FE0F}]+/, '')  # Remove any remaining emoji/symbol characters
+    .strip                            # Clean up any remaining whitespace
 
   { raw_line: line, clean_title: clean_title }
 end
@@ -394,8 +425,8 @@ journal_files = find_journal_files(work_notes_path, days_back)
 all_person_notes = Hash.new { |h, k| h[k] = [] }
 journal_files.each do |file|
   person_notes = extract_person_notes(file)
-  person_notes.each do |person, notes|
-    all_person_notes[person].concat(notes)
+  person_notes.each do |person, sessions|
+    all_person_notes[person].concat(sessions)
   end
 end
 
@@ -440,28 +471,37 @@ one_on_ones.each do |event|
     # Look for notes using canonical name
     if canonical_name && all_person_notes[canonical_name] && all_person_notes[canonical_name].any?
       # Generate AI summary
-      notes = all_person_notes[canonical_name]
-      prompt = generate_summary_prompt.call(canonical_name, notes)
+      sessions = all_person_notes[canonical_name]
+
+      # Get unique dates for display
+      dates = sessions.map { |s| s[:date] }.uniq.sort.reverse
+      date_range = if dates.length > 1
+        "(#{dates.last} to #{dates.first})"
+      else
+        "(#{dates.first})"
+      end
+
+      prompt = generate_summary_prompt.call(canonical_name, sessions)
       summary = call_openai(openai_api_key, prompt)
 
       if summary
         # Format the summary as indented bullet points
         summary_lines = summary.split("\n").reject { |l| l.strip.empty? }
-        md << "  - Previous discussions:\n"
+        md << "    - Previous discussions: #{date_range}\n"
         summary_lines.each do |line|
           # Remove leading dash if present, then re-add with proper indentation
           clean_line = line.strip.sub(/^\-\s*/, '')
-          md << "    - #{clean_line}\n"
+          md << "        - #{clean_line}\n"
         end
       else
-        md << "  - Previous discussions: (Error generating summary)\n"
+        md << "    - Previous discussions: (Error generating summary)\n"
       end
     else
-      md << "  - Previous discussions: No previous notes found in the last #{days_back} days\n"
+      md << "    - Previous discussions: No previous notes found in the last #{days_back} days\n"
     end
 
-    md << "  - Follow-ups:\n"
-    md << "  - Agenda:\n"
+    md << "    - Agenda / Follow-up:\n"
+    md << "        - Updates:\n"
   end
 end
 
