@@ -91,6 +91,9 @@ function install_macos() {
   brew_cask_install_if_absent rectangle
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent 1password
+  brew_cask_install_if_absent font-libre-caslon-text
+  brew_cask_install_if_absent font-libre-caslon-display
+
   brew_install_if_absent bash
   brew_install_if_absent font-hack-nerd-font
   brew_install_if_absent meetingbar
