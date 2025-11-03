@@ -7,6 +7,7 @@ alias zc="zeus console"
 alias zs="zeus server"
 # Redirects port 80 on a Mac to 3000, allowing to run the server without root
 alias railson80='sudo ipfw add 100 fwd 127.0.0.1,3000 tcp from any to any 80 in'
+alias rails_reset="bin/rails db:drop db:create db:schema:load db:seed"
 
 # Wrapper for `rbenv install`, but always runs this before each command:
 #

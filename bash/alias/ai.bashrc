@@ -43,8 +43,12 @@ function claude-new() {
       ,Bash(npm run lint) \
       ,Bash(grep:*) \
       ,Bash(mv:*) \
+      ,Bash(lsof:*) \
+      ,Bash(log:*) \
       ,Bash(git add:*) \
       ,Bash(cat:*) \
+      ,Bash(ps:*) \
+      ,Bash(awk:*) \
       ,WebFetch(domain:github.com)"
 }
 
