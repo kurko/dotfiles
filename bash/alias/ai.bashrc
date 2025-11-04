@@ -17,7 +17,10 @@ function claude-new() {
     # Injects whatever is passed into claude-new as the initial prompt.
     INITIAL_PROMPT="$INITIAL_PROMPT.
 
-    The AI notes are in ai-notes/. Read $README_FILE. Please read them before starting."
+    Start by running 'ls' to see what kind of project this is.
+
+    The 'ai-notes/' has notes from past sessions. Don't read them yet, only if I
+    ask you to (let's keep focused)."
   fi
 
   echo "Running claude"
@@ -28,28 +31,79 @@ function claude-new() {
       Bash(mkdir:*) \
       ,Bash(curl:*) \
       ,Bash(ls:*) \
+      ,Bash(pwd) \
+      ,Bash(which:*) \
+      ,Bash(head:*) \
+      ,Bash(tail:*) \
+      ,Bash(wc:*) \
+      ,Bash(file:*) \
       ,Bash(bundle install) \
       ,Bash(bundle install:*) \
       ,Bash(bundle exec:*) \
-      ,Bash(bin/rails:*) \
-      ,Bash(bin/rake:*) \
-      ,Bash(rm:*) \
-      ,Bash(find:*) \
+      ,Bash(bundle exec rspec:*) \
+      ,Bash(bundle exec rails:*) \
+      ,Bash(bundle exec rake:*) \
+      ,Bash(bundle list:*) \
+      ,Bash(bundle show:*) \
+      ,Bash(bin/rails routes:*) \
+      ,Bash(bin/rails db:schema:dump:*) \
+      ,Bash(bin/rails db:migrate:*) \
+      ,Bash(bin/rails db:rollback:*) \
+      ,Bash(bin/rails db:version:*) \
+      ,Bash(bin/rails db:migrate:status:*) \
+      ,Bash(bin/rails runner:*) \
+      ,Bash(bin/rails console:*) \
+      ,Bash(bin/rails c:*) \
+      ,Bash(bin/rails generate:*) \
+      ,Bash(bin/rails g:*) \
+      ,Bash(bin/rails about:*) \
+      ,Bash(bin/rails stats:*) \
+      ,Bash(bin/rails notes:*) \
+      ,Bash(bin/rails time:zones:*) \
+      ,Bash(bin/rails middleware:*) \
+      ,Bash(bin/rails log:*) \
+      ,Bash(bin/rake routes:*) \
+      ,Bash(bin/rake -T:*) \
+      ,Bash(bin/rake --tasks:*) \
+      ,Bash(bin/rake stats:*) \
+      ,Bash(bin/rake notes:*) \
+      ,Bash(bin/rake about:*) \
+      ,Bash(bin/rspec:*) \
+      ,Bash(bin/spring status) \
+      ,Bash(bin/spring stop) \
+      ,Bash(rspec:*) \
       ,Bash(ag:*) \
       ,Bash(rg:*) \
       ,Bash(npm run build:*) \
       ,Bash(npm install:*) \
       ,Bash(npm test:*) \
       ,Bash(npm run lint) \
+      ,Bash(npm list:*) \
+      ,Bash(npm ls:*) \
       ,Bash(grep:*) \
-      ,Bash(mv:*) \
       ,Bash(lsof:*) \
       ,Bash(log:*) \
+      ,Bash(git status:*) \
+      ,Bash(git log:*) \
+      ,Bash(git diff:*) \
+      ,Bash(git branch:*) \
+      ,Bash(git show:*) \
+      ,Bash(git remote:*) \
+      ,Bash(git ls-files:*) \
       ,Bash(git add:*) \
       ,Bash(cat:*) \
       ,Bash(ps:*) \
       ,Bash(awk:*) \
-      ,WebFetch(domain:github.com)"
+      ,Bash(echo:*) \
+      ,Bash(date:*) \
+      ,Bash(diff:*) \
+      ,Bash(sort:*) \
+      ,Bash(uniq:*) \
+      ,Bash(jq:*) \
+      ,Bash(defaults read:*) \
+      ,Read(*) \
+      ,WebFetch(domain:github.com) \
+      ,WebSearch(*)"
 }
 
 function claude-new-worktree() {
