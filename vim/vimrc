@@ -760,8 +760,8 @@ nnoremap <silent> <C-w>v <C-w>v<C-w>l
     map <leader>f :Files!<cr>
 
     " FZF - Content Search (grep within files) - "g" for "grep"
-    nnoremap <leader>g :Rg <C-R><C-W><CR>
-    nnoremap <leader>G :Rg<space>
+    nnoremap <leader>G :Rg <C-R><C-W><CR>
+    nnoremap <leader>g :Rg <CR>
 
     " FZF - Buffer navigation
     nmap <leader>b :Buffers!<cr>
