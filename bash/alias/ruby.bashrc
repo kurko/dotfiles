@@ -140,10 +140,20 @@ function tfzf(){
   eval "$command"
 }
 
+# Helper function to run rubocop with config file if it exists
+function run_rubocop() {
+  local rubocop_cmd="bundle exec rubocop"
+  if [ -f "rubocop.yml" ]; then
+    rubocop_cmd="$rubocop_cmd -c rubocop.yml"
+  fi
+  # Use --no-parallel for immediate progress output (parallel mode buffers all output)
+  time $rubocop_cmd --no-parallel "$@"
+}
+
 function tcop(){
   t \
     && echo-command "\nRunning rubocop -A" \
-    && time bundle exec rubocop -A \
+    && run_rubocop -A \
     && echo "All good"
 }
 
@@ -169,11 +179,12 @@ function changed_cop_t() {
   fi
 
   echo-command "Running rubocop -A on changed files"
-  time bundle exec rubocop -A $CHANGED
+  run_rubocop -A $CHANGED
 
   echo-command "bundle exec rspec $CHANGED"
   t $TESTS_FOR_CHANGED
 }
+
 function zt(){
   SPEC_PATH='spec/'
   if [ ! -z "$*" ]; then

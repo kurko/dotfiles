@@ -43,6 +43,8 @@ function claude-new() {
       ,Bash(bundle exec rspec:*) \
       ,Bash(bundle exec rails:*) \
       ,Bash(bundle exec rake:*) \
+      ,Bash(bundle exec ruby:*) \
+      ,Bash(bundle exec rubocop:*) \
       ,Bash(bundle list:*) \
       ,Bash(bundle show:*) \
       ,Bash(bin/rails routes:*) \
