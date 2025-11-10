@@ -1,0 +1,15 @@
+{
+  "name": "rails-app-generator",
+  "description": "Generate a new Rails application with consistent, production-ready setup including PostgreSQL, RSpec, Devise, Sidekiq, and Tailwind",
+  "version": "1.0.0",
+  "author": "Alex",
+  "created": "2025-11-09",
+  "tags": ["rails", "generator", "setup", "boilerplate"],
+  "requirements": {
+    "ruby": ">=3.4.0",
+    "rails": ">=8.1.1",
+    "postgresql": ">=12",
+    "redis": ">=4.0",
+    "node": ">=18"
+  }
+}
