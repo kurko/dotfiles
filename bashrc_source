@@ -65,7 +65,7 @@ function update_symlinks(){
 
   ln -nfs ~/.dotfiles/ai/aider.conf.yml ~/.aider.conf.yml
   ln -nfs ~/.dotfiles/ai/claude.md ~/.claude/CLAUDE.md
-  ln -nfs ~/.dotfiles/ai-skills ~/.claude/skills
+  ln -nfs ~/.dotfiles/ai/skills ~/.claude/skills
 
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml
