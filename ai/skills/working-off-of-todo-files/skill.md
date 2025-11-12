@@ -1,6 +1,6 @@
 ---
 name: working-off-of-todo-files
-description: Use when the user asks you to interact, work, read, create or update tasks in ai-notes/**/*/todo.{md,txt} files.
+description: Use when the user asks you to interact, work, read, create or update tasks in ai-notes/**/*/todo.{md,txt} files, or when user asks you to look at the "todo file".
 ---
 
 ## Overview
