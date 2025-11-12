@@ -1,3 +1,5 @@
+# Disclaimer: the llm() function lives in llm.bashrc
+
 # This file contains aliases and functions for managing AI worktrees and tasks.
 # 
 # The git-* ones are auxiliary functions to manage git worktrees. You should

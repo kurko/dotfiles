@@ -29,6 +29,7 @@ source ~/.dotfiles/bash/alias/microsoft.bashrc
 source ~/.dotfiles/bash/alias/fixes.bashrc
 source ~/.dotfiles/bash/alias/code.bashrc
 source ~/.dotfiles/bash/alias/ai.bashrc
+source ~/.dotfiles/bash/alias/llm.bashrc
 source ~/.dotfiles/bash/alias/media_image_video.bashrc
 
 alias install-dotfiles='update_dotfiles'
