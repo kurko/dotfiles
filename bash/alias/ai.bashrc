@@ -180,10 +180,53 @@ function git-worktree-exists() {
 }
 
 function git-worktree-clean() {
-  git worktree list --porcelain | 
-    grep -B2 "branch refs/heads/" | 
-    grep "worktree" | 
-    cut -d' ' -f2 | 
+  git worktree list --porcelain |
+    grep -B2 "branch refs/heads/" |
+    grep "worktree" |
+    cut -d' ' -f2 |
     xargs -I {} git worktree remove {}
 }
 
+# Wrapper that enables attention color alerts for any command. It just makes the
+# whole tmux pane orange once Claude or any AI finishes running so my attention
+# is caught.
+#
+# The program must have a hook that calls ~/bin/prompt-color-attention
+# when it needs attention (and --disable when user resumes).
+#
+# Creates a temp file flag based on tmux pane ID so hooks can detect it.
+#
+# Usage: prompt-attention claude-new "my prompt"
+#        prompt-attention rspec spec/
+#
+# Claude Code hook setup (~/.claude/settings.json) example:
+#   "hooks": {
+#     "Notification": [{
+#       "matcher": "",
+#       "hooks": [{
+#         "type": "command",
+#         "command": "terminal-notifier -title 'Claude Code' -message 'Awaiting your input' -ignoreDnD && prompt-color-attention"
+#       }]
+#     }],
+#     "UserPromptSubmit": [{
+#       "matcher": "",
+#       "hooks": [{
+#         "type": "command",
+#         "command": "prompt-color-attention --disable"
+#       }]
+#     }]
+#   }
+function prompt-attention() {
+  local flag_file="/tmp/annoying-color-alert-$(tmux display-message -p '#{pane_id}' | tr -d '%')"
+  touch "$flag_file"
+  trap "rm -f '$flag_file'" EXIT INT TERM
+  "$@"
+  local exit_code=$?
+  rm -f "$flag_file"
+  return $exit_code
+}
+
+# Make the screen orange everytime Claude finishes
+function annoying-claude() {
+  prompt-attention claude-new "$@"
+}
