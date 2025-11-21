@@ -223,3 +223,7 @@ function prompt-attention() {
   "$@"
 }
 
+# Make the screen orange everytime Claude finishes
+function annoying-claude() {
+  prompt-attention claude-new "$@"
+}
