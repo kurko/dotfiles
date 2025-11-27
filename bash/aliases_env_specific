@@ -1,5 +1,13 @@
 #!/bin/bash
 
-alias pg="pg_ctl -D /usr/local/var/postgres -l ~/.pg.log start"
-alias pgstop="pg_ctl -D /usr/local/var/postgres -l ~/.pg.log stop"
-alias pgstatus="pg_ctl status"
+function pg {
+  brew services start $(brew list | grep '^postgresql')
+}
+
+function pgstop {
+  brew services stop $(brew list | grep '^postgresql')
+}
+
+function pgstatus {
+  brew services info $(brew list | grep '^postgresql')
+}
