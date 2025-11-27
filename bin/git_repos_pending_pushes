@@ -1,0 +1,185 @@
+#!/bin/bash
+
+# git_repos_pending_pushes - Find git repositories with unpushed changes
+#
+# DESCRIPTION:
+#   Recursively scans a directory for git repositories and reports which ones
+#   have pending changes that need to be pushed to remote. Useful for ensuring
+#   all work is synchronized before switching between laptops.
+#
+# USAGE:
+#   git_repos_pending_pushes <directory>
+#   git_repos_pending_pushes ~/projects
+#
+# WHAT IT CHECKS:
+#   - Commits that haven't been pushed to the tracking branch
+#   - Uncommitted changes (both staged and unstaged)
+#   - Untracked files (new files not added to git)
+#   - When on main/master: reports other branches without remote tracking
+#
+# OUTPUT:
+#   Groups repositories into "Needs Attention" (with details) and shows
+#   a summary count at the end. Uses symbols for visual scanning:
+#     ✘ = Repository needs attention
+#     • = Detail item
+#
+# FUTURE IMPROVEMENTS:
+#   - Add --auto-commit flag to automatically commit changes with generic message
+#   - Add --interactive mode to select which repos to push
+#   - Support .gitignore-style config file to skip certain repos
+#   - Add --parallel flag to check repos concurrently for speed
+#   - Add --show-clean flag to also list repositories that are up-to-date
+#   - Add --color/--no-color flags for color output control
+#   - Show last commit time/author for context
+#   - Integrate with git credential helper for automatic pushing
+
+# Colors
+RED='\033[91m'
+YELLOW='\033[93m'
+GREEN='\033[92m'
+BLUE='\033[94m'
+NC='\033[0m' # No Color
+
+# Show usage if no directory provided
+if [ $# -eq 0 ]; then
+  echo "Usage: git_repos_pending_pushes <directory>"
+  echo ""
+  echo "Scans directory recursively for git repos with pending changes."
+  echo ""
+  echo "Example:"
+  echo "  git_repos_pending_pushes ~/projects"
+  echo "  git_repos_pending_pushes ."
+  exit 1
+fi
+
+SEARCH_DIR="$1"
+
+# Validate directory exists
+if [ ! -d "$SEARCH_DIR" ]; then
+  echo "Error: Directory '$SEARCH_DIR' does not exist"
+  exit 1
+fi
+
+# Convert to absolute path
+SEARCH_DIR=$(cd "$SEARCH_DIR" && pwd)
+
+# Arrays to store results
+declare -a repos_need_attention
+declare -a repo_details
+
+# Find all git repositories
+while IFS= read -r git_dir; do
+  repo_dir=$(dirname "$git_dir")
+
+  # Change to repo directory
+  cd "$repo_dir" || continue
+
+  # Verify this is a valid git repository
+  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    continue
+  fi
+
+  # Get repo name (relative to search dir or basename)
+  if [[ "$repo_dir" == "$SEARCH_DIR"/* ]]; then
+    repo_name="${repo_dir#$SEARCH_DIR/}"
+  else
+    repo_name=$(basename "$repo_dir")
+  fi
+
+  # Initialize status array for this repo
+  status_items=()
+
+  # Check 1: Unpushed commits
+  # First, check if there's a tracking branch
+  tracking_branch=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "")
+
+  if [ -n "$tracking_branch" ]; then
+    # Count commits ahead of tracking branch
+    commits_ahead=$(git rev-list --count @{u}..HEAD 2>/dev/null || echo "0")
+    if [ "$commits_ahead" -gt 0 ]; then
+      status_items+=("$commits_ahead commit(s) ahead of $tracking_branch")
+    fi
+  fi
+
+  # Check 2: Uncommitted changes (staged + unstaged)
+  uncommitted=$(git status --short 2>/dev/null | grep -v '^??' | wc -l | tr -d ' ')
+  if [ "$uncommitted" -gt 0 ]; then
+    status_items+=("$uncommitted uncommitted change(s)")
+  fi
+
+  # Check 3: Untracked files
+  untracked=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$untracked" -gt 0 ]; then
+    status_items+=("$untracked untracked file(s)")
+  fi
+
+  # Check 4: Branches without remote tracking (only when on main/master)
+  current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [[ "$current_branch" == "main" || "$current_branch" == "master" ]]; then
+    # Find branches without remote tracking
+    unpushed_branches=()
+    while IFS= read -r branch; do
+      # Skip main/master branches
+      if [[ "$branch" == "main" || "$branch" == "master" ]]; then
+        continue
+      fi
+
+      # Check if branch has a remote tracking branch
+      remote_ref=$(git rev-parse --abbrev-ref "$branch@{u}" 2>/dev/null || echo "")
+      if [ -z "$remote_ref" ]; then
+        unpushed_branches+=("$branch")
+      fi
+    done < <(git for-each-ref --format='%(refname:short)' refs/heads/)
+
+    if [ ${#unpushed_branches[@]} -gt 0 ]; then
+      branch_list=$(IFS=', '; echo "${unpushed_branches[*]}")
+      status_items+=("Branch(es) not pushed: $branch_list")
+    fi
+  fi
+
+  # If there are any status items, add to needs_attention list
+  if [ ${#status_items[@]} -gt 0 ]; then
+    repos_need_attention+=("$repo_name")
+
+    # Store details for this repo
+    for item in "${status_items[@]}"; do
+      repo_details+=("$repo_name|$item")
+    done
+  fi
+
+done < <(find "$SEARCH_DIR" -name ".git" -type d 2>/dev/null)
+
+# Output results
+echo ""
+
+if [ ${#repos_need_attention[@]} -eq 0 ]; then
+  echo -e "${GREEN}✔ All repositories are up-to-date${NC}"
+  echo ""
+else
+  echo -e "${YELLOW}⚠ NEEDS ATTENTION${NC}"
+  echo ""
+
+  # Print each repo with its details
+  current_repo=""
+  for detail in "${repo_details[@]}"; do
+    repo="${detail%%|*}"
+    item="${detail#*|}"
+
+    # Print repo name if it's a new repo
+    if [ "$repo" != "$current_repo" ]; then
+      if [ -n "$current_repo" ]; then
+        echo ""
+      fi
+      echo -e "${RED}✘${NC} $repo"
+      current_repo="$repo"
+    fi
+
+    # Print detail item
+    echo "  • $item"
+  done
+
+  echo ""
+  echo "---"
+  echo -e "Summary: ${YELLOW}${#repos_need_attention[@]}${NC} repo(s) need attention"
+  echo ""
+fi
