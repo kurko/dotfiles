@@ -44,6 +44,7 @@ Further paragraphs come after blank lines.
 The rules:
 
 - The first line is a concise summary of the change, 50 characters or less.
+- Wrap all lines in the body to 80 characters maximum.
 - The first paragraph must explain what the PROBLEM is before the commit, and
   what impact it had.
 - The second paragraph must explain what the implemented SOLUTION in the commit
