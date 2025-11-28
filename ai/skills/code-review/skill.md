@@ -7,14 +7,22 @@ description: Review pull requests and uncommitted code changes. Use when user as
 
 Review code changes from pull requests, git diffs, or uncommitted changes.
 
-## CRITICAL: Always Use a Subagent
+## CRITICAL: Instructions for Parent Agent (YOU)
 
-**You MUST spawn a `general-purpose` subagent to perform the review.** This keeps
-review context separate from the main conversation and allows for thorough
-exploration without polluting the chat history.
+1. You MUST spawn a `general-purpose` subagent with the "Subagent Instructions" below
+2. When the subagent returns, you MUST display the complete review to the user verbatim
+   - Do NOT summarize or abbreviate the review
+   - The user needs to read every comment and the full summary
 
-Pass all instructions below to the subagent. The subagent should return the
-formatted review.
+---
+
+## Subagent Instructions
+
+Pass everything below this line to the subagent.
+
+**CRITICAL: You MUST return the full formatted review.** The parent agent will
+display it verbatim to the user - do not assume they can see your work. Your
+final message MUST contain the complete review output.
 
 ## When to Activate
 
@@ -281,10 +289,3 @@ Only mention alternative approaches when:
 
 Don't suggest alternatives just because you'd do it differently.
 
-## REMINDER: Use a Subagent
-
-Spawn a `general-purpose` subagent with these instructions. The subagent has
-access to all tools (Bash, Read, Grep, Glob) needed to explore the codebase
-and run read-only commands.
-
-Return the formatted review from the subagent to the user.
