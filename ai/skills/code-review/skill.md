@@ -63,6 +63,8 @@ Before commenting, understand the context:
 - Check related models, services, or components referenced in the diff
 - For DB changes: grep for the specific column names in schema.rb/structure.sql
   to verify indexes exist for queried columns
+- For new columns: check if the model uses `enum`, `where`, `find_by`, or scopes
+  on that column - if so, it needs an index (enums generate scopes automatically)
 
 ### 2. Review Priority (in order)
 
@@ -123,6 +125,9 @@ Rules for comments:
 - Don't state the obvious
 - Don't be vague, speculative, or hand-wavy
 - Comments must be specific, actionable, and evidence-based
+- Cite evidence from production code (models, controllers, queries), not from tests
+- Be assertive: state what you observed, then recommend. Don't hedge with "if you
+  plan to..." - either make a clear recommendation or ask a clarifying question
 - If a code is vague, ask for something that makes it deterministic, e.g instead of hash["key"], ask for hash.fetch("key") with a clear error if missing. Overall, we should only leave nullable code if we don't know the answer or if nil is handled. If we know a property can't be null, make the code treat it as non-nullable.
 
 ### Good vs Bad Comments
@@ -210,6 +215,50 @@ Good call adding this index. [3]
 Solid foundation for the import. Address the null check [1] and N+1 [2], add
 tests for the new methods, and this is good to merge.
 ```
+
+## Preserve Developer Intent
+
+Suggest pragmatic solutions that preserve developer intent rather than blanket
+prohibitions. Only push back hard when the intent is clearly low quality, unsafe,
+or absurd.
+
+**Good**: "Wrap this in `unless Rails.env.production?` to keep it safe"
+**Bad**: "Remove this entirely" (when the code serves a legitimate dev purpose)
+
+## Environment-Aware Recommendations
+
+Understand the context of the file before commenting:
+
+### seeds.rb / Development Fixtures
+
+Hardcoded passwords and test data are fine in seeds. However, there's risk someone
+runs seeds in production accidentally. Suggest environment guards:
+
+```ruby
+# Good recommendation
+User.create!(password: "dev123") unless Rails.env.production?
+```
+
+Don't suggest ENV variables or Rails credentials for dev-only seed data.
+
+### Debug Logging
+
+- **Temporary debug code** (`puts "got here"`, `console.log("x is", x)`): Flag for
+  removal before commit
+- **Useful logging with sensitive data**: Suggest environment guards, not removal
+
+```ruby
+# Bad: "Remove this logging entirely"
+# Good: "Wrap in `if Rails.env.development?` to avoid logging sensitive params in production"
+Rails.logger.info(params.inspect) if Rails.env.development?
+```
+
+### Test Files
+
+Apply production standards only to the code under test, not test setup. For example:
+- Don't flag hardcoded credentials in test factories or fixtures
+- Don't flag `let(:password) { "password123" }` in specs
+- Do flag if test code would be copied into production (e.g., shared modules)
 
 ## Things to Avoid
 
