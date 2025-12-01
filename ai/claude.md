@@ -100,6 +100,13 @@ If you're unsure how to make a test pass or tempted to skip testing:
 3. Never ship untested code
 4. Ask: "I'm having trouble with [specific test]. Here's what I've tried: [attempts]. What approach would you recommend?"
 
+### Bug Fixes Require Tests
+
+When fixing bugs, ALWAYS use the `tdd-bug-fix` skill. Never edit production code
+to fix a bug without first writing a failing test that reproduces it.
+
+Exceptions: config files (.env), infrastructure, documentation, dependency locks.
+
 ## Code Quality Standards
 
 ### Naming Conventions
