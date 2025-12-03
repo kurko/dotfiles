@@ -74,6 +74,51 @@ Before commenting, understand the context:
 - For new columns: check if the model uses `enum`, `where`, `find_by`, or scopes
   on that column - if so, it needs an index (enums generate scopes automatically)
 
+#### Check for Inheritance Hierarchies
+
+When a class method is modified, check if the class has subclasses:
+
+1. **Search for subclasses** using the appropriate file extension:
+   ```bash
+   # Use the language's file extension (e.g., .rb, .py, .ts, .java)
+   grep -r "class.*extends.*ClassName" . --include="*.{ext}"
+   grep -r "class.*<.*ClassName" . --include="*.{ext}"
+   grep -r "class.*ClassName" . --include="*.{ext}"
+
+   # Ruby example:
+   grep -r "class.*<.*Product::BasePresenter" app/ --include="*.rb"
+
+   # TypeScript example:
+   grep -r "extends.*BasePresenter" src/ --include="*.ts"
+
+   # Python example:
+   grep -r "class.*\(.*BasePresenter.*\)" . --include="*.py"
+   ```
+
+2. **Check for method overrides** in each subclass found:
+   ```bash
+   # Check if subclasses override the modified method
+   grep -A 3 "def method_name" path/to/subclass.ext
+   ```
+
+3. **Detect polymorphism-breaking changes**:
+   - Changes from calling a method to directly accessing a property bypass subclass overrides
+   - Common patterns that break polymorphism:
+     - Shorthand property syntax → direct property access (e.g., `{foo}` → `{foo: model.foo}`)
+     - Method call → direct property access (e.g., `foo()` → `model.foo`)
+     - `this.method()` → `this.model.method()` in serializers/presenters
+
+   **Ruby example**: In `as_json` methods, `countries:` is shorthand for `countries: countries`,
+   which calls `self.countries` and respects subclass overrides. Changing to `countries: model.countries`
+   bypasses this polymorphism.
+
+   **TypeScript example**: Changing `{country: this.getCountry()}` to `{country: this.model.country}`
+   bypasses any subclass override of `getCountry()`.
+
+4. **Verify test coverage** for subclass-specific behavior:
+   - Search for tests related to each subclass that overrides the method
+   - Flag if overridden behavior lacks test coverage
+
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets
