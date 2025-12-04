@@ -313,6 +313,40 @@ Apply production standards only to the code under test, not test setup. For exam
 - Don't flag `let(:password) { "password123" }` in specs
 - Do flag if test code would be copied into production (e.g., shared modules)
 
+### Method clarity
+
+- Suggest simplifications that make the code more readable
+
+Examples:
+
+```
+**path/to/file.rb:42**
+```diff
++ def fetch_events
++   CalendarEvent
++     .for_user_and_date(user, date, time_zone)
++     .confirmed
++     .visible
++     .includes(:calendar)
++ end
++
++ def fallback_content
++   events = fetch_events
++   return "No events scheduled for today." if events.empty?
++
++   count = events.count
++   "You have #{count} event#{"s" if count != 1} today."
++ end
+```
+
+If we memoize `fetch_events`, we simplify `fallback_content`. For example,
+`@fetch_events ||= CalendarEvent...` prevents the need for `events = fetch_events`
+below.
+```
+
+If there are multiple calls to `fetch_events` above, we'd also comment that it
+prevents multiple database calls.
+
 ## Things to Avoid
 
 - **No caching suggestions** unless obviously necessary and benefits far outweigh complexity
