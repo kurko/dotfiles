@@ -28,9 +28,15 @@ if [[ "$1" == "--disable" ]]; then
   exit 0
 fi
 
-# Check env var OR temp file flag (for hooks that don't inherit env)
-ALERT_FLAG_FILE="/tmp/annoying-color-alert-$(tmux display-message -p '#{pane_id}' | tr -d '%')"
-echo "  ALERT_FLAG_FILE=$ALERT_FLAG_FILE exists=$(test -f "$ALERT_FLAG_FILE" && echo yes || echo no)" >> "$LOG"
+# Use exported pane ID if available (from prompt-attention wrapper),
+# otherwise detect dynamically
+if [[ -n "$ANNOYING_PANE_ID" ]]; then
+  PANE_ID="$ANNOYING_PANE_ID"
+else
+  PANE_ID=$(tmux display-message -p '#{pane_id}' | tr -d '%')
+fi
+ALERT_FLAG_FILE="/tmp/annoying-color-alert-$PANE_ID"
+echo "  PANE_ID=$PANE_ID ALERT_FLAG_FILE=$ALERT_FLAG_FILE exists=$(test -f "$ALERT_FLAG_FILE" && echo yes || echo no)" >> "$LOG"
 
 if [[ "$ANNOYING_COLOR_ALERT" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
   echo "Setting tmux pane to attention color."

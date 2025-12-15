@@ -200,26 +200,13 @@ function git-worktree-clean() {
 # Usage: prompt-attention claude-new "my prompt"
 #        prompt-attention rspec spec/
 #
-# Claude Code hook setup (~/.claude/settings.json) example:
-#   "hooks": {
-#     "Notification": [{
-#       "matcher": "",
-#       "hooks": [{
-#         "type": "command",
-#         "command": "terminal-notifier -title 'Claude Code' -message 'Awaiting your input' -ignoreDnD && prompt-color-attention"
-#       }]
-#     }],
-#     "UserPromptSubmit": [{
-#       "matcher": "",
-#       "hooks": [{
-#         "type": "command",
-#         "command": "prompt-color-attention --disable"
-#       }]
-#     }]
-#   }
+# Claude Code hook setup: see ai/claude-settings.json (symlinked to
+# ~/.claude/settings.json). Documentation in ai/README.md.
 function prompt-attention() {
-  local flag_file="/tmp/annoying-color-alert-$(tmux display-message -p '#{pane_id}' | tr -d '%')"
+  local pane_id=$(tmux display-message -p '#{pane_id}' | tr -d '%')
+  local flag_file="/tmp/annoying-color-alert-$pane_id"
   touch "$flag_file"
+  export ANNOYING_PANE_ID="$pane_id"
   trap "rm -f '$flag_file'" EXIT INT TERM
   "$@"
   local exit_code=$?
