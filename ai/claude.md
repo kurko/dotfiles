@@ -276,3 +276,5 @@ Remember: We're craftspeople. We write code for humans first, computers second. 
 - Whenever I give you a PR, use `gh` to load it.
 - Use these skills for common tasks: git commit, write tasks in todo.md, code
   review, etc.
+- When inside a git repository, use regular git commands (git status, git diff,
+  git log) rather than git -C. The working directory is reliable.
