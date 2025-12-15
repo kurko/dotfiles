@@ -33,6 +33,7 @@ function claude-new() {
       Bash(mkdir:*) \
       ,Bash(curl:*) \
       ,Bash(ls:*) \
+      ,Bash(tree:*) \
       ,Bash(pwd) \
       ,Bash(which:*) \
       ,Bash(head:*) \
