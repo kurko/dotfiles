@@ -68,6 +68,7 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/ai/claude-settings.json ~/.claude/settings.json
   ln -nfs ~/.dotfiles/ai/skills ~/.claude/skills
   ln -nfs ~/.dotfiles/ai/commands ~/.claude/commands
+  ln -nfs ~/.dotfiles/ai/agents ~/.claude/agents
 
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml
