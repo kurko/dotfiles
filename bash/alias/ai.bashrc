@@ -107,8 +107,17 @@ function claude-new() {
       ,Bash(jq:*) \
       ,Bash(defaults read:*) \
       ,Read(*) \
+      ,Read(//Users/alex/.claude/**) \
+      ,Read(//Users/alex/.dotfiles/**) \
+      ,Read(//Users/alex/.dotfiles/**) \
+      ,Read(//Users/alex/www) \
+      ,Read(//Users/alex/work) \
+      ,Read(//Users/alex/ai-notes) \
+      ,Read(//Users/alex/humanics) \
+      ,Read(/tmp/**) \
       ,WebFetch(domain:github.com) \
-      ,WebSearch(*)"
+      ,WebSearch(*) \
+      ,Bash(claude config get:*)"
 }
 
 function claude-new-worktree() {
