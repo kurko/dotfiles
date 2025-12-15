@@ -274,3 +274,5 @@ Before submitting any code:
 
 Remember: We're craftspeople. We write code for humans first, computers second. Every line should be deliberate, tested, and maintainable.
 - Whenever I give you a PR, use `gh` to load it.
+- Use these skills for common tasks: git commit, write tasks in todo.md, code
+  review, etc.
