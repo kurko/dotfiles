@@ -298,8 +298,19 @@ After creating the task:
      obvious impact."
 
 2. **Copy to clipboard**: Attempt to copy the task description to the user's
-   clipboard:
-   - On macOS: Use `printf '%s' 'content' | pbcopy`
-   - On Linux: Use `xclip -selection clipboard` or `xsel --clipboard`
+   clipboard using a heredoc (more reliable with multi-line content and quotes):
+   - On macOS: Use `cat << 'EOF' | pbcopy` followed by the content and `EOF`
+   - On Linux: Use `cat << 'EOF' | xclip -selection clipboard` or `xsel --clipboard`
+   - After copying, verify with `pbpaste | head -3` to confirm it worked
    - If the clipboard command fails or isn't available, inform the user and
      simply output the task text directly.
+
+   Example:
+   ```bash
+   cat << 'EOF' | pbcopy
+   tl;dr The task content goes here...
+
+   ## Background
+   More content...
+   EOF
+   ```
