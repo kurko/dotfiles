@@ -88,6 +88,7 @@ function claude-new() {
       ,Bash(grep:*) \
       ,Bash(lsof:*) \
       ,Bash(log:*) \
+      ,Bash(log show:*) \
       ,Bash(git status:*) \
       ,Bash(git log:*) \
       ,Bash(git diff:*) \
