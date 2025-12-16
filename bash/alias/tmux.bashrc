@@ -22,6 +22,10 @@ function tmuxa(){
 }
 
 
+function tmuxnn(){
+  tmux new-session -t $1
+}
+
 function tmuxn(){
   tmux has-session -t $1 >/dev/null 2>&1
 
