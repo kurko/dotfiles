@@ -23,11 +23,6 @@ if [[ -z "$TMUX" ]]; then
   exit 0
 fi
 
-if [[ "$1" == "--disable" ]]; then
-  tmux select-pane -P 'bg=default,fg=default'
-  exit 0
-fi
-
 # Use exported pane ID if available (from prompt-attention wrapper),
 # otherwise detect dynamically
 if [[ -n "$ANNOYING_PANE_ID" ]]; then
@@ -35,12 +30,17 @@ if [[ -n "$ANNOYING_PANE_ID" ]]; then
 else
   PANE_ID=$(tmux display-message -p '#{pane_id}' | tr -d '%')
 fi
+
+if [[ "$1" == "--disable" ]]; then
+  tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
+  exit 0
+fi
 ALERT_FLAG_FILE="/tmp/annoying-color-alert-$PANE_ID"
 echo "  PANE_ID=$PANE_ID ALERT_FLAG_FILE=$ALERT_FLAG_FILE exists=$(test -f "$ALERT_FLAG_FILE" && echo yes || echo no)" >> "$LOG"
 
 if [[ "$ANNOYING_COLOR_ALERT" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
   echo "Setting tmux pane to attention color."
-  tmux select-pane -P 'bg=#FF8C00,fg=#ffffff'
+  tmux select-pane -t "%$PANE_ID" -P 'bg=#FF8C00,fg=#ffffff'
 else
   echo "ANNOYING_COLOR_ALERT is not enabled. No changes made."
 fi
