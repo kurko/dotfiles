@@ -7,23 +7,25 @@
 function claude-new() {
 
   INITIAL_PROMPT="$@"
-  if [[ -d "ai-notes" ]]; then
-    if [[ -f "ai-notes/AI-README.md" ]]; then
-      README_FILE="ai-notes/README.md"
-    elif [[ -f "ai-notes/README.md" ]]; then
-      README_FILE="ai-notes/README.md"
-    else
-      README_FILE=""
-    fi
+  # Testing not having an initial prompt for reading files.
+  #
+  # if [[ -d "ai-notes" ]]; then
+  #   if [[ -f "ai-notes/AI-README.md" ]]; then
+  #     README_FILE="ai-notes/README.md"
+  #   elif [[ -f "ai-notes/README.md" ]]; then
+  #     README_FILE="ai-notes/README.md"
+  #   else
+  #     README_FILE=""
+  #   fi
 
-    # Injects whatever is passed into claude-new as the initial prompt.
-    INITIAL_PROMPT="$INITIAL_PROMPT.
+  #   # Injects whatever is passed into claude-new as the initial prompt.
+  #   INITIAL_PROMPT="$INITIAL_PROMPT.
 
-    Start by running 'ls' to see what kind of project this is.
+  #   Start by running 'ls' to see what kind of project this is.
 
-    The 'ai-notes/' has notes from past sessions. Don't read them yet, only if I
-    ask you to (let's keep focused)."
-  fi
+  #   The 'ai-notes/' has notes from past sessions. Don't read them yet, only if I
+  #   ask you to (let's keep focused)."
+  # fi
 
   echo "Running claude"
 
