@@ -904,6 +904,17 @@ if has("nvim") " neovim?
   inoremap <silent><M-j> <Cmd>lua require('copilot.suggestion').next()<CR>
   inoremap <silent><M-k> <Cmd>lua require('copilot.suggestion').prev()<CR>
 
+  " Disable Copilot for secrets files to avoid Neovim 0.11.x LSP sync bug
+  lua << EOF
+  vim.api.nvim_create_autocmd("BufEnter", {
+    pattern = { "*/.secrets", "*/.env", "*credentials*" },
+    callback = function()
+      vim.b.copilot_suggestion_auto_trigger = false
+      require('copilot.command').disable()
+    end,
+  })
+EOF
+
   " When using MUComplete, it will automatically disable itself when Copilot is
   " enabled. This is done by the Copilot plugin.
   command! CopilotOn lua require('copilot').enable()
