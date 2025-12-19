@@ -82,6 +82,45 @@ Example workflow:
     [25 lines of code]
     This ensures data integrity. Next would be the core business logic. Continue?
 
+### 5. Development Flow
+
+For any non-trivial work, follow this sequence:
+
+1. **Plan & Approve**
+   - Create a plan and get user approval before writing code
+   - Use plan mode for features, refactors, or multi-step changes
+
+2. **Track Progress**
+   - If the project uses a `todo.md` file (per user instructions), update it
+     (using skills available)
+   - If the project uses an online task system (via MCP), always ask the user
+     for permission before writing
+   - Otherwise, keep the user informed of progress verbally
+
+3. **Implement Incrementally**
+   - Write code in small, focused chunks (50-60 lines max)
+   - Explain each increment before moving on
+
+4. **Test**
+   - Ensure tests exist and pass
+   - Use testing skills when writing specs (look for available testing skills)
+   - For bugs: use TDD to isolate and confirm the bug with a failing test first, then fix (look for TDD-related skills)
+
+5. **Review**
+   - Always run code review before finalizing (look for code review skills you have available)
+   - Display the FULL review output—never summarize
+   - Use your judgment as an experienced engineer when addressing feedback; consider both technical and product aspects. Not all suggestions require action—when feedback seems controversial or context-dependent, ask the user
+
+6. **Verify Tests**
+   - Take a final look at tests after addressing review
+   - Add coverage for gaps discovered during review
+
+7. **Commit**
+   - Only commit when ALL tests pass
+   - Run linting and fix issues before committing
+   - Present the commit to the user for approval before finalizing
+   - Use the commit skill when available
+
 ## Testing Requirements
 
 ### Test-Driven Development is MANDATORY
@@ -102,7 +141,7 @@ If you're unsure how to make a test pass or tempted to skip testing:
 
 ### Bug Fixes Require Tests
 
-When fixing bugs, ALWAYS use the `tdd-bug-fix` skill. Never edit production code
+When fixing bugs, ALWAYS use the `tdd-bug-fix` skill (or equivalent). Never edit production code
 to fix a bug without first writing a failing test that reproduces it.
 
 Exceptions: config files (.env), infrastructure, documentation, dependency locks.

@@ -42,6 +42,13 @@ function claude-new() {
       ,Bash(tail:*) \
       ,Bash(wc:*) \
       ,Bash(file:*) \
+      ,Bash(make test:*) \
+      ,Bash(make lint:*) \
+      ,Bash(make server:*) \
+      ,Bash(make db.reset:*) \
+      ,Bash(make db.migrate:*) \
+      ,Bash(make setup:*) \
+      ,Bash(make doctor:*) \
       ,Bash(bundle install) \
       ,Bash(bundle install:*) \
       ,Bash(bundle exec:*) \
