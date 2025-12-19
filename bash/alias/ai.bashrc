@@ -47,6 +47,9 @@ function claude-new() {
       ,Bash(make server:*) \
       ,Bash(make db.reset:*) \
       ,Bash(make db.migrate:*) \
+      ,Bash(make db.seed:*) \
+      ,Bash(make db.schema.load:*) \
+      ,Bash(make routes:*) \
       ,Bash(make setup:*) \
       ,Bash(make doctor:*) \
       ,Bash(bundle install) \
