@@ -167,6 +167,34 @@ When a class method is modified, check if the class has subclasses:
    - Search for tests related to each subclass that overrides the method
    - Flag if overridden behavior lacks test coverage
 
+#### Check for Variable-Filter Semantic Mismatches
+
+When code assigns the result of a collection lookup to a variable, check whether
+the variable name semantically matches the filter predicate:
+
+```ruby
+# Suspicious: variable says "product" but filter is on currency, not product attributes
+product = catalog.find { |p| p.currency_code == currency }
+
+# Suspicious: variable says "email" but filter is on first_name
+email = users.find { |u| u.first_name == name }
+
+# Suspicious: variable says "order" but filter is only on generic status
+order = records.where(status: "active").first
+```
+
+This pattern may return the wrong item if the collection is heterogeneous (e.g.,
+contains gift cards AND bank transfers, both with matching currency).
+
+**To verify:**
+1. Check if the collection source is already constrained upstream
+2. Look for uniqueness constraints or 1:1 relationships (e.g., one product per currency)
+3. Check if the containing context (folder/class name) implies a domain constraint
+   not reflected in the filter
+
+If unverifiable, flag it - the filter may need an additional predicate (e.g.,
+`category == "bank"`).
+
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets
