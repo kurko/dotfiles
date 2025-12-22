@@ -9,10 +9,32 @@ Review code changes from pull requests, git diffs, or uncommitted changes.
 
 ## CRITICAL: Instructions for Parent Agent (YOU)
 
-1. You MUST spawn a `general-purpose` subagent with the "Subagent Instructions" below
-2. When the subagent returns, you MUST display the complete review to the user verbatim
+1. You MUST gather **Coder Intent** and pass it to the subagent (see below)
+2. You MUST spawn a `general-purpose` subagent with the "Subagent Instructions" below
+3. When the subagent returns, you MUST display the complete review to the user verbatim
    - Do NOT summarize or abbreviate the review
    - The user needs to read every comment and the full summary
+
+### Gathering Coder Intent
+
+Pass relevant context as "CODER INTENT" at the start of your prompt to the subagent:
+
+| Review Type | What to Pass |
+|-------------|--------------|
+| **Git diff** (uncommitted changes) | Any implementation plan from this conversation. If you created a plan before coding, include it. |
+| **Pull Request** | The PR number or URL. Subagent will fetch details. |
+
+**Example prompt to subagent:**
+
+```
+CODER INTENT:
+- Implementation plan from this conversation:
+  1. Add OAuth controller with GitHub strategy
+  2. Create User model with github_id field
+  3. Add login button to homepage
+
+[Subagent instructions below...]
+```
 
 ---
 
@@ -45,6 +67,32 @@ Determine the source and fetch the diff:
 
 For uncommitted reviews, always include both `git diff HEAD` AND untracked files.
 Ignore `.env`, `.secrets`, and similar sensitive files.
+
+## Understanding Coder Intent
+
+The parent agent may pass "CODER INTENT" with context about what the developer intended.
+Use this to evaluate whether the implementation matches the stated goals.
+
+### For Pull Requests
+
+When reviewing a PR, fetch the full context:
+
+1. Run `gh pr view <number>` to get title, description, and linked issues
+2. **Extract task links** from the PR description (Asana, Linear, Jira, Notion, Trello, etc.)
+3. **Fetch task details via MCP** if task links are found:
+   - Use the appropriate MCP tool for the task system (e.g., Asana MCP, Linear MCP)
+   - Get the task title, description, acceptance criteria, and comments
+   - This provides the original requirements the code should satisfy
+
+### Graceful Degradation
+
+If you cannot fetch task details (MCP unavailable, auth issues, network errors):
+
+1. **Proceed with the review anyway** - do not block on missing context
+2. Note in your output: "Could not load linked task: <url>. Reviewing based on PR description and code."
+3. Use whatever context you do have (PR description, commit messages, code comments)
+
+The review must happen regardless of whether all context sources are available.
 
 ## Large Diffs (50+ files)
 
