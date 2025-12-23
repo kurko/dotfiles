@@ -31,14 +31,10 @@ else
   PANE_ID=$(tmux display-message -p '#{pane_id}' | tr -d '%')
 fi
 
-ACTIVE_PANE_FILE="/tmp/annoying-color-active-pane"
-
 if [[ "$1" == "--disable" ]]; then
-  # Use stored pane ID if available (handles hook subprocess case)
-  if [[ -f "$ACTIVE_PANE_FILE" ]]; then
-    PANE_ID=$(cat "$ACTIVE_PANE_FILE")
-    rm -f "$ACTIVE_PANE_FILE"
-  fi
+  # Just disable the current pane - no file lookup needed.
+  # The current pane context is always correct whether called from
+  # Option+Esc keybinding or Claude's UserPromptSubmit hook.
   echo "  disabling PANE_ID=$PANE_ID" >> "$LOG"
   tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
   exit 0
@@ -48,7 +44,6 @@ echo "  PANE_ID=$PANE_ID ALERT_FLAG_FILE=$ALERT_FLAG_FILE exists=$(test -f "$ALE
 
 if [[ "$ANNOYING_COLOR_ALERT" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
   echo "Setting tmux pane to attention color."
-  echo "$PANE_ID" > "$ACTIVE_PANE_FILE"
   tmux select-pane -t "%$PANE_ID" -P 'bg=#FF8C00,fg=#ffffff'
 else
   echo "ANNOYING_COLOR_ALERT is not enabled. No changes made."
