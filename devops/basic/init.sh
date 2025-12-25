@@ -5,63 +5,130 @@
 #
 # Usage:
 #
-#   bash <(curl -s https://raw.githubusercontent.com/kurko/devops/master/devops/basic/init.sh)
+#   # As root (creates user):
+#   USERNAME=myuser USER_PASSWORD=secret bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)
+#
+#   # As existing user:
+#   bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)
 #
 # This script:
 #
-# - Installs:
-#   - vim mosh build-essential software-properties-common curl wget git tmux
-#     htop
-# - Installs Docker and Compose
-# - Installs Ruby, adds rbenv to path
-# - Installs Node.js and Yarn
+# - Creates user (if running as root)
+# - Installs: vim mosh build-essential software-properties-common curl wget git tmux htop
+# - Installs Docker (Compose V2 is bundled)
+# - Installs Ruby (rbenv), Node.js 22.x LTS, and Yarn (via corepack)
+
+set -e
+
+# Determine target user based on who's running the script
+if [ "$(id -u)" -eq 0 ]; then
+  # Running as root - require USERNAME
+  if [ -z "$USERNAME" ]; then
+    echo "Error: USERNAME is required when running as root."
+    echo ""
+    echo "Usage:"
+    echo "  USERNAME=myuser USER_PASSWORD=secret bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)"
+    echo ""
+    echo "If the user already exists, USER_PASSWORD can be omitted."
+    exit 1
+  fi
+  TARGET_USER="$USERNAME"
+else
+  # Running as non-root - use current user
+  TARGET_USER="$(whoami)"
+fi
+
+TARGET_HOME="/home/$TARGET_USER"
+
+echo "==> Setting up server for user: $TARGET_USER"
+
+# Create user if needed (only when running as root and user doesn't exist)
+if [ "$(id -u)" -eq 0 ]; then
+  if ! id -u "$TARGET_USER" > /dev/null 2>&1; then
+    if [ -z "$USER_PASSWORD" ]; then
+      echo "Error: User '$TARGET_USER' does not exist. USER_PASSWORD is required to create them."
+      echo ""
+      echo "Usage:"
+      echo "  USERNAME=$TARGET_USER USER_PASSWORD=secret bash <(curl -s ...)"
+      exit 1
+    fi
+
+    echo "==> Creating user: $TARGET_USER"
+    adduser "$TARGET_USER" --gecos ",,," --disabled-password
+    echo "$TARGET_USER:$USER_PASSWORD" | chpasswd
+
+    # Set up SSH directory and copy root's authorized_keys
+    mkdir -p "$TARGET_HOME/.ssh"
+    if [ -f /root/.ssh/authorized_keys ]; then
+      cp /root/.ssh/authorized_keys "$TARGET_HOME/.ssh/authorized_keys"
+      echo "==> Copied SSH keys from root to $TARGET_USER"
+    else
+      touch "$TARGET_HOME/.ssh/authorized_keys"
+    fi
+    chmod 700 "$TARGET_HOME/.ssh"
+    chmod 600 "$TARGET_HOME/.ssh/authorized_keys"
+    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.ssh"
+  else
+    echo "==> User '$TARGET_USER' already exists. Skipping creation."
+  fi
+
+  # Add user to sudo group
+  usermod -aG sudo "$TARGET_USER"
+fi
 
 # Update package lists and upgrade the system
-sudo apt-get update -y && sudo apt-get upgrade -y
+echo "==> Updating system packages"
+apt-get update -y && apt-get upgrade -y
 
 # Install basic software
-#
-# mosh: replaces ssh (e.g mosh user@ip) to make the connection feel way faster
-sudo apt-get install -y \
+echo "==> Installing basic tools"
+apt-get install -y \
   vim mosh build-essential software-properties-common curl wget git tmux htop
 
-# Check if Docker is installed
+# Install Docker
 if ! command -v docker &> /dev/null; then
-    # Install Docker
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    rm get-docker.sh
+  echo "==> Installing Docker"
+  curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+  sh /tmp/get-docker.sh
+  rm /tmp/get-docker.sh
 else
-    echo "Docker is already installed. Skipping installation."
+  echo "==> Docker already installed. Skipping."
 fi
 
-# Add $USERNAME to the Docker group
-sudo usermod -aG docker `whoami`
+# Add user to docker group
+usermod -aG docker "$TARGET_USER"
 
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+# Note: Docker Compose V2 is bundled with Docker (use `docker compose`)
 
-# Install Rbenv and Ruby-build for managing Ruby versions
-sudo apt-get install -y rbenv ruby-build
+# Install Rbenv and Ruby-build
+echo "==> Installing rbenv and ruby-build"
+apt-get install -y rbenv ruby-build
 
-# Check if rbenv is already in PATH
-if ! grep -q 'export PATH="$HOME/.rbenv/bin:$PATH"' ~/.bashrc; then
-    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-    echo 'eval "$(rbenv init -)"' >> ~/.bashrc
-    source ~/.bashrc
+# Configure rbenv in user's bashrc
+if ! grep -q 'export PATH="$HOME/.rbenv/bin:$PATH"' "$TARGET_HOME/.bashrc"; then
+  echo "==> Configuring rbenv in $TARGET_HOME/.bashrc"
+  echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> "$TARGET_HOME/.bashrc"
+  echo 'eval "$(rbenv init -)"' >> "$TARGET_HOME/.bashrc"
 fi
 
-# Install Node.js for the Rails asset pipeline
-curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# Install Node.js LTS
+echo "==> Installing Node.js 22.x LTS"
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
 
-# Install Yarn for managing JavaScript packages
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-sudo apt-get update && sudo apt-get install yarn
+# Enable Yarn via corepack
+echo "==> Enabling Yarn via corepack"
+corepack enable
 
 # Clean up
-sudo apt-get autoremove -y && sudo apt-get clean
+apt-get autoremove -y && apt-get clean
 
-echo "Setup complete. Please reboot the system using 'sudo reboot'."
+echo ""
+echo "==> Setup complete!"
+echo ""
+if [ "$(id -u)" -eq 0 ]; then
+  echo "SSH in as '$TARGET_USER' to start using the server:"
+  echo "  ssh $TARGET_USER@<server-ip>"
+else
+  echo "Run 'source ~/.bashrc' or start a new shell to activate rbenv."
+fi

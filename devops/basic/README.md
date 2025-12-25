@@ -2,12 +2,25 @@
 
 This is a set of scripts for installing new VPS accounts.
 
-## Init machine
+## Quick Start
 
-This script will run basic installations of vim, mosh, git, add a devops user,
-install Ruby, node and more.
+**Fresh server (as root):**
+```bash
+USERNAME=myuser USER_PASSWORD=mypassword bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)
+```
 
-- [init.sh](./init.sh)
+**Existing user (SSH'd as that user):**
+```bash
+bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)
+```
+
+## What it installs
+
+- Creates user with sudo access (when running as root)
+- vim, mosh, git, tmux, htop, build-essential
+- Docker (Compose V2 bundled)
+- rbenv + ruby-build
+- Node.js 22.x LTS + Yarn (via corepack)
 
 ## Docker
 
