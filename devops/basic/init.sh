@@ -8,8 +8,8 @@
 #   # As root (creates user):
 #   USERNAME=myuser USER_PASSWORD=secret bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)
 #
-#   # As existing user:
-#   bash <(curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh)
+#   # As existing user (with sudo):
+#   curl -s https://raw.githubusercontent.com/kurko/dotfiles/master/devops/basic/init.sh | sudo bash
 #
 # This script:
 #
@@ -22,8 +22,15 @@ set -e
 
 # Determine target user based on who's running the script
 if [ "$(id -u)" -eq 0 ]; then
-  # Running as root - require USERNAME
-  if [ -z "$USERNAME" ]; then
+  # Running as root
+  if [ -n "$USERNAME" ]; then
+    # Explicit USERNAME provided
+    TARGET_USER="$USERNAME"
+  elif [ -n "$SUDO_USER" ]; then
+    # Running via sudo - use the original user
+    TARGET_USER="$SUDO_USER"
+  else
+    # Running as root directly without USERNAME
     echo "Error: USERNAME is required when running as root."
     echo ""
     echo "Usage:"
@@ -32,7 +39,6 @@ if [ "$(id -u)" -eq 0 ]; then
     echo "If the user already exists, USER_PASSWORD can be omitted."
     exit 1
   fi
-  TARGET_USER="$USERNAME"
 else
   # Running as non-root - use current user
   TARGET_USER="$(whoami)"
