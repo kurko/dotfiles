@@ -73,6 +73,9 @@ COUNT_SKIPPED_JPG_DNG=0
 COUNT_SIDECARS_UPDATED=0
 COUNT_COLLISIONS=0
 
+# Error tracking
+SYNC_ERRORS=false
+
 # Temp files (cleaned up on exit)
 TEMP_DIR=""
 JPG_EXCLUDE_FILE=""
@@ -297,17 +300,20 @@ sync_year_folders() {
 
     # Phase 1: Sync mutable files (sidecars + README.md) with --update
     log_verbose "  Phase 1: Syncing sidecars and README files..."
-    rsync "${rsync_base[@]}" \
+    if ! rsync "${rsync_base[@]}" \
         --update \
         "${sidecar_includes[@]}" \
         --include='README.md' \
         --include='*/' \
         --exclude='*' \
-        "$SOURCE_DIR/" "$dest_dir/" 2>/dev/null
+        "$SOURCE_DIR/" "$dest_dir/"; then
+        log "  ${RED}Error: rsync failed during sidecar sync${NC}"
+        SYNC_ERRORS=true
+    fi
 
     # Phase 2: Sync immutable files with --ignore-existing
     log_verbose "  Phase 2: Syncing raw, image, and video files..."
-    rsync "${rsync_base[@]}" \
+    if ! rsync "${rsync_base[@]}" \
         --ignore-existing \
         --exclude-from="$JPG_EXCLUDE_FILE" \
         "${raw_includes[@]}" \
@@ -315,7 +321,10 @@ sync_year_folders() {
         "${image_includes[@]}" \
         --include='*/' \
         --exclude='*' \
-        "$SOURCE_DIR/" "$dest_dir/" 2>/dev/null
+        "$SOURCE_DIR/" "$dest_dir/"; then
+        log "  ${RED}Error: rsync failed during file sync${NC}"
+        SYNC_ERRORS=true
+    fi
 }
 
 sync_exports_folder() {
@@ -352,13 +361,28 @@ sync_exports_folder() {
                 # Different size - collision
                 local file_date=$(stat -f%Sm -t%Y-%m "$src_file" 2>/dev/null)
                 local collision_dir="$dest_dir/_collisions/$file_date"
-                local collision_file="$collision_dir/$(basename "$src_file")"
+                local base_name=$(basename "$src_file")
+                local name_part="${base_name%.*}"
+                local ext_part="${base_name##*.}"
+                local collision_file="$collision_dir/$base_name"
 
-                log "  ${YELLOW}Collision${NC}: Exports/$rel_path -> _collisions/$file_date/$(basename "$src_file")"
+                # Find unique filename if collision file already exists
+                if [[ -f "$collision_file" ]]; then
+                    local counter=1
+                    while [[ -f "$collision_dir/${name_part}_$(printf '%03d' $counter).$ext_part" ]]; do
+                        ((counter++))
+                    done
+                    collision_file="$collision_dir/${name_part}_$(printf '%03d' $counter).$ext_part"
+                fi
+
+                log "  ${YELLOW}Collision${NC}: Exports/$rel_path -> _collisions/$file_date/$(basename "$collision_file")"
 
                 if [[ "$DRY_RUN" == false ]]; then
                     mkdir -p "$collision_dir"
-                    cp -p "$src_file" "$collision_file"
+                    if ! cp -p "$src_file" "$collision_file"; then
+                        log "  ${RED}Error: Failed to copy collision file${NC}"
+                        SYNC_ERRORS=true
+                    fi
                 fi
                 ((COUNT_COLLISIONS++))
             fi
@@ -367,7 +391,10 @@ sync_exports_folder() {
             log "  Copy: Exports/$rel_path"
             if [[ "$DRY_RUN" == false ]]; then
                 mkdir -p "$(dirname "$dest_file")"
-                cp -p "$src_file" "$dest_file"
+                if ! cp -p "$src_file" "$dest_file"; then
+                    log "  ${RED}Error: Failed to copy file${NC}"
+                    SYNC_ERRORS=true
+                fi
             fi
             ((COUNT_COPIED++))
         fi
@@ -485,10 +512,19 @@ main() {
     log "  Skipped (JPG with raw): $COUNT_SKIPPED_JPG_DNG files"
     log "  Sidecars/README updated: $COUNT_SIDECARS_UPDATED files"
     log "  Collisions moved: $COUNT_COLLISIONS files"
+    if [[ "$SYNC_ERRORS" == true ]]; then
+        log ""
+        log "  ${RED}⚠ Some sync operations failed - check output above${NC}"
+    fi
     log ""
     log "Log written to: $LOG_FILE"
 
     echo "$(date): backup-photos completed" >> "$LOG_FILE"
+
+    # Exit with error if any sync failed
+    if [[ "$SYNC_ERRORS" == true ]]; then
+        exit 1
+    fi
 }
 
 main "$@"
