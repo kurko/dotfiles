@@ -1,8 +1,4 @@
 #!/bin/bash
-LOG="/tmp/prompt-color-attention.log"
-echo "$(date): called with args: $@" >> "$LOG"
-echo "  TMUX=$TMUX" >> "$LOG"
-echo "  ANNOYING_COLOR_ALERT=$ANNOYING_COLOR_ALERT" >> "$LOG"
 #
 # Changes tmux pane background to grab attention when a program needs input.
 # Use ANNOYING_COLOR_ALERT=1 to enable.
@@ -18,10 +14,9 @@ echo "  ANNOYING_COLOR_ALERT=$ANNOYING_COLOR_ALERT" >> "$LOG"
 #   Red alert:       bg=#8B0000,fg=#ffffff
 #   Yellow:          bg=#FFD700,fg=#000000
 
-if [[ -z "$TMUX" ]]; then
-  echo "This script must be run inside a tmux session."
-  exit 0
-fi
+LOG="/tmp/prompt-color-attention.log"
+
+[[ -z "$TMUX" ]] && exit 0
 
 # Use exported pane ID if available (from prompt-attention wrapper),
 # otherwise detect dynamically
@@ -31,16 +26,20 @@ else
   PANE_ID=$(tmux display-message -p '#{pane_id}' | tr -d '%')
 fi
 
+ALERT_FLAG_FILE="/tmp/annoying-color-alert-$PANE_ID"
+
+# --disable: Only act if alert is active (flag file exists).
+# Safe to call on every Enter keypress - no-op without flag file.
 if [[ "$1" == "--disable" ]]; then
-  # Just disable the current pane - no file lookup needed.
-  # The current pane context is always correct whether called from
-  # Option+Esc keybinding or Claude's UserPromptSubmit hook.
-  echo "  disabling PANE_ID=$PANE_ID" >> "$LOG"
+  [[ ! -f "$ALERT_FLAG_FILE" ]] && exit 0
+  echo "$(date): disable PANE_ID=$PANE_ID" >> "$LOG"
   tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
+  rm -f "$ALERT_FLAG_FILE"
   exit 0
 fi
-ALERT_FLAG_FILE="/tmp/annoying-color-alert-$PANE_ID"
-echo "  PANE_ID=$PANE_ID ALERT_FLAG_FILE=$ALERT_FLAG_FILE exists=$(test -f "$ALERT_FLAG_FILE" && echo yes || echo no)" >> "$LOG"
+
+# Enable path - log for debugging
+echo "$(date): enable PANE_ID=$PANE_ID flag_exists=$(test -f "$ALERT_FLAG_FILE" && echo yes || echo no)" >> "$LOG"
 
 if [[ "$ANNOYING_COLOR_ALERT" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
   echo "Setting tmux pane to attention color."
