@@ -11,9 +11,10 @@
 #   backup-photos [OPTIONS]
 #
 # OPTIONS:
-#   --dry-run, -n     Show what would be copied without copying
-#   --verbose, -v     List each file as it's processed
-#   --help, -h        Show usage information
+#   --dry-run, -n       Show what would be copied without copying
+#   --verbose, -v       List each file as it's processed
+#   --delete-rejected   Move Photomator-rejected photos to Trash
+#   --help, -h          Show usage information
 #
 # FILE TYPE BEHAVIOR:
 #   Raw files (DNG, RAF, etc.)  - Skip if exists (immutable)
@@ -39,6 +40,7 @@ DEST_PATTERN="Alex 2Tb *"
 DEST_SUBDIR="Photography"
 LOG_DIR="$HOME/.local/log"
 LOG_FILE="$LOG_DIR/backup-photos.log"
+PHOTOMATOR_PLIST="$HOME/Library/Group Containers/4R6749AYRE.com.pixelmator/Library/Files Library/FilesLibrary.plist"
 
 # File extensions (case-insensitive matching)
 RAW_EXTENSIONS="dng raf cr3 cr2 arw nef orf rw2"
@@ -64,6 +66,7 @@ NC='\033[0m'  # No Color
 
 DRY_RUN=false
 VERBOSE=false
+DELETE_REJECTED=false
 VERSION="1.0"
 
 # Counters
@@ -72,6 +75,7 @@ COUNT_SKIPPED_EXISTS=0
 COUNT_SKIPPED_JPG_DNG=0
 COUNT_SIDECARS_UPDATED=0
 COUNT_COLLISIONS=0
+COUNT_REJECTED_TRASHED=0
 
 # Error tracking
 SYNC_ERRORS=false
@@ -112,15 +116,17 @@ USAGE:
     backup-photos [OPTIONS]
 
 OPTIONS:
-    -n, --dry-run     Show what would be copied without copying
-    -v, --verbose     List each file as it's processed
-    -h, --help        Show this help message
+    -n, --dry-run       Show what would be copied without copying
+    -v, --verbose       List each file as it's processed
+    --delete-rejected   Move Photomator-rejected photos to Trash
+    -h, --help          Show this help message
 
 EXAMPLES:
     backup-photos                    # Sync to all matching drives
     backup-photos --dry-run          # Preview what would happen
     backup-photos --verbose          # Show each file during copy
     backup-photos -n -v              # Verbose dry run
+    backup-photos --delete-rejected  # Trash rejected photos before sync
 EOF
 }
 
@@ -145,6 +151,10 @@ parse_args() {
                 ;;
             -v|--verbose)
                 VERBOSE=true
+                shift
+                ;;
+            --delete-rejected)
+                DELETE_REJECTED=true
                 shift
                 ;;
             -h|--help)
@@ -226,6 +236,113 @@ build_jpg_exclude_list() {
             echo "$rel_path" >> "$exclude_file"
         fi
     done
+}
+
+# =============================================================================
+# Rejected photo deletion
+# =============================================================================
+
+trash_file() {
+    local file="$1"
+    local base=$(basename "$file")
+    local trash_path="$HOME/.Trash/$base"
+
+    # Handle collisions with counter suffix
+    if [[ -e "$trash_path" ]]; then
+        local counter=1
+        if [[ "$base" == *.* ]]; then
+            local name="${base%.*}"
+            local ext="${base##*.}"
+            while [[ -e "$HOME/.Trash/${name}_${counter}.${ext}" ]]; do
+                ((counter++))
+            done
+            trash_path="$HOME/.Trash/${name}_${counter}.${ext}"
+        else
+            while [[ -e "$HOME/.Trash/${base}_${counter}" ]]; do
+                ((counter++))
+            done
+            trash_path="$HOME/.Trash/${base}_${counter}"
+        fi
+    fi
+
+    if [[ "$DRY_RUN" == false ]]; then
+        if ! mv "$file" "$trash_path"; then
+            log "  ${RED}Error: Failed to trash ${file}${NC}"
+            return 1
+        fi
+    fi
+    log "  ${YELLOW}Trash${NC}: $(basename "$file")"
+    ((COUNT_REJECTED_TRASHED++))
+}
+
+delete_rejected_photos() {
+    if [[ ! -f "$PHOTOMATOR_PLIST" ]]; then
+        log "${YELLOW}Warning: Photomator plist not found, skipping rejected deletion${NC}"
+        log "  Expected: $PHOTOMATOR_PLIST"
+        return
+    fi
+
+    log ""
+    log "$(dry_run_prefix)Checking for rejected photos in Photomator..."
+
+    # Parse plist and extract rejected files (flaggedAssets with value -1)
+    # Using plutil to convert to XML and grep/sed to extract paths
+    local rejected_files
+    rejected_files=$(plutil -convert xml1 -o - "$PHOTOMATOR_PLIST" 2>/dev/null | \
+        awk '
+        /flaggedAssets/,/<\/dict>/ {
+            if (/<key>/ && !/<key>flaggedAssets/) {
+                gsub(/<\/?key>/, "")
+                path = $0
+            }
+            if (/<integer>-1<\/integer>/) {
+                gsub(/^[[:space:]]+|[[:space:]]+$/, "", path)
+                print path
+            }
+        }')
+
+    if [[ -z "$rejected_files" ]]; then
+        log "  No rejected photos found"
+        return
+    fi
+
+    local count=0
+    while IFS= read -r file; do
+        # Skip if not under SOURCE_DIR
+        if [[ "$file" != "$SOURCE_DIR"/* ]]; then
+            continue
+        fi
+
+        # Skip if file doesn't exist
+        if [[ ! -f "$file" ]]; then
+            continue
+        fi
+
+        local dir=$(dirname "$file")
+        local base=$(basename "$file")
+        local name="${base%.*}"
+
+        # Trash the rejected file
+        trash_file "$file"
+        ((count++))
+
+        # Also trash matching raw files (case-insensitive search)
+        while IFS= read -r raw_file; do
+            [[ -f "$raw_file" ]] && trash_file "$raw_file"
+        done < <(find "$dir" -maxdepth 1 \( -iname "$name.dng" -o -iname "$name.raf" -o \
+                 -iname "$name.cr3" -o -iname "$name.cr2" -o -iname "$name.arw" -o \
+                 -iname "$name.nef" -o -iname "$name.orf" -o -iname "$name.rw2" \) 2>/dev/null)
+
+        # Trash any sidecar files (case-insensitive search)
+        while IFS= read -r sidecar; do
+            [[ -f "$sidecar" ]] && trash_file "$sidecar"
+        done < <(find "$dir" -maxdepth 1 \( -iname "$name.xmp" -o -iname "$name.pp3" -o \
+                 -iname "$name.dop" -o -iname "$name.photo-edit" \) 2>/dev/null)
+    done <<< "$rejected_files"
+
+    if [[ $count -gt 0 ]]; then
+        log "  Trashed $count rejected photo(s) and associated files"
+    fi
 }
 
 # =============================================================================
@@ -459,6 +576,11 @@ main() {
         exit 1
     fi
 
+    # Delete rejected photos if requested
+    if [[ "$DELETE_REJECTED" == true ]]; then
+        delete_rejected_photos
+    fi
+
     # Find matching drives
     log ""
     log "Checking for drives matching \"${DEST_PATTERN}\"..."
@@ -512,6 +634,9 @@ main() {
     log "  Skipped (JPG with raw): $COUNT_SKIPPED_JPG_DNG files"
     log "  Sidecars/README updated: $COUNT_SIDECARS_UPDATED files"
     log "  Collisions moved: $COUNT_COLLISIONS files"
+    if [[ "$DELETE_REJECTED" == true ]]; then
+        log "  Rejected trashed: $COUNT_REJECTED_TRASHED files"
+    fi
     if [[ "$SYNC_ERRORS" == true ]]; then
         log ""
         log "  ${RED}⚠ Some sync operations failed - check output above${NC}"
