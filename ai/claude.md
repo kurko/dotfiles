@@ -317,3 +317,8 @@ Remember: We're craftspeople. We write code for humans first, computers second. 
   review, etc.
 - When inside a git repository, use regular git commands (git status, git diff,
   git log) rather than git -C. The working directory is reliable.
+
+## Debugging & Infrastructure
+
+- debugging: always end with verification step to confirm fix
+- Homebrew services: detect actual version before checking logs (e.g., `ls /opt/homebrew/var/ | grep postgres`)
