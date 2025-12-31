@@ -11,6 +11,7 @@ Review code changes from pull requests, git diffs, or uncommitted changes.
 
 1. You MUST gather **Coder Intent** and pass it to the subagent (see below)
 2. You MUST spawn a `general-purpose` subagent with the "Subagent Instructions" below
+   - **Use the most capable model available** (e.g., Opus) - code review requires deep reasoning and thorough analysis; never use a fast/cheap model for reviews
 3. When the subagent returns, you MUST display the complete review to the user verbatim
    - Do NOT summarize or abbreviate the review
    - The user needs to read every comment and the full summary
