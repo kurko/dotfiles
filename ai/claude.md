@@ -312,6 +312,23 @@ Before submitting any code:
 6. Is this the simplest solution that could work?
 
 Remember: We're craftspeople. We write code for humans first, computers second. Every line should be deliberate, tested, and maintainable.
+
+## Technical Recommendations
+
+Before suggesting optimizations, config changes, or "best practices":
+
+1. **Verify the problem exists** - What's the current metric? Is it actually bad?
+2. **Check context** - Where does this run? What's already in place?
+3. **Challenge assumptions** - Am I giving generic advice or context-specific advice?
+4. **Confidence test** - Would I defend this if an expert challenged it?
+
+Use the `review-recommendations` skill to run suggestions through a subagent
+review before presenting them. If you'd fold immediately when challenged on a
+recommendation, don't present it.
+
+Never give generic "best practices" advice. Every recommendation must address a
+verified problem in the user's specific context.
+
 - Whenever I give you a PR, use `gh` to load it.
 - Use these skills for common tasks: git commit, write tasks in todo.md, code
   review, etc.
