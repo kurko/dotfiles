@@ -195,6 +195,60 @@ contains gift cards AND bank transfers, both with matching currency).
 If unverifiable, flag it - the filter may need an additional predicate (e.g.,
 `category == "bank"`).
 
+#### Check for Single Source of Truth Violations
+
+When a value is hardcoded that already exists elsewhere (constant, config file, or
+another definition), flag it. Reason: When the original value changes in the future, the
+duplicate will silently be forgotten, causing partial failures that are hard to diagnose.
+The intent is to prevent those future bugs.
+
+**Example 1 - String instead of constant:**
+
+```ruby
+# Bad: string may duplicate an existing constant
+def expired?
+  status == "expired"
+end
+```
+
+```typescript
+// Bad: string may duplicate an existing constant
+if (order.status === "expired") { ... }
+```
+
+**Detection:** When you see a hardcoded string that looks like a status, type, or
+category, search for existing constants:
+
+```bash
+# Search for constants containing the value (use regex, don't load full files).
+# This is just a suggestion, please adapt and find more effective ways of
+# accomplishing your goal.
+grep -rE "(EXPIRED|expired.*=|:expired)" . --include="*.rb" --include="*.ts" -l
+```
+
+If a constant like `Order::STATUS_EXPIRED` or `OrderStatus.EXPIRED` exists, flag
+the hardcoded string and recommend using the constant.
+
+**Example 2 - Infrastructure value in workflow:**
+
+```yaml
+# .github/workflows/ci.yml - Bad: IP may duplicate config/deploy.yml
+- run: ssh-keyscan -H 192.0.2.1 >> ~/.ssh/known_hosts
+```
+
+**Detection:** Search for the value in config files:
+
+```bash
+grep -r "192.0.2.1" . --include="*.yml" --include="*.yaml" --include="*.env*"
+```
+
+If the value exists in a config file, flag it and recommend reading from the
+canonical source instead of duplicating.
+
+**Severity: MEDIUM-HIGH** - These violations cause subtle bugs when the canonical
+source is updated but the duplicate is forgotten. The system partially works,
+making the bug hard to diagnose.
+
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets
