@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Stage and commit git changes with conventional commit messages. Use when user wants to commit changes, or asks to save their work. Also activates when user says "commit changes", simply "commit", or similar git workflow requests. Never commit without loading this skill.
+description: Stage and commit git changes with conventional commit messages. Use when user wants to commit changes, or asks to save their work, even when committing your own work after completing a task. Also activates when user says "commit changes", simply "commit", or similar git workflow requests. Never commit without loading this skill.
 ---
 
 # Git Commit Workflow

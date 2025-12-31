@@ -344,6 +344,8 @@ verified problem in the user's specific context.
 - Whenever I give you a PR, use `gh` to load it.
 - Use these skills for common tasks: git commit, write tasks in todo.md, code
   review, etc.
+- **Always use the `git-commit` skill when committing.** Never use raw git
+  commands for commits, even when committing your own work after completing a task.
 - When inside a git repository, use regular git commands (git status, git diff,
   git log) rather than git -C. The working directory is reliable.
 
