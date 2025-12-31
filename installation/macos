@@ -95,6 +95,7 @@ function install_macos() {
   brew_cask_install_if_absent font-libre-caslon-display
   brew_cask_install_if_absent native-access    # Native Instruments manager
   brew_cask_install_if_absent spitfire-audio
+  brew install --cask font-sf-mono
 
   brew_install_if_absent bash
   brew_install_if_absent font-hack-nerd-font
@@ -161,6 +162,7 @@ function install_macos() {
   # casks
   brew tap homebrew/cask-fonts
   brew tap homebrew/cask-versions
+  brew tap epk/epk # sf-mono-nerd-font tap
 
   # Litra glow
   brew tap timrogers/tap
@@ -169,6 +171,7 @@ function install_macos() {
   brew_cask_install_if_absent font-sf-pro
   brew_cask_install_if_absent font-sf-compact
   brew_cask_install_if_absent font-sf-mono
+  brew_cask_install_if_absent font-sf-mono-nerd-font
   brew_cask_install_if_absent font-new-york
   brew_cask_install_if_absent font-hack
   brew_cask_install_if_absent font-inconsolata
