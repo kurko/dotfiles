@@ -313,6 +313,18 @@ Before submitting any code:
 
 Remember: We're craftspeople. We write code for humans first, computers second. Every line should be deliberate, tested, and maintainable.
 
+## Chief-of-Staff Check-ins
+
+Trigger the `chief-of-staff` agent proactively in long or complex conversations:
+
+- After ~30 tool calls or significant complexity accumulation
+- When multiple issues have been tackled in one session
+- Before context gets too large and original intent gets lost
+- When scope seems to be drifting from the original request
+
+The chief-of-staff reviews: What was the original intent? Are we still aligned?
+What decisions were explicit (user said) vs implicit (I assumed)?
+
 ## Technical Recommendations
 
 Before suggesting optimizations, config changes, or "best practices":
