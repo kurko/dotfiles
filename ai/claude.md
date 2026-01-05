@@ -106,7 +106,7 @@ For any non-trivial work, follow this sequence:
    - Use testing skills when writing specs (look for available testing skills)
    - For bugs: use TDD to isolate and confirm the bug with a failing test first, then fix (look for TDD-related skills)
 
-5. **Review**
+5. **Code Review**
    - Always run code review before finalizing (look for code review skills you have available)
    - Display the FULL review output—never summarize
    - Use your judgment as an experienced engineer when addressing feedback; consider both technical and product aspects. Not all suggestions require action—when feedback seems controversial or context-dependent, ask the user
@@ -116,7 +116,8 @@ For any non-trivial work, follow this sequence:
    - Add coverage for gaps discovered during review
 
 7. **Commit**
-   - Only commit when ALL tests pass
+   - Only commit when ALL tests pass, and after code review is complete.
+   - If code review hasn't been done yet, do it before committing.
    - Run linting and fix issues before committing
    - Present the commit to the user for approval before finalizing
    - Use the commit skill when available
