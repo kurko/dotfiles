@@ -250,6 +250,81 @@ canonical source instead of duplicating.
 source is updated but the duplicate is forgotten. The system partially works,
 making the bug hard to diagnose.
 
+#### Check for Leaky Abstractions (Data vs Decisions)
+
+When a method returns raw data that callers must interpret, the decision logic
+spreads across the codebase. Each caller reimplements the same interpretation,
+making the code harder to read and the abstraction fails to encapsulate.
+
+**Note:** Returning nil is sometimes fine - use judgment. The issue is when
+nil forces every caller to implement the same interpretation logic.
+
+**Pattern 1: Names that promise more than they deliver**
+
+A method named `*_limit`, `*_threshold`, `*_count`, or `*_value` promises to return
+that thing. Returning `nil` breaks the contract - callers must know nil is possible
+and decide what it means.
+
+```ruby
+# Bad: name promises a limit, but nil is possible
+def rate_limit
+  config[:requests_per_minute]  # might be nil
+end
+
+# Caller must interpret:
+limit = rate_limit
+return unless limit && requests > limit
+```
+
+```ruby
+# Good: honor the contract with a default
+def rate_limit
+  config[:requests_per_minute] || DEFAULT_RATE_LIMIT
+end
+
+# Or answer the real question with a predicate:
+def rate_limit_exceeded?
+  requests > (config[:requests_per_minute] || DEFAULT_RATE_LIMIT)
+end
+```
+
+**Pattern 2: Callers all do the same interpretation**
+
+When every caller performs identical logic on a return value, that logic belongs
+inside the method.
+
+```javascript
+// Bad: every caller interprets the same way
+const settings = getSettings();  // might be null
+const timeout = settings?.timeout ?? 30;
+
+// If this pattern repeats, the method should encapsulate it:
+function getTimeout() {
+  return getSettings()?.timeout ?? 30;
+}
+```
+
+**Mental tool:** Ask "could this be a predicate method (returns true/false)?"
+If the callers are using the return value to make a yes/no decision, a predicate
+often encapsulates better and reads more naturally at call sites.
+
+**Detection:**
+- Method returns `X | nil` but name doesn't suggest optionality
+- Callers immediately check for nil/null/undefined after calling
+- Multiple callers do the same fallback or comparison logic
+- Guard clauses like `return unless value && condition` right after fetching
+
+**What to flag:**
+- "This returns nil but the name suggests a value. Either provide a default or
+  rename to `*_if_configured` to be honest about the contract."
+- "Every caller checks `&& count >= threshold` - consider a predicate method
+  that encapsulates this decision."
+
+**Why it matters:** When interpretation logic lives at call sites, it's easy for
+one caller to get it wrong, and impossible to change the interpretation without
+updating every caller. Encapsulating decisions makes the code easier to read and
+reason about.
+
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets

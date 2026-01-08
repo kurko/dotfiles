@@ -46,9 +46,14 @@ The rules:
 - The first line is a concise summary of the change, 50 characters or less.
 - Wrap all lines in the body to 80 characters maximum.
 - The first paragraph must explain what the PROBLEM is before the commit, and
-  what impact it had.
+  what impact it had. If there's an obvious counterargument or objection to the
+  change ("why not just X?"), acknowledge it briefly and explain why the change
+  is still worthwhile.
 - The second paragraph must explain what the implemented SOLUTION in the commit
-  is. It doesn't need to go into all details that the code itself does, but should
+  is. Write it as proper prose, not bullet-point style - start sentences with a
+  subject like "This commit...", "This change...", or "This modification...",
+  and use "It also..." for follow-up sentences rather than starting with a verb.
+  It doesn't need to go into all details that the code itself does, but should
   explain the approach taken, the reasoning. It needs to be as concise as possible.
 - The third paragraph should explain what an ideal solution would look like this
   is not what the commit implements. It includes things that could be improved later,
@@ -57,6 +62,53 @@ The rules:
 - Do not include Co-Authored-By: Claude <noreply@anthropic.com> or equivalent.
   You MUST NOT include any indication that an AI assisted in the commit or that
   the commit message was generated.
+
+## Examples
+
+### Refactoring for clarity
+
+```
+Move EmailValidator to Notifications namespace
+
+The EmailValidator class validates email format, delivery status, and bounce
+handling, all specific to our notification system. Its generic name and
+top-level location made it look like a general-purpose utility when it's
+tightly coupled to notification internals. Sure, someone could read the code
+to understand this, but the name should communicate intent upfront.
+
+This commit moves the class under the Notifications namespace to clarify its
+scope. It also updates the three call sites in the mailer classes accordingly.
+```
+
+### Bug fix
+
+```
+Fix race condition in payment processing
+
+When two requests hit the payment endpoint simultaneously, both could pass
+the idempotency check before either wrote to the database. This caused
+duplicate charges in production roughly once per 10k transactions.
+
+This change wraps the check-and-write in a database transaction with row-level
+locking. It also adds an index on the idempotency key to keep the lock fast.
+
+A distributed lock (Redis/etc) would handle cross-server races better, but
+our current single-database setup makes this sufficient for now.
+```
+
+### Simple feature
+
+```
+Add retry button to failed export jobs
+
+Users had no way to retry a failed export without re-entering all parameters.
+Support tickets about this increased after we added the larger export types
+last month.
+
+This commit adds a retry action to the exports controller that clones the
+original job's parameters into a new job. It also adds the button to the
+job status page, visible only for failed jobs.
+```
 
 ## Workflow
 
