@@ -353,4 +353,32 @@ verified problem in the user's specific context.
 ## Debugging & Infrastructure
 
 - debugging: always end with verification step to confirm fix
+- debugging: document root cause and prevention in CLAUDE.md after fixing production issues
 - Homebrew services: detect actual version before checking logs (e.g., `ls /opt/homebrew/var/ | grep postgres`)
+
+## Deployment
+
+- deployment: always commit dependency file changes (Gemfile, package.json) BEFORE deploying
+- deployment: ensure env vars are defined in both deploy config AND appropriate secrets/.env files
+- infrastructure: extract config values dynamically from source files instead of hardcoding
+- single source of truth: values in config files must be read dynamically, not duplicated (MEDIUM-HIGH severity)
+
+## Security
+
+- security: verify vulnerability exists before applying fix (show proof)
+- security: when fixing a vulnerability, check for similar issues in related components
+
+## Rails & Ruby
+
+- Rails webhooks: use JSON.parse(request.raw_post) for external payloads (avoids permit! issues)
+- Gemfile: use constraint pins (< 3) with comments for temporary compatibility fixes, not exact versions
+
+## Bash Scripts
+
+- bash: use count=$((count + 1)) not ((count++)) with set -e (arithmetic returning 0 has exit code 1)
+- bash: set -euo pipefail at top, clear header comments, helper functions, errors to stderr
+
+## Code Quality (additional rules)
+
+- commands/skills: use explicit subjects ("the user", "Claude", "the subagent") - avoid ambiguous "you"
+- Makefile: use dots for namespacing targets (lint.fix, security.scan, db.migrate)
