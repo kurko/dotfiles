@@ -26,5 +26,8 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "safety-net@cc-marketplace": true
+  }
 }
