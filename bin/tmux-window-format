@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# Formats tmux window name for display in status bar.
+# - Hides "bash" (shows just the window number)
+# - Detects version-like names and looks up actual process
+#
+# Usage: tmux-window-format --pane-tty <tty> <window_name>
+
+# Parse arguments
+pane_tty=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --pane-tty)
+      pane_tty="$2"
+      shift 2
+      ;;
+    *)
+      window_name="$1"
+      shift
+      ;;
+  esac
+done
+
+# pane_tty is required
+if [[ -z "$pane_tty" ]]; then
+  echo "name-error"
+  exit 1
+fi
+
+# Hide bash
+if [[ "$window_name" == "bash" ]]; then
+  echo ""
+  exit 0
+fi
+
+# Some apps (e.g., Claude Code) set their process title to a version number
+# like "2.0.76" instead of the actual command name. When we detect a version
+# pattern, look up the actual foreground process on the TTY.
+if [[ "$window_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  # Find foreground process (marked with + in STAT) on this TTY
+  actual_cmd=$(ps -o comm= -o stat= -t "$pane_tty" 2>/dev/null | awk '$2 ~ /\+/ {print $1; exit}')
+  if [[ -n "$actual_cmd" ]]; then
+    window_name=$(basename "$actual_cmd")
+  fi
+fi
+
+echo " $window_name"
