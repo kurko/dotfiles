@@ -1,0 +1,115 @@
+# Jan 2026: Quick Claude Code Setup
+
+Skills and commands that make Claude Code significantly better at writing
+production code. Copy-paste these commands to get started. Don't forget to set up
+your CLAUDE.md afterwards instruct the LLM to call those skills automatically.
+
+[↘︎ Skip to CLAUDE.md](#claude-md-setup)).
+
+## Core Skills
+
+**What are skills?**
+
+Skills are markdown files read automatically by the AI during its workflow. They
+run in subagents (new context, unbiased) when instructed, and help self-correct
+from hallucinations or drifting from the goal. In practice, it will make Claude
+run for longer without human intervention (4-5x in my experience), and produce
+higher quality code.
+
+**How skills change my workflow?**
+
+For the `code-review` skill, I wrote down every aspect I could remember I
+used during my career when reviewing pull requests. Now, whenever someone asks
+me for review, I run this skill first locally.
+
+Protip: I also review the PR myself. When there are discrepancies, I ask Claude
+to "read my comments in <pr-url>, generalize them, and improve the code-review
+skill so next time you catch these issues automatically".
+
+**How to**
+
+- `code-review`: reviews PRs and diffs, comparing initial intent to final code.
+- `review-recommendations`: reviews config or optimization suggestions
+  before applying them.
+
+```bash
+mkdir -p ~/.claude/skills/code-review \
+  ~/.claude/skills/review-recommendations
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/code-review/skill.md \
+  -o ~/.claude/skills/code-review/skill.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/review-recommendations/skill.md \
+  -o ~/.claude/skills/review-recommendations/skill.md
+```
+
+## Commands
+
+- `/diary` captures what happened in a session. `/reflect` analyzes diary entries
+and proposes CLAUDE.md improvements. Together they create a learning loop.
+- `/help-me-spec` interviews you to create detailed specs before building.
+  Accepts arguments, e.g `/help-me-spec I want to work on this task <task-url>`.
+
+```bash
+mkdir -p ~/.claude/commands
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/commands/diary.md \
+  -o ~/.claude/commands/diary.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/commands/reflect.md \
+  -o ~/.claude/commands/reflect.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/commands/help-me-spec.md \
+  -o ~/.claude/commands/help-me-spec.md
+```
+
+## Rails/TDD Skills (optional)
+
+For Rails devs or those who want TDD enforcement on bug fixes, here is a skill.
+It will instruct the AI to always write a failing test _first_ when fixing bugs.
+
+```bash
+mkdir -p ~/.claude/skills/rspec-rails \
+  ~/.claude/skills/tdd-bug-fix \
+  ~/.claude/skills/working-off-of-todo-files
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/rspec-rails/SKILL.md \
+  -o ~/.claude/skills/rspec-rails/SKILL.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/tdd-bug-fix/skill.md \
+  -o ~/.claude/skills/tdd-bug-fix/skill.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/working-off-of-todo-files/skill.md \
+  -o ~/.claude/skills/working-off-of-todo-files/skill.md
+```
+
+## CLAUDE.md Setup<a name="claude-md-setup"></a> (critical)
+
+Skills need instructions in your CLAUDE.md to activate automatically.
+
+**If you don't have a CLAUDE.md yet, copy mine:**
+```bash
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/CLAUDE.md \
+  -o ~/.claude/CLAUDE.md
+```
+
+**If you already have one**, add this snippet:
+
+```markdown
+## Skill Usage
+
+- After writing code, ALWAYS run the `code-review` skill before committing
+- Before suggesting optimizations or config changes, ALWAYS use
+  `review-recommendations` to validate the advice is context-specific
+- When writing Rails specs, ALWAYS use the `rspec-rails` skill
+- When fixing bugs, FIRST READ the `tdd-bug-fix` skill to write a failing test first
+- When working from `todo.md` or `todo.txt` files, use
+  `working-off-of-todo-files` skill to guide your work
+```
+
+**Protip:** basic, but add this to your CLAUDE.md. It makes a huge difference in
+helping the AI self-correct.
+
+```
+- ALWAYS run tests before committing code changes. We should never commit
+  untested code. If linting is available, run linting as well.
+```
