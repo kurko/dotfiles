@@ -113,3 +113,48 @@ helping the AI self-correct.
 - ALWAYS run tests before committing code changes. We should never commit
   untested code. If linting is available, run linting as well.
 ```
+
+## Bonus
+
+The stuff below aren't critical, but I find them useful for my personal flow.
+
+**Attention alerts ([`annoying-claude`][annoying-claude-src]):**<a name="annoying-claude"></a>
+First, I forget that Claude needs my attention and Mac's notifications aren't enough. Second, I want to be able to code in parallel.
+
+![annoying-claude in action](images/IMG_2053.JPG)
+
+I added a hook that turns my terminal orange when Claude needs input. Helpful
+when you're multitasking. You'll notice immediately when Claude is waiting.
+
+**More skills**
+
+- `git-commit`: structures commit messages with problem/solution/future format.
+- `write-task`: templates for writing clear task descriptions (Asana, Linear,
+  Jira, etc).
+
+```bash
+mkdir -p ~/.claude/skills/git-commit \
+  ~/.claude/skills/write-task
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/git-commit/skill.md \
+  -o ~/.claude/skills/git-commit/skill.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/write-task/skill.md \
+  -o ~/.claude/skills/write-task/skill.md
+```
+
+**More commands**
+
+- `/recap`: generates a summary for returning to a project after time away. Just
+    summarizes the context window.
+- `/rails-investigate-pg`: diagnoses basic PostgreSQL connection errors in Rails apps.
+
+```bash
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/commands/recap.md \
+  -o ~/.claude/commands/recap.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/commands/rails-investigate-pg.md \
+  -o ~/.claude/commands/rails-investigate-pg.md
+```
+
+[annoying-claude-src]: https://github.com/kurko/dotfiles/blob/f2d0b1b637651cba1cef78bc1ec1a36e8577d75d/bash/alias/ai.bashrc#L240
