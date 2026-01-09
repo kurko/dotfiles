@@ -112,6 +112,83 @@ indicating work-in-progress:
 
 ## Review Process
 
+The review happens in two phases:
+
+### Phase A: Identify Potential Issues
+
+Read the diff and identify potential issues. For each issue, note:
+- What you observed in the code
+- What needs verification (schema, related files, tests, etc.)
+- The specific question to answer
+- **Why it matters** (the intent behind checking)
+
+**CRITICAL: Do NOT write "worth verifying" or "consider checking" in your final
+output.** If something needs verification, YOU verify it in Phase B.
+
+### Phase B: Verify Each Issue with Subagents
+
+For each potential issue that requires verification, spawn a dedicated subagent:
+
+```
+Spawn a `general-purpose` subagent (use the best model, e.g., opus) for each verification task.
+```
+
+**Why subagents?**
+- Fresh context window = unbiased investigation
+- Focused attention on one specific question
+- Prevents the main reviewer from getting overwhelmed
+- Each verification is thorough and isolated
+
+**Example verifications to delegate:**
+- "Check if `user_external_id` has an index in structure.sql"
+- "Find the default value for `restrictions` column in the migration"
+- "Search for existing constants that match this hardcoded string"
+- "Check if any subclasses override this method"
+
+**Subagent prompt template:**
+```
+VERIFICATION TASK: [specific question]
+
+INTENT: [why this matters - what problem we're trying to prevent]
+
+Context: I'm reviewing a PR that [brief context]. I need to verify:
+[the specific thing to check]
+
+Instructions:
+1. Search/read the relevant files
+2. Return your findings in this format:
+
+VERDICT: CONFIRMED | REFUTED | INCONCLUSIVE
+EVIDENCE: [file path, line number, actual content you found]
+CONTEXT: [any caveats, related findings, or nuances the main reviewer should
+know about - e.g., "the index exists but only on a partial condition" or
+"the constant exists but in a deprecated module"]
+
+Do NOT speculate. If you can't find evidence, say INCONCLUSIVE with what you
+searched.
+
+REVIEW STANDARDS (apply these to your investigation):
+- Be specific and evidence-based
+- Cite file paths and line numbers
+- Don't hedge - state facts
+```
+
+**Parallelization:**
+Spawn subagents in parallel when their questions are independent:
+- "Does column X have an index?" + "Are there subclasses overriding method Y?" → parallel
+
+Sequential is fine when one answer informs the next question.
+
+**After subagents return:**
+1. Review the CONTEXT from each subagent for caveats you didn't anticipate
+2. If a subagent's context reveals something unexpected, spawn another subagent
+   to investigate further
+3. Incorporate confirmed findings into your review as facts, not speculation
+4. For INCONCLUSIVE results, either spawn a refined subagent or note the
+   uncertainty explicitly in your review
+
+---
+
 ### 1. Read Related Files
 
 Before commenting, understand the context:
