@@ -26,8 +26,9 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": true,
   "enabledPlugins": {
     "safety-net@cc-marketplace": true
-  }
+  },
+  "alwaysThinkingEnabled": true,
+  "model": "opus"
 }
