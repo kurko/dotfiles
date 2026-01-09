@@ -17,9 +17,9 @@ Read https://github.com/kurko/dotfiles/blob/master/docs/jan-2026-claude-code-set
 - Don't install annoying-claude though. I'll look at the separately.
 ```
 
-[↘︎ Skip to CLAUDE.md](#claude-md-setup).
-[↘︎ Skip to Why use subagents](#why-subagents).
-[↘︎ Skip to Claude attention alert](#annoying-claude).
+[↘︎ Skip to CLAUDE.md](#claude-md-setup)<br>
+[↘︎ Skip to Why use subagents](#why-subagents)<br>
+[↘︎ Skip to Claude attention alert](#annoying-claude)
 
 ## Core Skills
 
