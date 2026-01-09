@@ -107,6 +107,13 @@ function claude-new() {
       ,Bash(git branch:*) \
       ,Bash(git show:*) \
       ,Bash(git remote:*) \
+      ,Bash(git fetch:*) \
+      ,Bash(git stash list:*) \
+      ,Bash(git stash show:*) \
+      ,Bash(git stash save:*) \
+      ,Bash(git stash push:*) \
+      ,Bash(git blame:*) \
+      ,Bash(git rev-parse:*) \
       ,Bash(git ls-files:*) \
       ,Bash(git add:*) \
       ,Bash(cat:*) \
