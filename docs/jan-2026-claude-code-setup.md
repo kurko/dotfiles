@@ -38,7 +38,7 @@ used during my career when reviewing pull requests. Now, whenever someone asks
 me for review, I run this skill first locally.
 
 Protip: I also review the PR myself. When there are discrepancies, I ask Claude
-to "read my comments in <pr-url>, generalize them, and improve the code-review
+to "read my comments in \<pr-url\>, generalize them, and improve the code-review
 skill so next time you catch these issues automatically".
 
 **How to**
