@@ -18,6 +18,8 @@ Read https://github.com/kurko/dotfiles/blob/master/docs/jan-2026-claude-code-set
 ```
 
 [↘︎ Skip to CLAUDE.md](#claude-md-setup).
+[↘︎ Skip to Why use subagents](#why-subagents).
+[↘︎ Skip to Claude attention alert](#annoying-claude).
 
 ## Core Skills
 
@@ -110,6 +112,31 @@ helping the AI self-correct.
 ## Bonus
 
 The stuff below aren't critical, but I find them useful for my personal flow.
+
+**Why use subagents?**<a name="why-subagents"></a>
+
+When you tell the AI to use subagents, it moves that processing into separate,
+unbiased agents with fresh context windows. Think of it like subprocesses where
+memory isn't shared.
+
+![Subagents running in parallel](images/subagents-180k-tokens.png)
+
+In this screenshot, 12 subagents ran in parallel to compare skills. Each used
+~14-17k tokens in their own context window. That's ~180k tokens that never
+entered the main context window.
+
+The benefits:
+- Longer sessions without hallucinations: your main context stays small and
+  focused, so the AI doesn't lose track of the original goal
+- Unbiased analysis: each subagent starts fresh, without being influenced by
+  earlier assumptions in the conversation
+- Parallel processing: subagents can run simultaneously, making complex
+  comparisons faster
+
+To trigger subagent usage, add instructions like "use subagents to compare" or
+"spawn separate agents for each analysis" in your prompts.
+
+Protip: make all your skills run in subagents.
 
 **Attention alerts ([`annoying-claude`][annoying-claude-src]):**<a name="annoying-claude"></a>
 First, I forget that Claude needs my attention and Mac's notifications aren't enough. Second, I want to be able to code in parallel.
