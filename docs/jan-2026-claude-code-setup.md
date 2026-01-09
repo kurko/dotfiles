@@ -1,10 +1,23 @@
 # Jan 2026: Quick Claude Code Setup
 
 Skills and commands that make Claude Code significantly better at writing
-production code. Copy-paste these commands to get started. Don't forget to set up
+production code. Copy-paste to get started. Don't forget to set up
 your CLAUDE.md afterwards instruct the LLM to call those skills automatically.
 
-[↘︎ Skip to CLAUDE.md](#claude-md-setup)).
+**Protip:** copy/paste into Claude,
+
+```
+Read https://github.com/kurko/dotfiles/blob/master/docs/jan-2026-claude-code-setup.md
+
+- Install it automatically for me. Make sure CLAUDE.md is updated at the global level.
+- Use subagents to compare with skills I already have, and suggest improvements
+  to my own Markdown files instead of replacing them.
+- Ask me for confirmation before installing each skill or command. Use
+  the AskUserQuestion tool for EVERY question.
+- Don't install annoying-claude though. I'll look at the separately.
+```
+
+[↘︎ Skip to CLAUDE.md](#claude-md-setup).
 
 ## Core Skills
 
@@ -62,26 +75,6 @@ curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/commands/hel
   -o ~/.claude/commands/help-me-spec.md
 ```
 
-## Rails/TDD Skills (optional)
-
-For Rails devs or those who want TDD enforcement on bug fixes, here is a skill.
-It will instruct the AI to always write a failing test _first_ when fixing bugs.
-
-```bash
-mkdir -p ~/.claude/skills/rspec-rails \
-  ~/.claude/skills/tdd-bug-fix \
-  ~/.claude/skills/working-off-of-todo-files
-
-curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/rspec-rails/SKILL.md \
-  -o ~/.claude/skills/rspec-rails/SKILL.md
-
-curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/tdd-bug-fix/skill.md \
-  -o ~/.claude/skills/tdd-bug-fix/skill.md
-
-curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/working-off-of-todo-files/skill.md \
-  -o ~/.claude/skills/working-off-of-todo-files/skill.md
-```
-
 ## CLAUDE.md Setup<a name="claude-md-setup"></a> (critical)
 
 Skills need instructions in your CLAUDE.md to activate automatically.
@@ -131,10 +124,28 @@ when you're multitasking. You'll notice immediately when Claude is waiting.
 - `git-commit`: structures commit messages with problem/solution/future format.
 - `write-task`: templates for writing clear task descriptions (Asana, Linear,
   Jira, etc).
+- `rspec-rails`: guides the AI to write idiomatic, maintainable RSpec tests for
+  Rails applications. My favorite.
+- `tdd-bug-fix`: instructs the AI to always write a failing test _first_ when
+  fixing bugs.
+- `working-off-of-todo-files`: helps the AI prioritize and structure work when
+  using `todo.md` or `todo.txt` files. I use for side projects.
 
 ```bash
 mkdir -p ~/.claude/skills/git-commit \
-  ~/.claude/skills/write-task
+  ~/.claude/skills/write-task \
+  ~/.claude/skills/rspec-rails \
+  ~/.claude/skills/tdd-bug-fix \
+  ~/.claude/skills/working-off-of-todo-files
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/rspec-rails/SKILL.md \
+  -o ~/.claude/skills/rspec-rails/SKILL.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/tdd-bug-fix/skill.md \
+  -o ~/.claude/skills/tdd-bug-fix/skill.md
+
+curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/working-off-of-todo-files/skill.md \
+  -o ~/.claude/skills/working-off-of-todo-files/skill.md
 
 curl -sL https://raw.githubusercontent.com/kurko/dotfiles/master/ai/skills/git-commit/skill.md \
   -o ~/.claude/skills/git-commit/skill.md
