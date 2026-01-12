@@ -19,9 +19,12 @@ LOG="/tmp/prompt-color-attention.log"
 [[ -z "$TMUX" ]] && exit 0
 
 # Use exported pane ID if available (from prompt-attention wrapper),
-# otherwise detect dynamically
+# then TMUX_PANE (inherited env var, more reliable than display-message),
+# finally fall back to tmux display-message
 if [[ -n "$ANNOYING_PANE_ID" ]]; then
   PANE_ID="$ANNOYING_PANE_ID"
+elif [[ -n "$TMUX_PANE" ]]; then
+  PANE_ID="${TMUX_PANE#%}"
 else
   PANE_ID=$(tmux display-message -p '#{pane_id}' | tr -d '%')
 fi
@@ -43,6 +46,7 @@ echo "$(date): enable PANE_ID=$PANE_ID flag_exists=$(test -f "$ALERT_FLAG_FILE" 
 
 if [[ "$ANNOYING_COLOR_ALERT" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
   echo "Setting tmux pane to attention color."
+  touch "$ALERT_FLAG_FILE"
   tmux select-pane -t "%$PANE_ID" -P 'bg=#FF8C00,fg=#ffffff'
 else
   echo "ANNOYING_COLOR_ALERT is not enabled. No changes made."
