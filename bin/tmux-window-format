@@ -27,6 +27,14 @@ if [[ -z "$pane_tty" ]]; then
   exit 1
 fi
 
+# Detect Rails/Puma server with port (check before hiding bash)
+# Check for puma process on this TTY and extract port from its args
+rails_port=$(ps -o args= -t "$pane_tty" 2>/dev/null | grep -E 'puma.*\(tcp://[^:]+:[0-9]+\)' | grep -oE ':[0-9]+\)' | head -1 | tr -d ':)')
+if [[ -n "$rails_port" ]]; then
+  echo " rails:$rails_port"
+  exit 0
+fi
+
 # Hide bash
 if [[ "$window_name" == "bash" ]]; then
   echo ""
