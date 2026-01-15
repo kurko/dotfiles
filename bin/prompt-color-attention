@@ -37,7 +37,7 @@ if [[ "$1" == "--disable" ]]; then
   [[ ! -f "$ALERT_FLAG_FILE" ]] && exit 0
   echo "$(date): disable PANE_ID=$PANE_ID" >> "$LOG"
   tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
-  rm -f "$ALERT_FLAG_FILE"
+  # Flag file owned by with_prompt_attention - don't delete it here
   exit 0
 fi
 
