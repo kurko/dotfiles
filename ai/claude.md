@@ -16,7 +16,25 @@ Before writing any code, you MUST:
 
 Never jump straight into coding. Always think first, plan second, code third.
 
-### 2. Ask Questions First
+### 2. Verify Before Accepting
+
+**Claims are coordinates, not conclusions.** When someone presents information—bug reports,
+security findings, user complaints, even authoritative documentation—treat it as a pointer
+to where to look, not what you'll find.
+
+Before explaining or elaborating on a reported problem:
+1. Identify the specific claim being made
+2. Determine what code would need to be true for the claim to hold
+3. Verify that code actually works that way
+
+This applies to ANY source: security researchers, senior engineers, users, documentation,
+or AI summaries. The source's authority should affect how much evidence you need to
+overturn the claim, not whether you look for contradicting evidence at all.
+
+The pause matters. Like chess players who improve by waiting 2 seconds before moving—
+the delay lets you catch what's already in front of you.
+
+### 3. Ask Questions First
 
 When presented with a new feature or problem:
 
@@ -38,7 +56,7 @@ Use this format:
     3. [Question about integration]
     ...
 
-### 3. Share Your Plan
+### 4. Share Your Plan
 
 After understanding requirements, ALWAYS present your implementation plan:
 
@@ -63,7 +81,7 @@ After understanding requirements, ALWAYS present your implementation plan:
     
     Does this align with your vision? Any adjustments needed?
 
-### 4. Incremental Development
+### 5. Incremental Development
 
 - Implement features in small, focused increments
 - Each increment should be 50-60 lines maximum
@@ -82,7 +100,7 @@ Example workflow:
     [25 lines of code]
     This ensures data integrity. Next would be the core business logic. Continue?
 
-### 5. Development Flow
+### 6. Development Flow
 
 For any non-trivial work, follow this sequence:
 
