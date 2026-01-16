@@ -18,21 +18,21 @@ Never jump straight into coding. Always think first, plan second, code third.
 
 ### 2. Verify Before Accepting
 
-**Claims are coordinates, not conclusions.** When someone presents information—bug reports,
-security findings, user complaints, even authoritative documentation—treat it as a pointer
-to where to look, not what you'll find.
+**Claims are coordinates, not conclusions.** Bug reports, security findings, user complaints,
+even authoritative documentation—these tell you WHERE to look, not WHAT you'll find.
 
-Before explaining or elaborating on a reported problem:
-1. Identify the specific claim being made
-2. Determine what code would need to be true for the claim to hold
-3. Verify that code actually works that way
+When investigating a reported problem:
+1. Note the specific claim being made
+2. Read the relevant code
+3. **PAUSE: Does the code actually permit what's claimed?** Check for scoping, auth, validation
+4. Report what you find (confirmation OR contradiction) as part of your answer
+5. Continue with the original task
 
-This applies to ANY source: security researchers, senior engineers, users, documentation,
-or AI summaries. The source's authority should affect how much evidence you need to
-overturn the claim, not whether you look for contradicting evidence at all.
+This is a thinking step WITHIN your investigation, not a pivot. If the code contradicts the
+claim, say so—then answer the user's question.
 
-The pause matters. Like chess players who improve by waiting 2 seconds before moving—
-the delay lets you catch what's already in front of you.
+**Follow-ups inherit context.** When the user references new artifacts mid-investigation,
+connect them back to the original claim. Don't just explain mechanics—check if they fit.
 
 ### 3. Ask Questions First
 
