@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+#
+# Start a new Claude session with pre-approved safe tools.
+# Use with_prompt_attention to get orange screen alerts.
+#
+# Usage: claude-new "my prompt"
+#        with_prompt_attention claude-new "my prompt"
+
+set -euo pipefail
+
+INITIAL_PROMPT="$*"
+
+echo "Running claude"
+
+claude \
+  "$INITIAL_PROMPT" \
+  --allowedTools " \
+    Bash(mkdir:*) \
+    ,Bash(curl:*) \
+    ,Bash(ls:*) \
+    ,Bash(tree:*) \
+    ,Bash(pwd) \
+    ,Bash(which:*) \
+    ,Bash(head:*) \
+    ,Bash(tail:*) \
+    ,Bash(wc:*) \
+    ,Bash(file:*) \
+    ,Bash(make test:*) \
+    ,Bash(make lint:*) \
+    ,Bash(make server:*) \
+    ,Bash(make db.reset:*) \
+    ,Bash(make db.migrate:*) \
+    ,Bash(make db.seed:*) \
+    ,Bash(make db.schema.load:*) \
+    ,Bash(make routes:*) \
+    ,Bash(make setup:*) \
+    ,Bash(make doctor:*) \
+    ,Bash(bundle install) \
+    ,Bash(bundle install:*) \
+    ,Bash(bundle exec:*) \
+    ,Bash(bundle exec rspec:*) \
+    ,Bash(bundle exec rails:*) \
+    ,Bash(bundle exec rake:*) \
+    ,Bash(bundle exec ruby:*) \
+    ,Bash(bundle exec rubocop:*) \
+    ,Bash(bundle list:*) \
+    ,Bash(bundle show:*) \
+    ,Bash(bin/rails routes:*) \
+    ,Bash(bin/rails db:schema:dump:*) \
+    ,Bash(bin/rails db:migrate:*) \
+    ,Bash(bin/rails db:rollback:*) \
+    ,Bash(bin/rails db:version:*) \
+    ,Bash(bin/rails db:migrate:status:*) \
+    ,Bash(bin/rails runner:*) \
+    ,Bash(bin/rails console:*) \
+    ,Bash(bin/rails c:*) \
+    ,Bash(bin/rails generate:*) \
+    ,Bash(bin/rails g:*) \
+    ,Bash(bin/rails about:*) \
+    ,Bash(bin/rails stats:*) \
+    ,Bash(bin/rails notes:*) \
+    ,Bash(bin/rails time:zones:*) \
+    ,Bash(bin/rails middleware:*) \
+    ,Bash(bin/rails log:*) \
+    ,Bash(bin/rake routes:*) \
+    ,Bash(bin/rake -T:*) \
+    ,Bash(bin/rake --tasks:*) \
+    ,Bash(bin/rake stats:*) \
+    ,Bash(bin/rake notes:*) \
+    ,Bash(bin/rake about:*) \
+    ,Bash(bin/rspec:*) \
+    ,Bash(bin/spring status) \
+    ,Bash(bin/spring stop) \
+    ,Bash(rspec:*) \
+    ,Bash(ag:*) \
+    ,Bash(rg:*) \
+    ,Bash(npm run build:*) \
+    ,Bash(npm install:*) \
+    ,Bash(npm test:*) \
+    ,Bash(npm run lint) \
+    ,Bash(npm list:*) \
+    ,Bash(npm ls:*) \
+    ,Bash(grep:*) \
+    ,Bash(lsof:*) \
+    ,Bash(log:*) \
+    ,Bash(log show:*) \
+    ,Bash(git status:*) \
+    ,Bash(git log:*) \
+    ,Bash(git diff:*) \
+    ,Bash(git branch:*) \
+    ,Bash(git show:*) \
+    ,Bash(git remote:*) \
+    ,Bash(git fetch:*) \
+    ,Bash(git stash list:*) \
+    ,Bash(git stash show:*) \
+    ,Bash(git stash save:*) \
+    ,Bash(git stash push:*) \
+    ,Bash(git blame:*) \
+    ,Bash(git rev-parse:*) \
+    ,Bash(git ls-files:*) \
+    ,Bash(git add:*) \
+    ,Bash(cat:*) \
+    ,Bash(ps:*) \
+    ,Bash(awk:*) \
+    ,Bash(echo:*) \
+    ,Bash(date:*) \
+    ,Bash(diff:*) \
+    ,Bash(sort:*) \
+    ,Bash(uniq:*) \
+    ,Bash(jq:*) \
+    ,Bash(defaults read:*) \
+    ,Read(*) \
+    ,Read(//Users/alex/.claude/**) \
+    ,Read(//Users/alex/.dotfiles/**) \
+    ,Read(//Users/alex/.dotfiles/**) \
+    ,Read(//Users/alex/www) \
+    ,Read(//Users/alex/work) \
+    ,Read(//Users/alex/ai-notes) \
+    ,Read(//Users/alex/humanics) \
+    ,Read(/tmp/**) \
+    ,WebFetch(domain:github.com) \
+    ,WebSearch(*) \
+    ,Bash(claude config get:*)"

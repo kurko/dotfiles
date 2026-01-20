@@ -423,6 +423,21 @@ reason about.
 - Trivially simple methods (one-liners, simple delegation) can skip tests
 - For WIP mode: skip test requirements entirely
 
+**CRITICAL: Never accept "matches existing pattern's test coverage" as justification
+for missing tests.** If similar code elsewhere lacks tests, that's technical debt to
+fix, not a pattern to follow. A pragmatic engineer improves the codebase rather than
+perpetuating gaps.
+
+Sometimes tests genuinely aren't needed - the code is trivial, the test would be
+redundant with existing coverage, or the test would just restate the implementation.
+That's fine. But if you're skipping tests, use the right argument:
+
+- **Good reasons**: "This is a one-liner delegation", "Already covered by feature spec X",
+  "Testing this would just duplicate the framework's own tests"
+- **Bad reason**: "Similar code elsewhere also lacks tests"
+
+The argument matters. We never justify gaps by pointing to other gaps.
+
 ### 4. Running Tests (Optional)
 
 Only run tests when you need to verify behavior for the review:

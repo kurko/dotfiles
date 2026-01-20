@@ -1,144 +1,12 @@
 # Disclaimer: the llm() function lives in llm.bashrc
 
 # This file contains aliases and functions for managing AI worktrees and tasks.
-# 
+#
 # The git-* ones are auxiliary functions to manage git worktrees. You should
 # look into claude-new-worktree as entrypoint.
-function claude-new() {
-
-  INITIAL_PROMPT="$@"
-  # Testing not having an initial prompt for reading files.
-  #
-  # if [[ -d "ai-notes" ]]; then
-  #   if [[ -f "ai-notes/AI-README.md" ]]; then
-  #     README_FILE="ai-notes/README.md"
-  #   elif [[ -f "ai-notes/README.md" ]]; then
-  #     README_FILE="ai-notes/README.md"
-  #   else
-  #     README_FILE=""
-  #   fi
-
-  #   # Injects whatever is passed into claude-new as the initial prompt.
-  #   INITIAL_PROMPT="$INITIAL_PROMPT.
-
-  #   Start by running 'ls' to see what kind of project this is.
-
-  #   The 'ai-notes/' has notes from past sessions. Don't read them yet, only if I
-  #   ask you to (let's keep focused)."
-  # fi
-
-  echo "Running claude"
-
-  claude \
-    "$INITIAL_PROMPT" \
-    --allowedTools " \
-      Bash(mkdir:*) \
-      ,Bash(curl:*) \
-      ,Bash(ls:*) \
-      ,Bash(tree:*) \
-      ,Bash(pwd) \
-      ,Bash(which:*) \
-      ,Bash(head:*) \
-      ,Bash(tail:*) \
-      ,Bash(wc:*) \
-      ,Bash(file:*) \
-      ,Bash(make test:*) \
-      ,Bash(make lint:*) \
-      ,Bash(make server:*) \
-      ,Bash(make db.reset:*) \
-      ,Bash(make db.migrate:*) \
-      ,Bash(make db.seed:*) \
-      ,Bash(make db.schema.load:*) \
-      ,Bash(make routes:*) \
-      ,Bash(make setup:*) \
-      ,Bash(make doctor:*) \
-      ,Bash(bundle install) \
-      ,Bash(bundle install:*) \
-      ,Bash(bundle exec:*) \
-      ,Bash(bundle exec rspec:*) \
-      ,Bash(bundle exec rails:*) \
-      ,Bash(bundle exec rake:*) \
-      ,Bash(bundle exec ruby:*) \
-      ,Bash(bundle exec rubocop:*) \
-      ,Bash(bundle list:*) \
-      ,Bash(bundle show:*) \
-      ,Bash(bin/rails routes:*) \
-      ,Bash(bin/rails db:schema:dump:*) \
-      ,Bash(bin/rails db:migrate:*) \
-      ,Bash(bin/rails db:rollback:*) \
-      ,Bash(bin/rails db:version:*) \
-      ,Bash(bin/rails db:migrate:status:*) \
-      ,Bash(bin/rails runner:*) \
-      ,Bash(bin/rails console:*) \
-      ,Bash(bin/rails c:*) \
-      ,Bash(bin/rails generate:*) \
-      ,Bash(bin/rails g:*) \
-      ,Bash(bin/rails about:*) \
-      ,Bash(bin/rails stats:*) \
-      ,Bash(bin/rails notes:*) \
-      ,Bash(bin/rails time:zones:*) \
-      ,Bash(bin/rails middleware:*) \
-      ,Bash(bin/rails log:*) \
-      ,Bash(bin/rake routes:*) \
-      ,Bash(bin/rake -T:*) \
-      ,Bash(bin/rake --tasks:*) \
-      ,Bash(bin/rake stats:*) \
-      ,Bash(bin/rake notes:*) \
-      ,Bash(bin/rake about:*) \
-      ,Bash(bin/rspec:*) \
-      ,Bash(bin/spring status) \
-      ,Bash(bin/spring stop) \
-      ,Bash(rspec:*) \
-      ,Bash(ag:*) \
-      ,Bash(rg:*) \
-      ,Bash(npm run build:*) \
-      ,Bash(npm install:*) \
-      ,Bash(npm test:*) \
-      ,Bash(npm run lint) \
-      ,Bash(npm list:*) \
-      ,Bash(npm ls:*) \
-      ,Bash(grep:*) \
-      ,Bash(lsof:*) \
-      ,Bash(log:*) \
-      ,Bash(log show:*) \
-      ,Bash(git status:*) \
-      ,Bash(git log:*) \
-      ,Bash(git diff:*) \
-      ,Bash(git branch:*) \
-      ,Bash(git show:*) \
-      ,Bash(git remote:*) \
-      ,Bash(git fetch:*) \
-      ,Bash(git stash list:*) \
-      ,Bash(git stash show:*) \
-      ,Bash(git stash save:*) \
-      ,Bash(git stash push:*) \
-      ,Bash(git blame:*) \
-      ,Bash(git rev-parse:*) \
-      ,Bash(git ls-files:*) \
-      ,Bash(git add:*) \
-      ,Bash(cat:*) \
-      ,Bash(ps:*) \
-      ,Bash(awk:*) \
-      ,Bash(echo:*) \
-      ,Bash(date:*) \
-      ,Bash(diff:*) \
-      ,Bash(sort:*) \
-      ,Bash(uniq:*) \
-      ,Bash(jq:*) \
-      ,Bash(defaults read:*) \
-      ,Read(*) \
-      ,Read(//Users/alex/.claude/**) \
-      ,Read(//Users/alex/.dotfiles/**) \
-      ,Read(//Users/alex/.dotfiles/**) \
-      ,Read(//Users/alex/www) \
-      ,Read(//Users/alex/work) \
-      ,Read(//Users/alex/ai-notes) \
-      ,Read(//Users/alex/humanics) \
-      ,Read(/tmp/**) \
-      ,WebFetch(domain:github.com) \
-      ,WebSearch(*) \
-      ,Bash(claude config get:*)"
-}
+#
+# claude-new and with_prompt_attention are bin scripts (not functions) so
+# changes take effect immediately without reloading shells.
 
 function claude-new-worktree() {
   # create a new Claude conversation
@@ -217,33 +85,7 @@ function git-worktree-clean() {
     xargs -I {} git worktree remove {}
 }
 
-# Wrapper that enables attention color alerts for any command. It just makes the
-# whole tmux pane orange once Claude or any AI finishes running so my attention
-# is caught.
-#
-# The program must have a hook that calls ~/bin/prompt-color-attention
-# when it needs attention (and --disable when user resumes).
-#
-# Creates a temp file flag based on tmux pane ID so hooks can detect it.
-#
-# Usage: prompt-attention claude-new "my prompt"
-#        prompt-attention rspec spec/
-#
-# Claude Code hook setup: see ai/claude-settings.json (symlinked to
-# ~/.claude/settings.json). Documentation in ai/README.md.
-function prompt-attention() {
-  local pane_id=$(tmux display-message -p '#{pane_id}' | tr -d '%')
-  local flag_file="/tmp/annoying-color-alert-$pane_id"
-  touch "$flag_file"
-  export ANNOYING_PANE_ID="$pane_id"
-  trap "rm -f '$flag_file'" EXIT INT TERM
-  "$@"
-  local exit_code=$?
-  rm -f "$flag_file"
-  return $exit_code
-}
-
 # Make the screen orange everytime Claude finishes
 function annoying-claude() {
-  prompt-attention claude-new "$@"
+  with_prompt_attention claude-new "$@"
 }

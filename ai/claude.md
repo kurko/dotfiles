@@ -122,6 +122,11 @@ For any non-trivial work, follow this sequence:
    - Present the commit to the user for approval before finalizing
    - Use the commit skill when available
 
+8. **Summary**
+   - Always end work with a summary that includes whether code review was run
+   - Example: "Code review: Yes (ran code-review skill, addressed issues [1] and [2])"
+   - If code review was skipped, explain why (e.g., "Code review: Skipped - config-only change")
+
 ## Testing Requirements
 
 ### Test-Driven Development is MANDATORY

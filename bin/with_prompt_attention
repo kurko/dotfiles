@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# Wrapper that enables attention color alerts for commands.
+# Creates a flag file so prompt-color-attention hook can detect it.
+#
+# Usage: with_prompt_attention claude-new "my prompt"
+#        with_prompt_attention rspec spec/
+
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: with_prompt_attention <command> [args...]" >&2
+  exit 1
+fi
+
+# Use TMUX_PANE (inherited env var for this pane), not tmux display-message
+# (which returns the focused pane - wrong if user clicked elsewhere)
+pane_id="${TMUX_PANE#%}"
+flag_file="/tmp/annoying-color-alert-$pane_id"
+
+touch "$flag_file"
+export ANNOYING_PANE_ID="$pane_id"
+
+cleanup() {
+  rm -f "$flag_file"
+}
+trap cleanup EXIT INT TERM
+
+"$@"

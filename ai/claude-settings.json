@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -29,6 +30,5 @@
   "enabledPlugins": {
     "safety-net@cc-marketplace": true
   },
-  "alwaysThinkingEnabled": true,
-  "model": "opus"
+  "alwaysThinkingEnabled": true
 }
