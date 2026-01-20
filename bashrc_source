@@ -66,9 +66,24 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/ai/aider.conf.yml ~/.aider.conf.yml
   ln -nfs ~/.dotfiles/ai/claude.md ~/.claude/CLAUDE.md
   ln -nfs ~/.dotfiles/ai/claude-settings.json ~/.claude/settings.json
-  ln -nfs ~/.dotfiles/ai/skills ~/.claude/skills
-  ln -nfs ~/.dotfiles/ai/commands ~/.claude/commands
-  ln -nfs ~/.dotfiles/ai/agents ~/.claude/agents
+  # Claude AI config - merge public and private
+  mkdir -p ~/.claude/commands ~/.claude/skills ~/.claude/agents
+
+  # Clean stale symlinks pointing to dotfiles (preserves private files)
+  find ~/.claude/commands -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
+  find ~/.claude/skills -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
+  find ~/.claude/agents -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
+
+  # Public commands/skills/agents from dotfiles
+  for f in ~/.dotfiles/ai/commands/*; do
+    [ -e "$f" ] && ln -nfs "$f" ~/.claude/commands/
+  done
+  for f in ~/.dotfiles/ai/skills/*; do
+    [ -e "$f" ] && ln -nfs "$f" ~/.claude/skills/
+  done
+  for f in ~/.dotfiles/ai/agents/*; do
+    [ -e "$f" ] && ln -nfs "$f" ~/.claude/agents/
+  done
 
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml
