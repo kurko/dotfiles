@@ -30,5 +30,10 @@
   "enabledPlugins": {
     "safety-net@cc-marketplace": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "permissions": {
+    "allow": [
+      "mcp__pencil"
+    ]
+  }
 }

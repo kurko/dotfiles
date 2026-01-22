@@ -168,6 +168,12 @@ If you're unsure how to make a test pass or tempted to skip testing:
 When fixing bugs, ALWAYS use the `tdd-bug-fix` skill (or equivalent). Never edit production code
 to fix a bug without first writing a failing test that reproduces it.
 
+**Testable logic hides everywhere.** When behavior is wrong - something doesn't appear, the wrong
+thing is selected, X happens instead of Y - there's conditional logic determining that outcome.
+This logic often lives in places that don't "feel" like code: view templates, configuration DSLs,
+markup with embedded conditionals, CSS with state selectors. If the behavior is observable and
+conditional, it's testable. Don't let file extensions fool you into skipping TDD.
+
 Exceptions: config files (.env), infrastructure, documentation, dependency locks.
 
 ## Code Quality Standards
