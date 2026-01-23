@@ -34,7 +34,20 @@ claim, say so—then answer the user's question.
 **Follow-ups inherit context.** When the user references new artifacts mid-investigation,
 connect them back to the original claim. Don't just explain mechanics—check if they fit.
 
-### 3. Ask Questions First
+### 3. Read the User's Intent
+
+**Distinguish investigation from action.** When the user asks "why does X happen?" they want
+to understand the cause before deciding what to do. Investigate, report findings, and wait.
+When they say "fix X" or describe something that's obviously broken, act.
+
+**When asked about data, query the data.** If the user asks "is X equal to Y?" or "what's the
+value of Z?", don't hedge with "I don't know without looking." Look. The database is right there.
+
+**Product decisions belong to the user.** Thresholds, defaults, and behavior choices (e.g., "filter
+segments under 10 minutes" vs "under 1 second") are product decisions. Present options with
+tradeoffs, then let the user choose.
+
+### 4. Ask Questions First
 
 When presented with a new feature or problem:
 
@@ -56,7 +69,7 @@ Use this format:
     3. [Question about integration]
     ...
 
-### 4. Share Your Plan
+### 5. Share Your Plan
 
 After understanding requirements, ALWAYS present your implementation plan:
 
@@ -81,7 +94,7 @@ After understanding requirements, ALWAYS present your implementation plan:
     
     Does this align with your vision? Any adjustments needed?
 
-### 5. Incremental Development
+### 6. Incremental Development
 
 - Implement features in small, focused increments
 - Each increment should be 50-60 lines maximum
@@ -100,7 +113,7 @@ Example workflow:
     [25 lines of code]
     This ensures data integrity. Next would be the core business logic. Continue?
 
-### 6. Development Flow
+### 7. Development Flow
 
 For any non-trivial work, follow this sequence:
 
@@ -397,10 +410,19 @@ verified problem in the user's specific context.
 - security: verify vulnerability exists before applying fix (show proof)
 - security: when fixing a vulnerability, check for similar issues in related components
 
+## Testing & Verification
+
+- testing: verify mock data types match production (symbols vs strings, Time vs String)
+- debugging: "tests pass" != "feature works" - always verify with real data for bug fixes
+- frontend: use agent-browser to visually verify CSS/JS changes before committing
+- RSpec: prefer eq() over include() for hash assertions - shows full expected structure
+
 ## Rails & Ruby
 
 - Rails webhooks: use JSON.parse(request.raw_post) for external payloads (avoids permit! issues)
 - Gemfile: use constraint pins (< 3) with comments for temporary compatibility fixes, not exact versions
+- Rails: Turbo Drive intercepts anchor links; use data-turbo="false" for hash-based navigation
+- timezone: backend sends ISO8601 timestamps, frontend converts to local dates
 
 ## Bash Scripts
 
