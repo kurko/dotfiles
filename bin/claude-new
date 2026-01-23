@@ -109,6 +109,7 @@ claude \
     ,Bash(uniq:*) \
     ,Bash(jq:*) \
     ,Bash(defaults read:*) \
+    ,Bash(agent-browser:*) \
     ,Read(*) \
     ,Read(//Users/alex/.claude/**) \
     ,Read(//Users/alex/.dotfiles/**) \

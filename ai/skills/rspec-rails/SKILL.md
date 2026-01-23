@@ -417,6 +417,38 @@ end.to change { task.reload.events.count }.by(1)
 expect { perform_asana_job }.to raise_error StandardError
 ```
 
+### Hash Assertions: Prefer `eq` over `include`
+
+When asserting hash structures (like serializer output), prefer `eq` over `include`.
+Using `eq` shows the complete expected structure, making tests more explicit and
+catching unexpected changes to the hash.
+
+```ruby
+# Bad - hides what else might be in the hash
+expect(result).to include(
+  id: task.id,
+  name: "Test Task",
+  status: "todo"
+)
+
+# Good - explicit about the full structure
+expect(result).to eq(
+  id: task.id,
+  name: "Test Task",
+  status: "todo",
+  segments: [],
+  deadline: nil,
+  deadlineDay: nil,
+  depth: 0,
+  parentId: nil,
+  hasChildren: false
+)
+```
+
+**Exception**: Use `include` only when specifically testing for the presence of
+certain keys without caring about the rest (e.g., testing that a specific field
+was added to an existing large structure).
+
 ### Mocking and Stubbing
 
 Create test doubles for external dependencies:
