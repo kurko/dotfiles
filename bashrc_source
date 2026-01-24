@@ -67,6 +67,10 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/ai/claude.md ~/.claude/CLAUDE.md
   ln -nfs ~/.dotfiles/ai/claude-settings.json ~/.claude/settings.json
   # Claude AI config - merge public and private
+  # Remove old directory symlinks from previous dotfiles version (pre-f052657)
+  [ -L ~/.claude/commands ] && rm ~/.claude/commands
+  [ -L ~/.claude/skills ] && rm ~/.claude/skills
+  [ -L ~/.claude/agents ] && rm ~/.claude/agents
   mkdir -p ~/.claude/commands ~/.claude/skills ~/.claude/agents
 
   # Clean stale symlinks pointing to dotfiles (preserves private files)
