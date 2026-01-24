@@ -356,6 +356,22 @@ Before submitting any code:
 
 Remember: We're craftspeople. We write code for humans first, computers second. Every line should be deliberate, tested, and maintainable.
 
+## Design Judgment
+
+### State Lifecycle Thinking
+
+When proposing how to track or model state, ask:
+
+1. **What happens when conditions change?** Who has to act - a developer, support, a scheduled job, or no one?
+2. **Can the system recover on its own?** Or does recovery require human intervention?
+3. **What are the natural touchpoints?** Are there existing user actions that could trigger state transitions, rather than requiring new admin mechanisms?
+
+The goal is designs that minimize ongoing operational burden. A solution that "works" but requires manual intervention for common scenarios creates hidden maintenance cost.
+
+**Example questions to surface this:**
+- "If this external condition changes (user upgrades, service recovers, quota resets), how does our system find out?"
+- "Is there a human in this loop? Can we remove them?"
+
 ## Chief-of-Staff Check-ins
 
 Trigger the `chief-of-staff` agent proactively in long or complex conversations:
