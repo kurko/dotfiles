@@ -16,14 +16,24 @@ Review code changes from pull requests, git diffs, or uncommitted changes.
    - Do NOT summarize or abbreviate the review
    - The user needs to read every comment and the full summary
 
-### Gathering Coder Intent
+### Gathering Coder Intent and Plan
+
+**CRITICAL**: You MUST pass any implementation plan to the subagent. This enables the
+most important check: verifying the code actually implements what was planned.
 
 Pass relevant context as "CODER INTENT" at the start of your prompt to the subagent:
 
 | Review Type | What to Pass |
 |-------------|--------------|
-| **Git diff** (uncommitted changes) | Any implementation plan from this conversation. If you created a plan before coding, include it. |
+| **Git diff** (uncommitted changes) | The FULL implementation plan from this conversation (check for plan mode files or earlier discussion). Include ALL planned features, not just a summary. |
 | **Pull Request** | The PR number or URL. Subagent will fetch details. |
+
+**Finding the plan:**
+1. Check if a plan file exists (mentioned in system messages or earlier in conversation)
+2. Look for plan mode discussions earlier in the conversation
+3. Check for user requirements that spawned the work
+4. If no explicit plan exists, pass whatever user intent/requirements you have - the review
+   will note that formal completeness verification isn't possible, but won't block on it
 
 **Example prompt to subagent:**
 
@@ -33,9 +43,19 @@ CODER INTENT:
   1. Add OAuth controller with GitHub strategy
   2. Create User model with github_id field
   3. Add login button to homepage
+  4. Handle OAuth callback and session creation
+  5. Add logout functionality
+
+PLAN FILE (if exists):
+[Include full contents of any plan file]
+
+REVIEW TYPE: final (or "wip" if user indicated work-in-progress)
 
 [Subagent instructions below...]
 ```
+
+**IMPORTANT**: Always specify whether this is a "final" review (before commit/merge) or
+"wip" review (mid-implementation). Final reviews MUST check plan completeness.
 
 ---
 
@@ -73,6 +93,35 @@ Ignore `.env`, `.secrets`, and similar sensitive files.
 
 The parent agent may pass "CODER INTENT" with context about what the developer intended.
 Use this to evaluate whether the implementation matches the stated goals.
+
+### Plan Completeness Check (CRITICAL for Final Reviews)
+
+**This is the most important check for final reviews.** Before examining code quality,
+verify the implementation is COMPLETE against the plan.
+
+When "REVIEW TYPE: final" is specified (or not specified, assume final):
+
+1. **Extract all planned features** from the CODER INTENT section
+2. **For each planned feature**, verify it exists in the diff:
+   - Search the diff for code that implements that feature
+   - If not found, flag it as MISSING
+3. **Report findings** in a dedicated section BEFORE code comments
+
+Report your findings in a "Plan Completeness" section at the start of the review.
+Make it clear which features are done and which are missing, with evidence.
+
+**Rules:**
+- If ANY planned features are missing, the review is BLOCKING regardless of code quality
+- "Partially implemented" counts as MISSING - the feature must be complete
+- If the plan mentions "deferred" or "future work" items, note them but don't block
+- If no formal plan was provided (only user intent/requirements), note this and do your
+  best to verify against the stated intent. Don't block, but mention that a formal plan
+  would enable better completeness verification.
+
+**For WIP reviews** (when "REVIEW TYPE: wip" is specified):
+- Skip the plan completeness check
+- Focus only on code quality of what's been written so far
+- Note: "WIP review - skipping plan completeness check"
 
 ### For Pull Requests
 
@@ -405,16 +454,17 @@ reason about.
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets
-2. **Database schema** - Missing indexes for queried columns, missing constraints
-3. **Logic errors / bugs** - Off-by-one, null handling, race conditions
-4. **Missing error handling** - Unhandled exceptions, missing validations
-5. **Missing tests** - New methods without corresponding tests
-6. **N+1 queries / DB concerns** - Queries in loops, missing eager loading
-7. **API design / interface** - Public method signatures, breaking changes
-8. **Edge cases** - Boundary conditions, empty states
-9. **Naming clarity** - Misleading or vague names
-10. **Method size** - Methods doing too much, extraction opportunities
-11. **Style** - Minor improvements, readability
+2. **Plan completeness** - Are ALL planned features implemented? (final reviews only)
+3. **Database schema** - Missing indexes for queried columns, missing constraints
+4. **Logic errors / bugs** - Off-by-one, null handling, race conditions
+5. **Missing error handling** - Unhandled exceptions, missing validations
+6. **Missing tests** - New methods without corresponding tests
+7. **N+1 queries / DB concerns** - Queries in loops, missing eager loading
+8. **API design / interface** - Public method signatures, breaking changes
+9. **Edge cases** - Boundary conditions, empty states
+10. **Naming clarity** - Misleading or vague names
+11. **Method size** - Methods doing too much, extraction opportunities
+12. **Style** - Minor improvements, readability
 
 ### 3. Test Requirements
 
@@ -516,6 +566,13 @@ numbered comments.
 ```markdown
 # Code Review
 
+## Plan Completeness
+
+[Report which planned features are done vs missing, with evidence.
+If any missing: note that the review is BLOCKING until they're implemented.]
+
+---
+
 [Comments numbered [1], [2], etc.]
 
 ---
@@ -523,13 +580,28 @@ numbered comments.
 ## Summary
 
 [One-liner assessment OR list of required changes if there are architectural
-problems. For clean PRs: brief statement of what the change accomplishes.]
+problems. For clean PRs: brief statement of what the change accomplishes.
+If plan incomplete, summary MUST mention the missing features.]
 ```
 
-### Example Output
+**For WIP reviews**, note that plan completeness check was skipped.
+
+### Example Output (Complete Implementation)
 
 ```markdown
 # Code Review
+
+## Plan Completeness
+
+| Planned Feature | Status | Evidence |
+|-----------------|--------|----------|
+| PlanetFetcher service | ✅ DONE | `app/services/planet_fetcher.rb` |
+| Film model and migration | ✅ DONE | `app/models/film.rb`, `db/migrate/...` |
+| API pagination handling | ✅ DONE | `PlanetFetcher#fetch_all!` loops until no next page |
+
+All planned features implemented.
+
+---
 
 **app/services/planet_fetcher.rb:15**
 ```diff
@@ -565,6 +637,39 @@ Good call adding this index. [3]
 
 Solid foundation for the import. Address the null check [1] and N+1 [2], add
 tests for the new methods, and this is good to merge.
+```
+
+### Example Output (Missing Features - BLOCKING)
+
+```markdown
+# Code Review
+
+## Plan Completeness
+
+| Planned Feature | Status | Evidence |
+|-----------------|--------|----------|
+| Basic data import service | ✅ DONE | `app/services/data_importer.rb` |
+| Change detection for updates | ❌ MISSING | No comparison of existing vs incoming records |
+| Soft delete detection | ❌ MISSING | No tracking of seen record IDs |
+| Audit trail events | ❌ MISSING | No event creation for changes |
+| Incremental sync support | ❌ MISSING | No since/cursor parameter |
+
+**BLOCKING: 4 planned features are missing.** This review cannot pass until:
+- Change detection is implemented
+- Soft delete detection is implemented
+- Audit trail events are implemented
+- Incremental sync is implemented
+
+---
+
+[Code quality comments would follow, but they're secondary to the missing features]
+
+---
+
+## Summary
+
+The basic import works, but 4 of 5 planned features are not implemented.
+This is incomplete and should not be committed until the plan is fulfilled.
 ```
 
 ## Preserve Developer Intent
