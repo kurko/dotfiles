@@ -161,6 +161,12 @@ indicating work-in-progress:
 
 ## Review Process
 
+### Mindset: Patterns Are a Floor, Not a Ceiling
+
+The patterns below help catch common issues, but they are NOT exhaustive. Stay
+alert for ANY issue that would cause bugs, waste resources, or make the code
+harder to maintain. Ask: "What could go wrong here that isn't on my checklist?"
+
 The review happens in two phases:
 
 ### Phase A: Identify Potential Issues
@@ -376,6 +382,53 @@ canonical source instead of duplicating.
 source is updated but the duplicate is forgotten. The system partially works,
 making the bug hard to diagnose.
 
+#### Check for Magic Numbers and Unnamed Values
+
+When a literal value appears inline, ask: "Would a reader understand why this
+specific value was chosen?" If not, extract to a named constant.
+
+```ruby
+# Bad: Why 1.day? Cache TTL? Expiration? Grace period?
+if record.updated_at > 1.day.ago
+
+# Good: Constant name explains intent
+CACHE_TTL = 1.day
+if record.updated_at > CACHE_TTL.ago
+```
+
+**Why it matters:**
+- **Discoverability**: Search for `CACHE_TTL` vs hoping to find every `1.day`
+- **Self-documentation**: The name explains the business reason
+- **Single point of change**: Update once, applies everywhere
+
+**When NOT to flag:** Values inherently clear from context (e.g., `100` for
+percentage max), or test setup where specific values don't matter.
+
+#### Check for Race Condition Patterns
+
+**Pattern: Duplicate Work Before Conflict Resolution**
+
+When code rescues `RecordNotUnique` or similar, check what happens BEFORE the
+save attempt:
+
+```ruby
+def find_or_create(params)
+  return existing if existing&.fresh?
+
+  # PROBLEM: Expensive API call happens before we know if we'll use the result
+  result = ExternalAPI.fetch(params)
+  Record.create!(data: result)
+rescue ActiveRecord::RecordNotUnique
+  Record.find_by!(params)
+end
+```
+
+Two concurrent requests both call `ExternalAPI.fetch` before either wins the
+race. One succeeds, one rescues - but both made the costly API call.
+
+**What to flag:** "Both requests will call the external API before one wins the
+race. If this is high-traffic, consider an advisory lock to avoid duplicate calls."
+
 #### Check for Leaky Abstractions (Data vs Decisions)
 
 When a method returns raw data that callers must interpret, the decision logic
@@ -472,6 +525,20 @@ reason about.
 - Complex methods missing tests are blockers
 - Trivially simple methods (one-liners, simple delegation) can skip tests
 - For WIP mode: skip test requirements entirely
+
+**Error handling paths need test coverage too.** When code has `rescue`, `catch`,
+or similar error handling with meaningful behavior (logging, fallback, retry),
+that behavior should be verified by a test.
+
+```ruby
+# This rescue has logic worth testing
+rescue ActiveRecord::RecordNotUnique
+  find_existing_record(params)  # Fallback behavior - does it work?
+end
+```
+
+Flag: "The rescue block falls back to `find_existing_record`, but there's no
+test verifying this fallback works."
 
 **CRITICAL: Never accept "matches existing pattern's test coverage" as justification
 for missing tests.** If similar code elsewhere lacks tests, that's technical debt to
@@ -770,4 +837,14 @@ Only mention alternative approaches when:
 - The alternative is simpler, not more complex
 
 Don't suggest alternatives just because you'd do it differently.
+
+## Before Concluding Your Review
+
+Ask yourself these questions to escape checklist tunnel vision:
+
+- "What could a production incident reveal that I missed?"
+- "If two requests hit this code simultaneously, what happens?"
+- "Are there rescue/catch blocks without test coverage?"
+- "Are there inline values that should be named constants?"
+- "What feels wrong even if I can't name the pattern?"
 
