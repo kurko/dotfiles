@@ -508,14 +508,14 @@ Overall, avoid running these unless absolutely necessary.
 
 Each comment should follow this structure:
 
-```
+````
 **path/to/file.rb:42**
 ```diff
 + def fetch_all!
 ```
 
 The comment text here. Be specific and actionable. [1]
-```
+````
 
 Rules for comments:
 
