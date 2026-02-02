@@ -30,6 +30,7 @@
   "enabledPlugins": {
     "safety-net@cc-marketplace": true
   },
+  "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
   "permissions": {
     "allow": []
