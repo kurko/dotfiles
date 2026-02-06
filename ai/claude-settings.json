@@ -32,8 +32,6 @@
   },
   "alwaysThinkingEnabled": true,
   "permissions": {
-    "allow": [
-      "mcp__pencil"
-    ]
+    "allow": []
   }
 }
