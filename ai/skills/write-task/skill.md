@@ -314,3 +314,37 @@ After creating the task:
    More content...
    EOF
    ```
+
+## Creating Tasks in Asana
+
+When creating tasks directly in Asana via the MCP tool, use the `html_notes`
+parameter. Key formatting rules:
+
+**Use `<b>` instead of `<h2>` for section headers.** Asana renders `<h2>` tags
+with built-in margin/padding that creates extra vertical spacing you cannot
+control. Using `<b>` gives tighter, cleaner formatting:
+
+```html
+<!-- Creates extra spacing above and below (Asana's built-in h2 styling) -->
+<h2>Background</h2>
+
+<!-- Tighter spacing - preferred -->
+<b>Background</b>
+```
+
+**Use newlines, not `<br/>`.** The `<br/>` tag is no longer supported in Asana.
+Use actual newline characters for line breaks. Double newlines create paragraph
+breaks.
+
+**Keep headers and content adjacent.** Put the section header and its first
+paragraph on consecutive lines (single newline between them):
+
+```html
+<b>Background</b>
+When a payout fails with an NSF error...
+```
+
+**Supported tags:** `<strong>`, `<em>`, `<b>`, `<u>`, `<s>`, `<code>`, `<ol>`,
+`<ul>`, `<li>`, `<a>`, `<blockquote>`, `<pre>`, `<h1>`, `<h2>`, `<hr/>`.
+
+Reference: https://developers.asana.com/docs/rich-text
