@@ -6,6 +6,14 @@ allowed-tools: Bash(agent-browser:*)
 
 # Browser Automation with agent-browser
 
+## Setup (run once if command not found)
+
+If `agent-browser` is not installed, install it globally:
+
+```bash
+command -v agent-browser >/dev/null 2>&1 || npm install -g agent-browser
+```
+
 ## Quick start
 
 ```bash
