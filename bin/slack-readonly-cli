@@ -1,0 +1,416 @@
+#!/usr/bin/env bash
+#
+# slack-readonly-cli - Read-only Slack operations via the Slack Web API
+#
+# This script provides read-only Slack operations that MCP tools don't support well:
+#   - search: Search for messages using Slack's search.messages API
+#   - message: Look up a message and its thread by URL or channel:timestamp
+#   - user: Look up a user by ID or email
+#   - channels: List channels matching a pattern
+#
+# Requirements:
+#   - SLACK_BOT_TOKEN environment variable must be set
+#   - curl must be available
+#   - jq is required for JSON parsing and URL encoding
+#
+# Usage:
+#   ./slack-readonly-cli search "query" [--count N]
+#   ./slack-readonly-cli message <url_or_channel:ts>
+#   ./slack-readonly-cli user <user_id_or_email>
+#   ./slack-readonly-cli channels [pattern]
+#   ./slack-readonly-cli help
+#
+
+set -euo pipefail
+
+# Colors for output (disabled if not a tty)
+if [[ -t 1 ]]; then
+  RED='\033[0;31m'
+  GREEN='\033[0;32m'
+  YELLOW='\033[0;33m'
+  NC='\033[0m' # No Color
+else
+  RED=''
+  GREEN=''
+  YELLOW=''
+  NC=''
+fi
+
+# Error handling helper
+error() {
+  echo -e "${RED}Error:${NC} $1" >&2
+  exit 1
+}
+
+# Warning helper
+warn() {
+  echo -e "${YELLOW}Warning:${NC} $1" >&2
+}
+
+# Check for required SLACK_BOT_TOKEN
+check_token() {
+  if [[ -z "${SLACK_BOT_TOKEN:-}" ]]; then
+    error "SLACK_BOT_TOKEN environment variable is not set.
+
+To use this script, you need a Slack Bot Token with the appropriate scopes:
+  - search:read (for message search)
+  - channels:history, groups:history, im:history, mpim:history (for message/thread lookup)
+  - users:read (for user lookup)
+  - users:read.email (for email lookup)
+  - channels:read (for channel listing)
+
+Set it with:
+  export SLACK_BOT_TOKEN='xoxb-your-token-here'"
+  fi
+}
+
+# Make a Slack API call
+# Arguments: endpoint [additional_params...]
+slack_api() {
+  local endpoint="$1"
+  shift
+  local url="https://slack.com/api/${endpoint}"
+
+  # Build query string from remaining arguments
+  local query_string=""
+  for param in "$@"; do
+    if [[ -n "$query_string" ]]; then
+      query_string="${query_string}&${param}"
+    else
+      query_string="$param"
+    fi
+  done
+
+  if [[ -n "$query_string" ]]; then
+    url="${url}?${query_string}"
+  fi
+
+  local response
+  response=$(curl -s -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" "$url")
+
+  # Check for API errors
+  local ok
+  ok=$(echo "$response" | jq -r '.ok // "false"' 2>/dev/null || echo "false")
+
+  if [[ "$ok" != "true" ]]; then
+    local error_msg
+    error_msg=$(echo "$response" | jq -r '.error // "unknown error"' 2>/dev/null || echo "unknown error")
+    error "Slack API error: $error_msg"
+  fi
+
+  echo "$response"
+}
+
+# Command: search
+# Search for messages using Slack's search.messages API
+# Usage: search "query" [--count N]
+cmd_search() {
+  local query=""
+  local count=20
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --count)
+        count="$2"
+        if ! [[ "$count" =~ ^[0-9]+$ ]] || [[ "$count" -eq 0 ]]; then
+          error "--count must be a positive integer"
+        fi
+        shift 2
+        ;;
+      --count=*)
+        count="${1#*=}"
+        if ! [[ "$count" =~ ^[0-9]+$ ]] || [[ "$count" -eq 0 ]]; then
+          error "--count must be a positive integer"
+        fi
+        shift
+        ;;
+      -*)
+        error "Unknown option: $1"
+        ;;
+      *)
+        if [[ -z "$query" ]]; then
+          query="$1"
+        else
+          query="$query $1"
+        fi
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z "$query" ]]; then
+    error "Search query is required.
+
+Usage: $0 search \"query\" [--count N]
+
+Examples:
+  $0 search \"international bank transfers\"
+  $0 search \"from:@alice project update\" --count 50
+  $0 search \"in:#engineering bug fix\""
+  fi
+
+  # URL-encode the query
+  local encoded_query
+  encoded_query=$(printf '%s' "$query" | jq -sRr @uri)
+
+  slack_api "search.messages" "query=${encoded_query}" "count=${count}"
+}
+
+# Command: message
+# Look up a message and its thread by Slack URL or channel:timestamp
+# Usage: message <url_or_channel:ts>
+cmd_message() {
+  local identifier="${1:-}"
+
+  if [[ -z "$identifier" ]]; then
+    error "Message URL or channel:timestamp is required.
+
+Usage: $0 message <url_or_channel:ts>
+
+Examples:
+  $0 message https://myworkspace.slack.com/archives/C01ABC123/p1770392941458769
+  $0 message C01ABC123:1770392941.458769"
+  fi
+
+  local channel=""
+  local ts=""
+
+  if [[ "$identifier" == http* ]]; then
+    # Parse Slack URL: https://*.slack.com/archives/CHANNEL/pTIMESTAMP
+    # Also handles URLs with query params like ?thread_ts=...
+    local path
+    path=$(printf '%s' "$identifier" | sed -E 's|https?://[^/]*/||' | sed 's|[?#].*||')
+
+    channel=$(printf '%s' "$path" | cut -d'/' -f2)
+    local raw_ts
+    raw_ts=$(printf '%s' "$path" | cut -d'/' -f3)
+
+    if [[ -z "$channel" || -z "$raw_ts" ]]; then
+      error "Could not parse Slack URL. Expected format:
+  https://workspace.slack.com/archives/CHANNEL_ID/pTIMESTAMP"
+    fi
+
+    # Convert pXXXXXXXXXXYYYYYY to XXXXXXXXXX.YYYYYY
+    raw_ts="${raw_ts#p}"
+    if [[ ${#raw_ts} -gt 6 ]]; then
+      ts="${raw_ts:0:${#raw_ts}-6}.${raw_ts:${#raw_ts}-6}"
+    else
+      ts="$raw_ts"
+    fi
+  elif [[ "$identifier" == *:* ]]; then
+    # Parse channel:timestamp format
+    channel="${identifier%%:*}"
+    ts="${identifier#*:}"
+  else
+    error "Unrecognized format. Provide a Slack URL or channel:timestamp.
+
+Examples:
+  $0 message https://myworkspace.slack.com/archives/C01ABC123/p1770392941458769
+  $0 message C01ABC123:1770392941.458769"
+  fi
+
+  if [[ -z "$channel" || -z "$ts" ]]; then
+    error "Could not extract channel and timestamp from: $identifier"
+  fi
+
+  slack_api "conversations.replies" "channel=${channel}" "ts=${ts}"
+}
+
+# Command: user
+# Look up a user by ID or email
+# Usage: user <user_id_or_email>
+cmd_user() {
+  local identifier="${1:-}"
+
+  if [[ -z "$identifier" ]]; then
+    error "User ID or email is required.
+
+Usage: $0 user <user_id_or_email>
+
+Examples:
+  $0 user U02P3CWUKMG
+  $0 user alice@example.com"
+  fi
+
+  # Check if it looks like an email
+  if [[ "$identifier" == *@* ]]; then
+    # Look up by email
+    local encoded_email
+    encoded_email=$(printf '%s' "$identifier" | jq -sRr @uri)
+    slack_api "users.lookupByEmail" "email=${encoded_email}"
+  else
+    # Look up by user ID
+    slack_api "users.info" "user=${identifier}"
+  fi
+}
+
+# Command: channels
+# List channels, optionally filtering by a pattern
+# Usage: channels [pattern]
+cmd_channels() {
+  local pattern="${1:-}"
+  local limit=1000
+  local cursor=""
+  local all_channels="[]"
+
+  # Paginate through all channels
+  while true; do
+    local params="limit=${limit}&types=public_channel,private_channel"
+    if [[ -n "$cursor" ]]; then
+      params="${params}&cursor=${cursor}"
+    fi
+
+    local response
+    response=$(slack_api "conversations.list" "$params")
+
+    # Extract channels from this page
+    local page_channels
+    page_channels=$(echo "$response" | jq '.channels')
+
+    # Merge with all_channels
+    all_channels=$(echo "$all_channels" "$page_channels" | jq -s 'add')
+
+    # Check for next page
+    cursor=$(echo "$response" | jq -r '.response_metadata.next_cursor // ""')
+    if [[ -z "$cursor" ]]; then
+      break
+    fi
+  done
+
+  # Filter by pattern if provided
+  if [[ -n "$pattern" ]]; then
+    # Convert glob pattern to regex
+    # First escape regex special characters, then convert * to .*
+    local regex_pattern
+    regex_pattern=$(printf '%s' "$pattern" | sed 's/[.[\^$+?{}|()]/\\&/g' | sed 's/\*/.*?/g')
+
+    all_channels=$(echo "$all_channels" | jq --arg pattern "$regex_pattern" '[.[] | select(.name | test($pattern; "i"))]')
+  fi
+
+  # Return result in the same format as Slack API
+  echo "{\"ok\": true, \"channels\": $all_channels}"
+}
+
+# Command: help
+# Show usage information
+cmd_help() {
+  cat << 'EOF'
+slack-readonly-cli - Read-only Slack operations via the Slack Web API
+
+USAGE:
+    ./slack-readonly-cli <command> [options]
+
+COMMANDS:
+    search <query> [--count N]
+        Search for messages using Slack's search.messages API.
+        Default count is 20.
+
+        Examples:
+            ./slack-readonly-cli search "international bank transfers"
+            ./slack-readonly-cli search "from:@alice project update" --count 50
+            ./slack-readonly-cli search "in:#engineering bug fix"
+
+        Search modifiers:
+            from:@username    Messages from a specific user
+            in:#channel       Messages in a specific channel
+            has:link          Messages containing links
+            has:emoji         Messages with emoji reactions
+            before:YYYY-MM-DD Messages before a date
+            after:YYYY-MM-DD  Messages after a date
+
+    message <url_or_channel:ts>
+        Look up a message and its thread by Slack URL or channel:timestamp.
+        Returns the parent message and all thread replies.
+
+        Examples:
+            ./slack-readonly-cli message https://myworkspace.slack.com/archives/C01ABC123/p1770392941458769
+            ./slack-readonly-cli message C01ABC123:1770392941.458769
+
+    user <user_id_or_email>
+        Look up a user by their Slack user ID or email address.
+
+        Examples:
+            ./slack-readonly-cli user U03P2CAUKMG
+            ./slack-readonly-cli user alice@example.com
+
+    channels [pattern]
+        List channels, optionally filtering by a glob pattern.
+        Supports * as a wildcard.
+
+        Examples:
+            ./slack-readonly-cli channels                    # List all channels
+            ./slack-readonly-cli channels "project-*"        # Channels starting with "project-"
+            ./slack-readonly-cli channels "*-alerts"         # Channels ending with "-alerts"
+            ./slack-readonly-cli channels "*galileo*"        # Channels containing "galileo"
+
+    help
+        Show this help message.
+
+ENVIRONMENT:
+    SLACK_BOT_TOKEN
+        Required. Your Slack Bot Token (starts with xoxb-).
+        The token needs these scopes:
+            - search:read (for message search)
+            - channels:history, groups:history, im:history, mpim:history (for message/thread lookup)
+            - users:read (for user lookup)
+            - users:read.email (for email lookup)
+            - channels:read (for channel listing)
+
+OUTPUT:
+    All commands output JSON that can be piped to jq for further processing.
+
+    Examples:
+        # Get just message text from search results
+        ./slack-readonly-cli search "query" | jq '.messages.matches[].text'
+
+        # Get all message texts from a thread
+        ./slack-readonly-cli message https://workspace.slack.com/archives/C01/p123 | jq '.messages[].text'
+
+        # Get user's real name
+        ./slack-readonly-cli user U123 | jq '.user.real_name'
+
+        # Get list of channel names matching pattern
+        ./slack-readonly-cli channels "project-*" | jq '.channels[].name'
+
+EOF
+}
+
+# Main entry point
+main() {
+  if [[ $# -eq 0 ]]; then
+    cmd_help
+    exit 0
+  fi
+
+  local command="$1"
+  shift
+
+  case "$command" in
+    search)
+      check_token
+      cmd_search "$@"
+      ;;
+    message)
+      check_token
+      cmd_message "${1:-}"
+      ;;
+    user)
+      check_token
+      cmd_user "${1:-}"
+      ;;
+    channels)
+      check_token
+      cmd_channels "${1:-}"
+      ;;
+    help|--help|-h)
+      cmd_help
+      ;;
+    *)
+      error "Unknown command: $command
+
+Run '$0 help' for usage information."
+      ;;
+  esac
+}
+
+main "$@"
