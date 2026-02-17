@@ -89,6 +89,13 @@ function update_symlinks(){
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/agents/
   done
 
+  # Claude hooks
+  mkdir -p ~/.claude/hooks
+  find ~/.claude/hooks -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
+  for f in ~/.dotfiles/ai/hooks/*; do
+    [ -e "$f" ] && ln -nfs "$f" ~/.claude/hooks/
+  done
+
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml
   ln -nfs ~/.dotfiles/alacritty/alacritty.yml ~/.alacritty.yml

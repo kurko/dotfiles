@@ -30,6 +30,18 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/git-commit-reminder.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
