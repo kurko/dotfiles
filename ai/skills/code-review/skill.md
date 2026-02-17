@@ -429,6 +429,105 @@ race. One succeeds, one rescues - but both made the costly API call.
 **What to flag:** "Both requests will call the external API before one wins the
 race. If this is high-traffic, consider an advisory lock to avoid duplicate calls."
 
+#### Check for Nested Subquery Scoping
+
+When a `WHERE id IN (SELECT ...)` subquery contains another subquery inside it,
+PostgreSQL's planner has limited flexibility to optimize the execution plan. A
+single-level `IN (SELECT ...)` is usually fine — the planner can convert it to a
+semi-join. But nesting reduces options at each level.
+
+**How it happens in Rails:**
+
+`has_many :through` associations produce subqueries when used in `where` clauses.
+If you chain them, nesting appears:
+
+```ruby
+# scoped_projects returns current_workspace.projects (has_many :through)
+# This is already a subquery internally
+task_ids = Task.joins(:projects).where(projects: {id: scoped_projects}).select(:id)
+
+# Now this wraps that subquery inside another one
+@actors = Actor.joins(:tasks).where(tasks: {id: task_ids}).distinct
+```
+
+The generated SQL has `WHERE id IN (SELECT ... WHERE id IN (SELECT ...))` — two
+levels of nesting. Add another `has_many :through` and you get three.
+
+**Detection:** Look for this pattern:
+1. A variable or method returns a `.select(:id)` or `.pluck(:id)` result
+2. That result is used in `where(column: {id: ...})` or `where(column_id: ...)`
+3. The source relation itself contains `joins` + `where` with another relation
+
+Specifically watch for:
+- `where(x: {id: scope_that_returns_relation})` — the scope may contain its own subquery
+- Chaining `.select(:id)` results through multiple `where` clauses
+- Private methods like `workspace_task_ids` that hide a subquery behind a method name
+
+**The fix:** Define model scopes using `joins()` through the full association chain,
+then compose them with `merge()`:
+
+```ruby
+# Model scope: joins through the full chain, single WHERE clause
+scope :in_workspace, ->(workspace) {
+  joins(projects: :workspaces)
+    .where(workspaces: {id: workspace.id})
+}
+
+# Controller: compose via merge — produces flat joins, no nesting
+Actor.joins(:tasks).merge(Task.in_workspace(current_workspace)).distinct
+```
+
+**When subqueries are still appropriate:** Polymorphic associations (`subject_type`
++ `subject_id`) can't be joined cleanly, so `WHERE subject_id IN (SELECT ...)`
+is correct. But the inner query should use joins, not contain another subquery:
+
+```ruby
+# Good: subquery needed for polymorphic, but inner query uses joins
+Risk.where(subject_type: "Task", subject_id: Task.in_workspace(ws).select(:id))
+
+# Bad: subquery inside subquery inside subquery
+Risk.where(subject_id: Task.where(project_id: workspace.projects).select(:id))
+```
+
+**What to flag:** "This `WHERE IN` subquery contains another subquery. PostgreSQL's
+planner has limited optimization options for nested subqueries. Extract a model
+scope using `joins()` and compose with `merge()` to flatten the query."
+
+**Literal ID lists degrade over time:**
+
+A separate but related problem: `WHERE id IN (1, 2, 3, ..., N)` with a
+materialized list of IDs. With small lists, PostgreSQL uses an index scan. As
+the list grows into hundreds or thousands, the planner may switch to a
+sequential table scan because it estimates too many index pages would be touched.
+
+This is insidious because it works fine in development and early production, then
+slows down considerably after months as data accumulates. By the time it's
+noticed, the query is in a hot path.
+
+In Rails, this happens when `.pluck(:id)` materializes IDs into Ruby, then
+passes them back to the database:
+
+```ruby
+# Bad: round-trips IDs through Ruby, creates literal IN list
+task_ids = Task.where(project_id: project.id).pluck(:id)
+Event.where(task_id: task_ids)
+# SQL: WHERE task_id IN (1, 2, 3, ..., 50000)
+
+# Good: keep it as a subquery — the DB handles it internally
+task_ids = Task.where(project_id: project.id).select(:id)
+Event.where(task_id: task_ids)
+# SQL: WHERE task_id IN (SELECT id FROM tasks WHERE project_id = ?)
+```
+
+**Detection:** Look for `.pluck(:id)` or `.map(&:id)` followed by `.where(column: ids)`.
+The fix is almost always to use `.select(:id)` instead, keeping the query in the
+database. Even better: use joins or `merge()` to avoid the subquery entirely.
+
+**What to flag:** "This materializes IDs into Ruby with `pluck`/`map` and passes
+them back as a literal list. Use `.select(:id)` to keep it as a subquery, or
+refactor to joins. Literal `IN` lists degrade as data grows — PostgreSQL may
+switch from index scan to sequential scan with large lists."
+
 #### Check for Leaky Abstractions (Data vs Decisions)
 
 When a method returns raw data that callers must interpret, the decision logic
