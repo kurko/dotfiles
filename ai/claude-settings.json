@@ -36,5 +36,6 @@
     "safety-net@cc-marketplace": true
   },
   "syntaxHighlightingDisabled": false,
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
