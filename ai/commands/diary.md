@@ -148,22 +148,20 @@ Based on the conversation context (and optional metadata from Step 3), create a 
 
 ### 4. Save the Diary Entry
 
-Run this command to save the entry:
+Use Glob and Write (both auto-approved) to save the entry without any permission prompts:
 
-```bash
-# Create directory if needed
-mkdir -p ~/.claude/memory/diary && \
-# Determine filename
-TODAY=$(date +%Y-%m-%d) && \
-N=1 && \
-while [ -f ~/.claude/memory/diary/${TODAY}-session-${N}.md ]; do N=$((N+1)); done && \
-DIARY_FILE=~/.claude/memory/diary/${TODAY}-session-${N}.md && \
-# Save entry (you'll need to write the content)
-echo "[diary-content]" > "$DIARY_FILE" && \
-echo "Saved to: $DIARY_FILE"
-```
+1. **Find existing diary files for today** using Glob:
+   `~/.claude/memory/diary/YYYY-MM-DD-session-*.md`
+   (substitute today's date)
 
-Use the Write tool to actually write the diary content to the determined file path.
+2. **Compute the next session number** from the Glob results:
+   - 0 matches → N = 1
+   - Matches found → N = highest existing session number + 1
+
+3. **Write the diary entry** using the Write tool to:
+   `~/.claude/memory/diary/YYYY-MM-DD-session-N.md`
+
+Write auto-creates parent directories, so no `mkdir -p` is needed.
 
 ### 5. Confirm Completion
 
