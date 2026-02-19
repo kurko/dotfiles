@@ -454,6 +454,7 @@ Success is measured by the quality of the user's final decision, not their satis
 
 - bash: use count=$((count + 1)) not ((count++)) with set -e (arithmetic returning 0 has exit code 1)
 - bash: set -euo pipefail at top, clear header comments, helper functions, errors to stderr
+- bash tool: NEVER chain commands with &&, ||, ;, or | in a single Bash tool call — make separate parallel tool calls instead (Claude Code's --allowedTools intentionally blocks compound commands even when each individual command is pre-approved)
 
 ## Code Quality (additional rules)
 

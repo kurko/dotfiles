@@ -61,6 +61,15 @@ claude \
     ,Bash(bin/rails time:zones:*) \
     ,Bash(bin/rails middleware:*) \
     ,Bash(bin/rails log:*) \
+    ,Bash(RAILS_ENV=development bin/rails db:migrate:*) \
+    ,Bash(RAILS_ENV=development bin/rails db:schema:load:*) \
+    ,Bash(RAILS_ENV=development bin/rails db:seed:*) \
+    ,Bash(RAILS_ENV=development bundle exec rails db:seed:*) \
+    ,Bash(RAILS_ENV=test bin/rails db:migrate:*) \
+    ,Bash(RAILS_ENV=test bin/rails db:schema:load:*) \
+    ,Bash(bin/rails db:create:*) \
+    ,Bash(bin/rails db:prepare:*) \
+    ,Bash(bin/rails db:seed:*) \
     ,Bash(bin/rake routes:*) \
     ,Bash(bin/rake -T:*) \
     ,Bash(bin/rake --tasks:*) \
@@ -100,6 +109,7 @@ claude \
     ,Bash(git ls-files:*) \
     ,Bash(git add:*) \
     ,Bash(git commit:*) \
+    ,Bash(gh:*) \
     ,Bash(cat:*) \
     ,Bash(ps:*) \
     ,Bash(awk:*) \
@@ -121,6 +131,10 @@ claude \
     ,Read(//Users/alex/humanics) \
     ,Read(/tmp/**) \
     ,WebFetch(domain:github.com) \
+    ,WebFetch(domain:docs.anthropic.com) \
+    ,WebFetch(domain:claude.ai) \
+    ,WebFetch(domain:claude.com) \
+    ,WebFetch(domain:code.claude.com) \
     ,WebSearch(*) \
     ,Bash(claude config get:*) \
     ,mcp__slack__slack_get_thread_replies \
