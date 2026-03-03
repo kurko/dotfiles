@@ -305,13 +305,30 @@ After creating the task:
    - If the clipboard command fails or isn't available, inform the user and
      simply output the task text directly.
 
-   Example:
+   **Choose the output format based on the project's task tracker:**
+   - If the project uses **Asana** (check CLAUDE.md / CLAUDE.local.md), use
+     Asana HTML formatting (see "Creating Tasks in Asana" section below).
+   - Otherwise, default to **markdown**.
+
+   Markdown example:
    ```bash
    cat << 'EOF' | pbcopy
    tl;dr The task content goes here...
 
    ## Background
-   More content...
+   More content with `inline code`...
+   EOF
+   ```
+
+   Asana HTML example:
+   ```bash
+   cat << 'EOF' | pbcopy
+   tl;dr The task content goes here...
+
+   <b>Background</b>
+   More content with <code>inline code</code>...
+
+   Relevant link: <a href="https://example.com">Example</a>
    EOF
    ```
 
