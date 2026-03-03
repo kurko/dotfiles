@@ -1,0 +1,383 @@
+#!/usr/bin/env bash
+#
+# sentry-readonly-cli - Fetch Sentry issue details for debugging
+#
+# Read-only CLI for fetching Sentry issue data. Designed for both human
+# and AI consumption: outputs structured, plain-text summaries of errors
+# including stacktraces, breadcrumbs, request context, and user info.
+#
+# Requirements:
+#   - SENTRY_AUTH_TOKEN environment variable
+#   - curl and jq
+#
+# Usage:
+#   sentry-readonly-cli <sentry-issue-url>
+#   sentry-readonly-cli help
+#
+
+set -euo pipefail
+
+# Colors (disabled when piped)
+if [[ -t 1 ]]; then
+  BOLD='\033[1m'
+  DIM='\033[2m'
+  RED='\033[0;31m'
+  NC='\033[0m'
+else
+  BOLD=''
+  DIM=''
+  RED=''
+  NC=''
+fi
+
+error() {
+  echo -e "${RED}Error:${NC} $1" >&2
+  exit 1
+}
+
+check_token() {
+  if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
+    error "SENTRY_AUTH_TOKEN environment variable is not set.
+
+To use this script, create a token at:
+  https://sentry.io/settings/account/api/auth-tokens/
+
+Required scope: event:read
+
+Set it with:
+  export SENTRY_AUTH_TOKEN='your-token-here'"
+  fi
+}
+
+parse_url() {
+  local input="$1"
+  if [[ "$input" =~ https?://([^.]+)\.sentry\.io/issues/([0-9]+) ]]; then
+    ORG="${BASH_REMATCH[1]}"
+    ISSUE_ID="${BASH_REMATCH[2]}"
+  else
+    error "Invalid Sentry URL: $input
+
+Expected format: https://<org>.sentry.io/issues/<issue-id>/"
+  fi
+}
+
+format_timestamp() {
+  local ts="$1"
+  if date -j -f "%Y-%m-%dT%H:%M:%S" "${ts%%.*}" "+%Y-%m-%d %H:%M:%S" 2>/dev/null; then
+    return
+  fi
+  date -d "$ts" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || echo "$ts"
+}
+
+section() {
+  echo -e "\n${BOLD}$1${NC}"
+}
+
+# Prints a labeled line only if value is non-empty
+field() {
+  local label="$1" value="$2"
+  if [[ -n "$value" ]]; then
+    echo "$label: $value"
+  fi
+}
+
+cmd_fetch() {
+  local url="$1"
+  parse_url "$url"
+
+  local base="https://sentry.io/api/0/organizations/${ORG}/issues/${ISSUE_ID}"
+  local headers="Authorization: Bearer ${SENTRY_AUTH_TOKEN}"
+
+  local issue_file event_file
+  issue_file=$(mktemp)
+  event_file=$(mktemp)
+  trap "rm -f '$issue_file' '$event_file'" EXIT
+
+  # Fetch issue + recommended event in parallel
+  # "recommended" is Sentry's most representative event for the issue
+  curl -sf -H "$headers" "${base}/" > "$issue_file" &
+  local issue_pid=$!
+  curl -sf -H "$headers" "${base}/events/recommended/" > "$event_file" 2>/dev/null &
+  local event_pid=$!
+
+  if ! wait "$issue_pid"; then
+    error "Failed to fetch issue. Check your SENTRY_AUTH_TOKEN and URL."
+  fi
+  wait "$event_pid" || true
+
+  # Fall back to latest if recommended is empty
+  if [[ ! -s "$event_file" ]]; then
+    curl -sf -H "$headers" "${base}/events/latest/" > "$event_file" 2>/dev/null || true
+  fi
+
+  local issue event
+  issue=$(cat "$issue_file")
+  event=$(cat "$event_file" 2>/dev/null || echo "{}")
+
+  # === Issue summary ===
+  local short_id title status level culprit count user_count first_seen last_seen
+  short_id=$(echo "$issue" | jq -r '.shortId // "?"')
+  title=$(echo "$issue" | jq -r '.title // "?"')
+  status=$(echo "$issue" | jq -r '.status // "?"')
+  level=$(echo "$issue" | jq -r '.level // "?"')
+  culprit=$(echo "$issue" | jq -r '.culprit // "N/A"')
+  count=$(echo "$issue" | jq -r '.count // "?"')
+  user_count=$(echo "$issue" | jq -r '.userCount // "?"')
+  first_seen=$(echo "$issue" | jq -r '.firstSeen // "?"')
+  last_seen=$(echo "$issue" | jq -r '.lastSeen // "?"')
+
+  echo -e "${BOLD}[${short_id}] ${title}${NC}"
+  echo "Status: ${status} | Level: ${level}"
+  echo "Culprit: ${culprit}"
+  echo "Events: ${count} | Users: ${user_count}"
+  echo "First seen: $(format_timestamp "$first_seen")"
+  echo "Last seen: $(format_timestamp "$last_seen")"
+
+  field "Assigned to" "$(echo "$issue" | jq -r '.assignedTo.name // .assignedTo.email // empty')"
+  field "File" "$(echo "$issue" | jq -r '.metadata.filename // empty')"
+
+  # === Error message ===
+  local error_value
+  error_value=$(echo "$issue" | jq -r '.metadata.value // empty')
+  if [[ -n "$error_value" ]]; then
+    section "Error"
+    echo "$error_value"
+  fi
+
+  # Everything below requires event data
+  if [[ ! -s "$event_file" ]]; then
+    echo -e "\nLink: $(echo "$issue" | jq -r '.permalink // empty')"
+    return
+  fi
+
+  # === Request context ===
+  local has_request
+  has_request=$(echo "$event" | jq '[.entries[] | select(.type == "request")] | length' 2>/dev/null || echo "0")
+  if [[ "$has_request" -gt 0 ]]; then
+    section "Request"
+    echo "$event" | jq -r '
+      .entries[] | select(.type == "request") | .data |
+      "  \(.method // "?") \(.url // "?")"
+      + if .query then "\n  Query: \(.query | tostring)" else "" end
+      + if (.data | type) == "string" and (.data | length) > 0 then "\n  Body: \(.data[:500])" else "" end
+      + if (.data | type) == "object" and (.data | length) > 0 then "\n  Body: \(.data | tostring[:500])" else "" end
+    ' 2>/dev/null || true
+  fi
+
+  # === User context ===
+  local user_info
+  user_info=$(echo "$event" | jq -r '
+    .user // empty |
+    [
+      if .id then "id=\(.id)" else empty end,
+      if .email then "email=\(.email)" else empty end,
+      if .username then "username=\(.username)" else empty end,
+      if .ip_address then "ip=\(.ip_address)" else empty end
+    ] | join(", ")
+  ' 2>/dev/null || echo "")
+  if [[ -n "$user_info" ]]; then
+    section "User"
+    echo "  $user_info"
+  fi
+
+  # === Runtime / contexts ===
+  local contexts_output
+  contexts_output=$(echo "$event" | jq -r '
+    .contexts // {} |
+    [
+      if .runtime then "Runtime: \(.runtime.name // "?") \(.runtime.version // "?")" else empty end,
+      if .os then "OS: \(.os.name // "?") \(.os.version // "?")" else empty end,
+      if .browser then "Browser: \(.browser.name // "?") \(.browser.version // "?")" else empty end
+    ] | .[] | "  \(.)"
+  ' 2>/dev/null || echo "")
+  if [[ -n "$contexts_output" ]]; then
+    section "Contexts"
+    echo "$contexts_output"
+  fi
+
+  # === Stacktrace ===
+  local has_exception
+  has_exception=$(echo "$event" | jq '[.entries[] | select(.type == "exception")] | length' 2>/dev/null || echo "0")
+  if [[ "$has_exception" -gt 0 ]]; then
+    section "Stacktrace"
+    # Show only in-app frames first, then all frames
+    echo "$event" | jq -r '
+      .entries[]
+      | select(.type == "exception")
+      | .data.values[]
+      | .stacktrace.frames
+      | [.[] | select(.inApp == true)]
+      | if length == 0 then empty else reverse[] end
+      | "  \(.filename // .module // "?"):\(.lineNo // "?") in \(.function // "<anonymous>")"
+        + if .context_line then "\n    > \(.context_line | ltrimstr(" "))" else "" end
+    ' 2>/dev/null || true
+
+    # Full trace (non-app frames) as a compact list
+    local non_app_count
+    non_app_count=$(echo "$event" | jq '[.entries[] | select(.type == "exception") | .data.values[] | .stacktrace.frames[] | select(.inApp != true)] | length' 2>/dev/null || echo "0")
+    if [[ "$non_app_count" -gt 0 ]]; then
+      echo -e "\n  ${DIM}--- vendor/framework frames (${non_app_count}) ---${NC}"
+      echo "$event" | jq -r '
+        .entries[]
+        | select(.type == "exception")
+        | .data.values[]
+        | .stacktrace.frames
+        | [.[] | select(.inApp != true)]
+        | reverse[]
+        | "  \(.filename // .module // "?"):\(.lineNo // "?") in \(.function // "<anonymous>")"
+      ' 2>/dev/null || true
+    fi
+  fi
+
+  # === Breadcrumbs ===
+  local has_breadcrumbs
+  has_breadcrumbs=$(echo "$event" | jq '[.entries[] | select(.type == "breadcrumbs")] | length' 2>/dev/null || echo "0")
+  if [[ "$has_breadcrumbs" -gt 0 ]]; then
+    section "Breadcrumbs (last 15)"
+    echo "$event" | jq -r '
+      .entries[]
+      | select(.type == "breadcrumbs")
+      | .data.values
+      | .[-15:][]
+      | "  \(.timestamp // "?") [\(.category // .type // "?")] \(.message // "")"
+        + if .data.url then " \(.data.method // "") \(.data.url)" else "" end
+        + if .data.status_code then " → \(.data.status_code)" else "" end
+    ' 2>/dev/null || true
+  fi
+
+  # === Link ===
+  local permalink
+  permalink=$(echo "$issue" | jq -r '.permalink // empty')
+  if [[ -n "$permalink" ]]; then
+    echo -e "\nLink: ${permalink}"
+  fi
+
+  # === Tags ===
+  local tag_count
+  tag_count=$(echo "$event" | jq '.tags | length' 2>/dev/null || echo "0")
+  if [[ "$tag_count" -gt 0 ]]; then
+    section "Tags"
+    echo "$event" | jq -r '.tags[] | "  \(.key): \(.value)"' 2>/dev/null || true
+  fi
+}
+
+cmd_help() {
+  cat << 'HELP'
+sentry-readonly-cli - Fetch Sentry issue details for debugging
+
+USAGE
+    sentry-readonly-cli <sentry-issue-url>
+    sentry-readonly-cli help
+
+DESCRIPTION
+    Read-only CLI that fetches a Sentry issue and its most representative
+    event, then prints a structured summary designed for debugging. The
+    output includes everything needed to understand what went wrong:
+    error details, stacktrace, request context, breadcrumbs, and more.
+
+    The script is safe to run in automated pipelines — it only reads data
+    and never modifies anything in Sentry.
+
+INPUT
+    Accepts a full Sentry issue URL in the format:
+
+        https://<org>.sentry.io/issues/<issue-id>/
+
+    Query parameters (alert_rule_id, environment, etc.) are ignored — only
+    the org slug and numeric issue ID are extracted from the URL.
+
+OUTPUT SECTIONS
+    The output is organized into sections, printed in this order. Sections
+    are omitted if no data is available.
+
+    Header
+        [SHORT-ID] Error title
+        Status, level, culprit, event/user counts, first/last seen,
+        assignee, and source file.
+
+    Error
+        The error message from the issue metadata.
+
+    Request
+        HTTP method, URL, query string, and request body from the event.
+        Only present for issues triggered by HTTP requests.
+
+    User
+        The affected user's ID, email, username, and/or IP address.
+
+    Contexts
+        Runtime (e.g., Ruby 3.4.8), OS, and browser info from the event.
+
+    Stacktrace
+        In-app frames are shown first with source context lines, followed
+        by vendor/framework frames in a compact list. Frames are ordered
+        from the crash site outward (most recent call first).
+
+    Breadcrumbs (last 15)
+        Timestamped log of actions leading up to the error: HTTP calls,
+        database queries, navigation events, console messages, etc.
+
+    Link
+        Permalink to the issue in the Sentry web UI.
+
+    Tags
+        All key-value tags from the event (environment, server, release,
+        transaction, custom tags, etc.).
+
+API DETAILS
+    The script makes 2 parallel HTTP requests to the Sentry API:
+
+        GET /api/0/organizations/{org}/issues/{issue_id}/
+        GET /api/0/organizations/{org}/issues/{issue_id}/events/recommended/
+
+    The "recommended" event is Sentry's pick for the most representative
+    occurrence. If unavailable, falls back to the "latest" event.
+
+ENVIRONMENT
+    SENTRY_AUTH_TOKEN    (required)
+        Sentry authentication token. Create one at:
+        https://sentry.io/settings/account/api/auth-tokens/
+
+        Required scope: event:read
+
+        Set it with:
+            export SENTRY_AUTH_TOKEN='your-token-here'
+
+EXAMPLES
+    Fetch an issue by URL:
+        sentry-readonly-cli "https://myorg.sentry.io/issues/7044654032/"
+
+    Pipe to a file for AI analysis:
+        sentry-readonly-cli "https://myorg.sentry.io/issues/123/" > /tmp/sentry-issue.txt
+
+    Use in a script:
+        ISSUE_OUTPUT=$(sentry-readonly-cli "$SENTRY_URL" 2>&1)
+
+EXIT CODES
+    0    Success
+    1    Error (missing token, invalid URL, API failure)
+
+HELP
+}
+
+main() {
+  if [[ $# -eq 0 ]]; then
+    cmd_help
+    exit 0
+  fi
+
+  local command="$1"
+  shift
+
+  case "$command" in
+    help|--help|-h)
+      cmd_help
+      ;;
+    *)
+      check_token
+      cmd_fetch "$command"
+      ;;
+  esac
+}
+
+main "$@"

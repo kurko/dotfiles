@@ -82,8 +82,11 @@ function update_symlinks(){
   for f in ~/.dotfiles/ai/commands/*; do
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/commands/
   done
+  mkdir -p ~/.codex/skills
+  find ~/.codex/skills -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
   for f in ~/.dotfiles/ai/skills/*; do
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/skills/
+    [ -e "$f" ] && ln -nfs "$f" ~/.codex/skills/
   done
   for f in ~/.dotfiles/ai/agents/*; do
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/agents/
