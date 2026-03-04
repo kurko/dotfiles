@@ -419,6 +419,9 @@ Success is measured by the quality of the user's final decision, not their satis
 
 - debugging: always end with verification step to confirm fix
 - debugging: document root cause and prevention in CLAUDE.md after fixing production issues
+- debugging: when user provides a keyword hint, search ALL relevant config directories broadly before narrowing scope
+- debugging: follow config sourcing chains to completion (source, run-shell, include directives)
+- debugging: check runtime state (tmux list-keys, env, printenv) not just config files for layered config issues
 - Homebrew services: detect actual version before checking logs (e.g., `ls /opt/homebrew/var/ | grep postgres`)
 
 ## Deployment
