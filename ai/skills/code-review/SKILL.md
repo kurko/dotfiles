@@ -10,7 +10,7 @@ Review code changes from pull requests, git diffs, or uncommitted changes.
 ## CRITICAL: Instructions for Parent Agent (YOU)
 
 1. You MUST gather **Coder Intent** and pass it to the subagent (see below)
-2. You MUST spawn a `general-purpose` subagent with the "Subagent Instructions" below
+2. You MUST spawn a subagent with the "Subagent Instructions" below
    - **Use the most capable model available** (e.g., Opus) - code review requires deep reasoning and thorough analysis; never use a fast/cheap model for reviews
 3. When the subagent returns, you MUST display the complete review to the user verbatim
    - Do NOT summarize or abbreviate the review
@@ -185,7 +185,7 @@ output.** If something needs verification, YOU verify it in Phase B.
 For each potential issue that requires verification, spawn a dedicated subagent:
 
 ```
-Spawn a `general-purpose` subagent (use the best model, e.g., opus) for each verification task.
+Spawn a subagent (use the most capable model available, e.g., Opus) for each verification task.
 ```
 
 **Why subagents?**
@@ -527,6 +527,41 @@ database. Even better: use joins or `merge()` to avoid the subquery entirely.
 them back as a literal list. Use `.select(:id)` to keep it as a subquery, or
 refactor to joins. Literal `IN` lists degrade as data grows — PostgreSQL may
 switch from index scan to sequential scan with large lists."
+
+#### Check for Ruby-Level Filtering That Belongs in SQL
+
+When code loads records from the database and then filters them in Ruby using
+`reject`, `select { }`, `if`/`unless`, or similar, check whether the condition
+could be expressed as a SQL `WHERE` clause instead. Loading rows into memory
+only to discard them wastes database bandwidth, Ruby memory, and CPU.
+
+```ruby
+# Bad: loads ALL projects, then filters in Ruby
+projects = user.projects.includes(:workspace)
+syncable = projects.reject { |p| p.workspace.service == "development" }
+
+# Good: filter in SQL — development projects never leave the database
+projects = user.projects
+  .joins(:workspace)
+  .merge(Workspace.syncable)
+```
+
+**Detection:** Look for:
+- `.reject { }` or `.select { }` (Enumerable, not ActiveRecord) after a query
+- `.each` loops with `next if` / `next unless` that check an association attribute
+- `.filter` / `.find` (Ruby) on an ActiveRecord result set
+- Any pattern where records are loaded then conditionally skipped
+
+**When Ruby-level filtering is acceptable:**
+- The condition involves computed values not in the database (e.g., API
+  responses, in-memory state, complex Ruby logic with no SQL equivalent)
+- The collection is already loaded for other purposes and is known to be small
+- The condition requires Ruby-specific logic (regex not supported by the DB,
+  custom objects, etc.)
+
+**What to flag:** "This loads N records and discards some in Ruby. Move the
+condition into the query with `where`/`joins`/`merge` so the database handles
+the filtering. Less data transferred, less memory used."
 
 #### Check for Leaky Abstractions (Data vs Decisions)
 

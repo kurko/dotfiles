@@ -99,6 +99,18 @@ function update_symlinks(){
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/hooks/
   done
 
+  # Codex CLI config
+  mkdir -p ~/.codex
+  ln -nfs ~/.dotfiles/ai/codex-agents.md ~/.codex/AGENTS.md
+  ln -nfs ~/.dotfiles/ai/codex-config.toml ~/.codex/config.toml
+
+  # Codex skills (spec requires ~/.agents/skills/, not ~/.codex/skills/)
+  mkdir -p ~/.agents/skills
+  find ~/.agents/skills -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
+  for f in ~/.dotfiles/ai/skills/*/; do
+    [ -d "$f" ] && ln -nfs "$f" ~/.agents/skills/
+  done
+
   mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml
   ln -nfs ~/.dotfiles/alacritty/alacritty.yml ~/.alacritty.yml

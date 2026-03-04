@@ -33,7 +33,7 @@ present it in the first place.
 
 ## How to Use
 
-Before presenting recommendations, spawn a `general-purpose` subagent with:
+Before presenting recommendations, spawn a subagent with:
 
 ```
 Review these technical recommendations I'm about to give:

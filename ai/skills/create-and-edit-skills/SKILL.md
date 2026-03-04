@@ -27,11 +27,14 @@ Skills are markdown files that extend Claude's capabilities. They follow the [Ag
 **Skill Locations** (by scope):
 | Location | Source Path | Symlinked To | Scope |
 |----------|-------------|--------------|-------|
-| Public | `~/.dotfiles/ai/skills/<skill-name>/` | `~/.claude/skills/<skill-name>/` | All projects, shareable |
+| Public | `~/.dotfiles/ai/skills/<skill-name>/` | `~/.claude/skills/<skill-name>/` and `~/.agents/skills/<skill-name>/` | All projects, shareable (Claude + Codex) |
 | Private | `~/.private-prompts/skills/<skill-name>/` | `~/.claude/skills/<skill-name>/` | All projects, not committed |
-| Project | `.claude/skills/<skill-name>/` | N/A | Current project only |
+| Project (Claude) | `.claude/skills/<skill-name>/` | N/A | Current project only |
+| Project (Codex) | `.agents/skills/<skill-name>/` | N/A | Current project only |
 
-**IMPORTANT**: Personal skills (public/private) are created in source directories and symlinked to `~/.claude/skills/`. Never create personal skills directly in `~/.claude/skills/`.
+**IMPORTANT**: Personal skills (public/private) are created in source directories and symlinked to their destinations. Never create personal skills directly in `~/.claude/skills/` or `~/.agents/skills/`.
+
+**Filename**: Always use `SKILL.md` (uppercase). Claude accepts both cases; Codex requires uppercase.
 
 **Symlink Scripts**:
 - Public skills: Run `update_dotfiles` after creating/editing
@@ -62,14 +65,16 @@ description: What this skill does and when to use it
 name: skill-name                    # Lowercase, hyphens only, max 64 chars. Becomes /skill-name
 description: Clear description      # What it does + when to use it. Claude uses this for auto-loading.
 
-# OPTIONAL fields
+# OPTIONAL fields (spec standard)
+allowed-tools: Read, Grep          # Tools the agent can use without permission when skill active
+
+# OPTIONAL fields (Claude Code only)
 argument-hint: "[arg1] [arg2]"     # Shown during autocomplete (e.g., "[issue-number]")
 disable-model-invocation: false    # true = manual only (/skill), Claude won't auto-invoke
 user-invocable: true               # false = hidden from / menu, background knowledge only
-allowed-tools: Read, Grep          # Tools Claude can use without permission when skill active
 model: opus                        # Model override when skill is active
 context: fork                      # "fork" = run in isolated subagent context
-agent: Explore                     # Subagent type when context: fork (Explore, Plan, general-purpose)
+agent: Explore                     # Subagent type when context: fork (Explore, Plan, etc.)
 ---
 ```
 
