@@ -603,6 +603,45 @@ one caller to get it wrong, and impossible to change the interpretation without
 updating every caller. Encapsulating decisions makes the code easier to read and
 reason about.
 
+#### Check for Misleading State Mutations
+
+When code transforms invalid or problematic data into a "normal-looking" value
+before storing or transmitting it, it makes the stored state lie about reality.
+Anyone reading the data later — a human debugging in error tracking, an agent
+triaging, a downstream system — draws wrong conclusions.
+
+Common forms:
+
+| Mutation | What it hides | What the debugger sees |
+|----------|--------------|----------------------|
+| invalid → `nil` | "data exists but is bad" | "no data was ever provided" |
+| invalid → plausible value | "code silently substituted a value" | "user/system chose this value" |
+| stale → overwrite silently | "fetch failed, data is old" | "data is current" |
+
+**Detection — look for these shapes:**
+1. `x = transform(input); x = nil unless valid?(x)` — clean-then-nullify
+2. `value = valid?(x) ? x : DEFAULT` — code picks a value the user never chose
+3. `return unless valid?(field)` in a sync/worker — silently skips with no log
+4. `parsed = SomeParser.parse(raw) rescue nil` — when the field is expected, not optional
+5. `record.update!(field: fetched_value)` inside a `rescue` that swallows the
+   fetch error — stale data overwrites without a trace
+
+**Key question:** "If I read this stored value in 6 months, will I be able to
+tell whether it reflects reality or a silent transformation of bad data?" If no,
+flag it.
+
+**The correct responses, in order of preference:**
+1. **Reject loudly** at the boundary — raise, log at warn/error, return failure
+2. **Track the distinction** — separate status field, error reason, wrapper type
+3. **Skip with visibility** — log why the operation was skipped, at a level that
+   shows up in error tracking (not just debug)
+
+**What to flag:** "This transforms invalid/failed data into a normal-looking
+value before storing it. When someone sees [nil / the default / the stale value]
+in error tracking or logs, they'll draw the wrong conclusion about what happened.
+Either reject the bad data loudly or store it with a marker that distinguishes
+it from legitimate values."
+
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets
