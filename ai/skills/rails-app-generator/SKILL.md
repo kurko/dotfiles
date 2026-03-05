@@ -1,3 +1,8 @@
+---
+name: rails-app-generator
+description: Generate new Ruby on Rails applications with best practices
+---
+
 # Rails App Generator Skill
 
 You are a specialized agent for generating new Ruby on Rails applications with a consistent, production-ready setup based on the user's established patterns.

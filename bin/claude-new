@@ -120,6 +120,7 @@ claude \
     ,Bash(uniq:*) \
     ,Bash(jq:*) \
     ,Bash(defaults read:*) \
+    ,Bash(things3:*) \
     ,Bash(agent-browser:*) \
     ,Read(*) \
     ,Read(//Users/alex/.claude/**) \

@@ -1,0 +1,398 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["things.py>=0.0.18"]
+# ///
+"""Things 3 CLI — read via things-py, write via Things URL Scheme."""
+
+import argparse
+import subprocess
+import urllib.parse
+
+import things
+
+
+# ---------------------------------------------------------------------------
+# Formatting helpers
+# ---------------------------------------------------------------------------
+
+def format_todo(todo):
+    parts = [todo.get("title", "(untitled)")]
+    if todo.get("notes"):
+        parts.append(f"  Notes: {todo['notes']}")
+    if todo.get("start_date"):
+        parts.append(f"  When: {todo['start_date']}")
+    if todo.get("deadline"):
+        parts.append(f"  Deadline: {todo['deadline']}")
+    if todo.get("tags"):
+        parts.append(f"  Tags: {', '.join(todo['tags'])}")
+    if todo.get("project_title"):
+        parts.append(f"  Project: {todo['project_title']}")
+    if isinstance(todo.get("checklist"), list):
+        for item in todo["checklist"]:
+            marker = "x" if item.get("status") == "completed" else " "
+            parts.append(f"  [{marker}] {item.get('title', '')}")
+    if todo.get("uuid"):
+        parts.append(f"  ID: {todo['uuid']}")
+    return "\n".join(parts)
+
+
+def format_project(project):
+    parts = [project.get("title", "(untitled)")]
+    if project.get("area_title"):
+        parts.append(f"  Area: {project['area_title']}")
+    if project.get("notes"):
+        parts.append(f"  Notes: {project['notes']}")
+    if project.get("uuid"):
+        parts.append(f"  ID: {project['uuid']}")
+    return "\n".join(parts)
+
+
+def format_area(area):
+    parts = [area.get("title", "(untitled)")]
+    if area.get("uuid"):
+        parts.append(f"  ID: {area['uuid']}")
+    return "\n".join(parts)
+
+
+def format_tag(tag):
+    parts = [tag.get("title", "(untitled)")]
+    if tag.get("shortcut"):
+        parts.append(f"  Shortcut: {tag['shortcut']}")
+    return "\n".join(parts)
+
+
+def format_heading(heading):
+    parts = [heading.get("title", "(untitled)")]
+    if heading.get("uuid"):
+        parts.append(f"  ID: {heading['uuid']}")
+    return "\n".join(parts)
+
+
+def print_items(items, formatter, empty_msg="No items found"):
+    if not items:
+        print(empty_msg)
+        return
+    for item in items:
+        print(formatter(item))
+        print()
+
+
+# ---------------------------------------------------------------------------
+# URL Scheme helpers (for writes)
+# ---------------------------------------------------------------------------
+
+def open_url(url):
+    subprocess.run(["open", url], check=True)
+
+
+def build_url(command, params):
+    filtered = {k: v for k, v in params.items() if v is not None}
+    query = urllib.parse.urlencode(filtered, quote_via=urllib.parse.quote)
+    return f"things:///{command}?{query}" if query else f"things:///{command}"
+
+
+# ---------------------------------------------------------------------------
+# Read subcommands
+# ---------------------------------------------------------------------------
+
+def cmd_today(_args):
+    print_items(things.today(), format_todo, "No tasks for today")
+
+def cmd_inbox(_args):
+    print_items(things.inbox(), format_todo, "Inbox is empty")
+
+def cmd_upcoming(_args):
+    print_items(things.upcoming(), format_todo, "No upcoming tasks")
+
+def cmd_anytime(_args):
+    print_items(things.anytime(), format_todo, "No anytime tasks")
+
+def cmd_someday(_args):
+    print_items(things.someday(), format_todo, "No someday tasks")
+
+def cmd_logbook(args):
+    kwargs = {}
+    if args.period:
+        kwargs["period"] = args.period
+    items = things.logbook(**kwargs)
+    if args.limit:
+        items = items[:args.limit]
+    print_items(items, format_todo, "Logbook is empty")
+
+def cmd_trash(_args):
+    print_items(things.trash(), format_todo, "Trash is empty")
+
+def cmd_todos(args):
+    kwargs = {}
+    if args.project:
+        kwargs["project"] = args.project
+    print_items(things.todos(**kwargs), format_todo, "No todos found")
+
+def cmd_projects(_args):
+    print_items(things.projects(), format_project, "No projects found")
+
+def cmd_areas(_args):
+    print_items(things.areas(), format_area, "No areas found")
+
+def cmd_tags(_args):
+    print_items(things.tags(), format_tag, "No tags found")
+
+def cmd_tagged(args):
+    print_items(things.todos(tag=args.tag), format_todo, f"No items tagged '{args.tag}'")
+
+def cmd_headings(args):
+    kwargs = {}
+    if args.project:
+        kwargs["project"] = args.project
+    items = things.tasks(type="heading", **kwargs)
+    print_items(items, format_heading, "No headings found")
+
+def cmd_search(args):
+    print_items(things.search(args.query), format_todo, "No results")
+
+def cmd_search_advanced(args):
+    kwargs = {}
+    if args.status:
+        kwargs["status"] = args.status
+    if args.tag:
+        kwargs["tag"] = args.tag
+    if args.project:
+        kwargs["project"] = args.project
+    if args.area:
+        kwargs["area"] = args.area
+    if args.type:
+        kwargs["type"] = args.type
+    if args.start_date:
+        kwargs["start_date"] = args.start_date
+    if args.deadline:
+        kwargs["deadline"] = args.deadline
+    print_items(things.tasks(**kwargs), format_todo, "No results")
+
+def cmd_recent(args):
+    print_items(things.tasks(last=args.period), format_todo, "No recent items")
+
+
+# ---------------------------------------------------------------------------
+# Write subcommands (via URL Scheme)
+# ---------------------------------------------------------------------------
+
+def cmd_add(args):
+    params = {"title": args.title, "reveal": "true"}
+    if args.notes:
+        params["notes"] = args.notes
+    if args.when:
+        params["when"] = args.when
+    if args.deadline:
+        params["deadline"] = args.deadline
+    if args.tags:
+        params["tags"] = args.tags
+    if args.checklist:
+        params["checklist-items"] = "\n".join(args.checklist.split(","))
+    if args.project:
+        params["list"] = args.project
+    if args.heading:
+        params["heading"] = args.heading
+    url = build_url("add", params)
+    open_url(url)
+    print(f"Created todo: {args.title}")
+
+
+def cmd_add_project(args):
+    params = {"title": args.title, "reveal": "true"}
+    if args.notes:
+        params["notes"] = args.notes
+    if args.when:
+        params["when"] = args.when
+    if args.deadline:
+        params["deadline"] = args.deadline
+    if args.tags:
+        params["tags"] = args.tags
+    if args.area:
+        params["area"] = args.area
+    url = build_url("add-project", params)
+    open_url(url)
+    print(f"Created project: {args.title}")
+
+
+def cmd_update(args):
+    params = {"id": args.id}
+    if args.title:
+        params["title"] = args.title
+    if args.notes:
+        params["append-notes"] = args.notes
+    if args.when:
+        params["when"] = args.when
+    if args.deadline:
+        params["deadline"] = args.deadline
+    if args.add_tags:
+        params["add-tags"] = args.add_tags
+    if args.completed:
+        params["completed"] = "true"
+    if args.canceled:
+        params["canceled"] = "true"
+    url = build_url("update", params)
+    open_url(url)
+    print(f"Updated todo: {args.id}")
+
+
+def cmd_update_project(args):
+    params = {"id": args.id}
+    if args.title:
+        params["title"] = args.title
+    if args.notes:
+        params["append-notes"] = args.notes
+    if args.when:
+        params["when"] = args.when
+    if args.deadline:
+        params["deadline"] = args.deadline
+    if args.add_tags:
+        params["add-tags"] = args.add_tags
+    if args.completed:
+        params["completed"] = "true"
+    if args.canceled:
+        params["canceled"] = "true"
+    url = build_url("update-project", params)
+    open_url(url)
+    print(f"Updated project: {args.id}")
+
+
+def cmd_show(args):
+    url = build_url("show", {"id": args.id})
+    open_url(url)
+
+
+def cmd_search_ui(args):
+    url = build_url("search", {"query": args.query})
+    open_url(url)
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="things3",
+        description="Things 3 CLI — read via things-py, write via URL Scheme",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    # Read commands
+    sub.add_parser("today", help="List today's tasks")
+    sub.add_parser("inbox", help="List inbox tasks")
+    sub.add_parser("upcoming", help="List upcoming tasks")
+    sub.add_parser("anytime", help="List anytime tasks")
+    sub.add_parser("someday", help="List someday tasks")
+
+    p = sub.add_parser("logbook", help="List completed tasks")
+    p.add_argument("--period", help="Time period (e.g. 7d, 1m)")
+    p.add_argument("--limit", type=int, help="Max items to return")
+
+    sub.add_parser("trash", help="List trashed tasks")
+
+    p = sub.add_parser("todos", help="List todos")
+    p.add_argument("--project", help="Filter by project UUID or title")
+
+    sub.add_parser("projects", help="List projects")
+    sub.add_parser("areas", help="List areas")
+    sub.add_parser("tags", help="List tags")
+
+    p = sub.add_parser("tagged", help="List items with a tag")
+    p.add_argument("tag", help="Tag name")
+
+    p = sub.add_parser("headings", help="List headings")
+    p.add_argument("--project", help="Filter by project UUID or title")
+
+    p = sub.add_parser("search", help="Search todos")
+    p.add_argument("query", help="Search query")
+
+    p = sub.add_parser("search-advanced", help="Advanced search with filters")
+    p.add_argument("--status", help="Filter by status")
+    p.add_argument("--tag", help="Filter by tag")
+    p.add_argument("--project", help="Filter by project")
+    p.add_argument("--area", help="Filter by area")
+    p.add_argument("--type", help="Filter by type (to-do, project, heading)")
+    p.add_argument("--start-date", help="Filter by start date")
+    p.add_argument("--deadline", help="Filter by deadline")
+
+    p = sub.add_parser("recent", help="Recently created items")
+    p.add_argument("period", help="Time period (e.g. 3d, 1w)")
+
+    # Write commands
+    p = sub.add_parser("add", help="Create a new todo")
+    p.add_argument("title", help="Todo title")
+    p.add_argument("--notes", help="Notes text")
+    p.add_argument("--when", help="When to schedule (today, tomorrow, evening, YYYY-MM-DD)")
+    p.add_argument("--deadline", help="Deadline (YYYY-MM-DD)")
+    p.add_argument("--tags", help="Comma-separated tags")
+    p.add_argument("--checklist", help="Comma-separated checklist items")
+    p.add_argument("--project", help="Project name or UUID")
+    p.add_argument("--heading", help="Heading name within project")
+
+    p = sub.add_parser("add-project", help="Create a new project")
+    p.add_argument("title", help="Project title")
+    p.add_argument("--notes", help="Notes text")
+    p.add_argument("--when", help="When to schedule")
+    p.add_argument("--deadline", help="Deadline (YYYY-MM-DD)")
+    p.add_argument("--tags", help="Comma-separated tags")
+    p.add_argument("--area", help="Area name or UUID")
+
+    p = sub.add_parser("update", help="Update a todo")
+    p.add_argument("id", help="Todo UUID")
+    p.add_argument("--title", help="New title")
+    p.add_argument("--notes", help="Notes to append")
+    p.add_argument("--when", help="When to schedule")
+    p.add_argument("--deadline", help="Deadline (YYYY-MM-DD)")
+    p.add_argument("--add-tags", help="Tags to add (comma-separated)")
+    p.add_argument("--completed", action="store_true", help="Mark as completed")
+    p.add_argument("--canceled", action="store_true", help="Mark as canceled")
+
+    p = sub.add_parser("update-project", help="Update a project")
+    p.add_argument("id", help="Project UUID")
+    p.add_argument("--title", help="New title")
+    p.add_argument("--notes", help="Notes to append")
+    p.add_argument("--when", help="When to schedule")
+    p.add_argument("--deadline", help="Deadline (YYYY-MM-DD)")
+    p.add_argument("--add-tags", help="Tags to add (comma-separated)")
+    p.add_argument("--completed", action="store_true", help="Mark as completed")
+    p.add_argument("--canceled", action="store_true", help="Mark as canceled")
+
+    p = sub.add_parser("show", help="Show item in Things app")
+    p.add_argument("id", help="Item UUID")
+
+    p = sub.add_parser("search-ui", help="Open search in Things app")
+    p.add_argument("query", help="Search query")
+
+    args = parser.parse_args()
+
+    commands = {
+        "today": cmd_today,
+        "inbox": cmd_inbox,
+        "upcoming": cmd_upcoming,
+        "anytime": cmd_anytime,
+        "someday": cmd_someday,
+        "logbook": cmd_logbook,
+        "trash": cmd_trash,
+        "todos": cmd_todos,
+        "projects": cmd_projects,
+        "areas": cmd_areas,
+        "tags": cmd_tags,
+        "tagged": cmd_tagged,
+        "headings": cmd_headings,
+        "search": cmd_search,
+        "search-advanced": cmd_search_advanced,
+        "recent": cmd_recent,
+        "add": cmd_add,
+        "add-project": cmd_add_project,
+        "update": cmd_update,
+        "update-project": cmd_update_project,
+        "show": cmd_show,
+        "search-ui": cmd_search_ui,
+    }
+
+    commands[args.command](args)
+
+
+if __name__ == "__main__":
+    main()

@@ -33,6 +33,9 @@ function update_symlinks(){
   mkdir -p ~/.config/git
   ln -nfs ~/.dotfiles/git/gitignore ~/.config/git/ignore
 
+  mkdir -p ~/.dotfiles/.git/hooks
+  ln -nfs ~/.dotfiles/git/hooks/post-commit ~/.dotfiles/.git/hooks/post-commit
+
   ln -nfs ~/.dotfiles/git/gitconfig ~/.gitconfig
   ln -nfs ~/.dotfiles/git/githelpers ~/.githelpers
   ln -nfs ~/.dotfiles/git/git_commit_template ~/.gitmessage
@@ -84,9 +87,9 @@ function update_symlinks(){
   done
   mkdir -p ~/.codex/skills
   find ~/.codex/skills -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true
-  for f in ~/.dotfiles/ai/skills/*; do
-    [ -e "$f" ] && ln -nfs "$f" ~/.claude/skills/
-    [ -e "$f" ] && ln -nfs "$f" ~/.codex/skills/
+  for f in ~/.dotfiles/ai/skills/*/; do
+    [ -d "$f" ] && ln -nfs "$f" ~/.claude/skills/
+    [ -d "$f" ] && ln -nfs "$f" ~/.codex/skills/
   done
   for f in ~/.dotfiles/ai/agents/*; do
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/agents/

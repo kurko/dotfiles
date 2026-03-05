@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Post-commit hook: refresh dotfiles symlinks after each commit.
+# Only runs when committing inside the dotfiles repo itself.
+
+DOTFILES_DIR="$HOME/.dotfiles"
+
+if [ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$DOTFILES_DIR" ]; then
+  exit 0
+fi
+
+# Source bashrc_source to get update_symlinks, then run it silently
+(
+  source "$DOTFILES_DIR/bashrc_source" 2>/dev/null
+  update_symlinks
+) >/dev/null
+
+exit 0
