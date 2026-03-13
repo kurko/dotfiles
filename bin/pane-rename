@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Rename the current tmux pane's border title.
+#
+# Usage:
+#   pane-rename <title>
+
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: pane-rename <title>" >&2
+  exit 1
+fi
+
+tmux select-pane -T "$*"

@@ -1,9 +1,70 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "allow": []
+    "allow": [
+      "mcp__pencil",
+      "mcp__datadog-mcp*",
+      "Bash(git show:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git blame:*)",
+      "Bash(git stash list:*)",
+      "Bash(git stash show:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo:*)",
+      "Bash(bundle exec rspec:*)",
+      "Bash(bundle exec rubocop:*)",
+      "Bash(bundle list:*)",
+      "Bash(bundle show:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run lint)",
+      "Bash(npm list:*)",
+      "Bash(npm ls:*)",
+      "Bash(rg:*)",
+      "Bash(ag:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(pwd)",
+      "Bash(which:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(file:*)",
+      "Bash(jq:*)",
+      "Bash(diff:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(ps:*)",
+      "Bash(date:*)",
+      "Bash(slack-readonly-cli *)",
+      "mcp__claude_ai_Asana__asana_get_*",
+      "mcp__claude_ai_Asana__asana_list_*",
+      "mcp__claude_ai_Asana__asana_search_*",
+      "mcp__claude_ai_Asana__asana_typeahead_*",
+      "mcp__claude_ai_Clockwise__fetch_*",
+      "mcp__claude_ai_Clockwise__get_*",
+      "mcp__claude_ai_Clockwise__search_*",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude_ai_Notion__notion-get-*",
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__claude_ai_Notion__notion-query-*",
+      "mcp__claude_ai_GoDaddy__domains_check_*",
+      "mcp__claude_ai_GoDaddy__domains_suggest",
+      "mcp__granola__get_*",
+      "mcp__granola__list_*",
+      "mcp__granola__query_*",
+      "mcp__slack__slack_get_*",
+      "mcp__slack__slack_list_*"
+    ]
   },
-  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -40,11 +101,27 @@
           }
         ]
       }
-    ]
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/alex/.claude/hooks/sidebar-diff-hook.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [],
+    "SessionStart": []
   },
   "enabledPlugins": {
-    "safety-net@cc-marketplace": true
+    "safety-net@cc-marketplace": true,
+    "ruby-lsp@claude-plugins-official": true
   },
+  "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true
 }

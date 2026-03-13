@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+#
+# Rename a DMUX pane's display name (slug) in dmux.config.json.
+# Updates the tmux pane border title immediately.
+# NOTE: The DMUX sidebar label does NOT auto-refresh (upstream bug in usePanes.js).
+#
+# Usage:
+#   dmux-rename <new-slug>                          # auto-detect pane from $PWD or $TMUX_PANE
+#   dmux-rename <new-slug> --old-slug <old-slug>    # explicit pane selection by current slug
+
+set -euo pipefail
+
+usage() {
+  echo "Usage: dmux-rename <new-slug> [--old-slug <old-slug>]" >&2
+  exit 1
+}
+
+# --- Parse arguments ---
+
+new_slug=""
+old_slug=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --old-slug)
+      [[ $# -lt 2 ]] && usage
+      old_slug="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      ;;
+    -*)
+      echo "Error: unknown option '$1'" >&2
+      usage
+      ;;
+    *)
+      [[ -n "$new_slug" ]] && usage
+      new_slug="$1"
+      shift
+      ;;
+  esac
+done
+
+[[ -z "$new_slug" ]] && usage
+
+# --- Find dmux.config.json by walking up from $PWD ---
+
+find_config() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    local config="$dir/.dmux/dmux.config.json"
+    if [[ -f "$config" ]]; then
+      echo "$config"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1
+}
+
+config_path="$(find_config)" || {
+  echo "Error: no .dmux/dmux.config.json found in any parent of $PWD" >&2
+  exit 1
+}
+
+# --- Resolve pane and update slug ---
+
+if [[ -n "$old_slug" ]]; then
+  # Explicit mode: match by slug
+  match_count=$(jq --arg slug "$old_slug" '[.panes[] | select(.slug == $slug)] | length' "$config_path")
+
+  if [[ "$match_count" -eq 0 ]]; then
+    echo "Error: no pane with slug '$old_slug' found in $config_path" >&2
+    exit 1
+  fi
+
+  matched_old_slug="$old_slug"
+else
+  # Auto-detect: try worktreePath match first, then paneId
+  matched_old_slug=$(jq -r --arg pwd "$PWD" '
+    first(.panes[] | select($pwd == .worktreePath or ($pwd | startswith(.worktreePath + "/")))) | .slug
+  ' "$config_path" 2>/dev/null || true)
+
+  if [[ -z "$matched_old_slug" ]]; then
+    # Fall back to tmux pane ID
+    if [[ -z "${TMUX_PANE:-}" ]]; then
+      echo "Error: could not auto-detect pane (no worktreePath match and \$TMUX_PANE not set)" >&2
+      exit 1
+    fi
+
+    matched_old_slug=$(jq -r --arg pane_id "$TMUX_PANE" '
+      first(.panes[] | select(.paneId == $pane_id)) | .slug
+    ' "$config_path" 2>/dev/null || true)
+
+    if [[ -z "$matched_old_slug" ]]; then
+      echo "Error: no pane matching \$PWD or \$TMUX_PANE ($TMUX_PANE) found in $config_path" >&2
+      exit 1
+    fi
+  fi
+fi
+
+if [[ "$matched_old_slug" == "$new_slug" ]]; then
+  echo "Slug is already '$new_slug' — nothing to do."
+  exit 0
+fi
+
+# --- Write updated config ---
+
+tmp_file="$(mktemp)"
+jq --arg old "$matched_old_slug" --arg new "$new_slug" '
+  .panes |= map(if .slug == $old then .slug = $new else . end)
+' "$config_path" > "$tmp_file"
+
+mv "$tmp_file" "$config_path"
+
+# --- Update tmux pane border title immediately ---
+
+pane_id=$(jq -r --arg slug "$new_slug" '
+  first(.panes[] | select(.slug == $slug)) | .paneId
+' "$config_path" 2>/dev/null || true)
+
+if [[ -n "$pane_id" ]]; then
+  tmux select-pane -t "$pane_id" -T "$new_slug" 2>/dev/null || true
+fi
+
+echo "Renamed \"$matched_old_slug\" → \"$new_slug\" in $config_path"
+echo "Pane border title updated. Sidebar label requires DMUX restart (upstream bug)."
