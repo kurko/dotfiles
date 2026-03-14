@@ -45,5 +45,6 @@
   "enabledPlugins": {
     "safety-net@cc-marketplace": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high"
 }
