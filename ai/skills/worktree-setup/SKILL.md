@@ -88,14 +88,35 @@ Common boot-critical gitignored files:
 These files must be copied into new worktrees by `bin/setup-worktree` (for manual
 `git worktree add`) and listed in `.worktreeinclude` (for Claude Code worktrees).
 
-### 1.4 Existing Setup Scripts
+### 1.4 Dependency Installation
+
+Check how the project installs dependencies and whether the config is local:
+
+**Ruby/Bundler**:
+- Check `.bundle/config` for `BUNDLE_PATH` — if set (e.g., `vendor/bundle`), this
+  file is gitignored and won't exist in the worktree. The setup script must copy it.
+- Also check global config: `bundle config list` — if only the global config sets
+  the path, no copy is needed.
+- The setup script MUST run `bundle check || bundle install` before any `bin/rails`
+  command. Worktrees share git history but NOT installed gems.
+
+**Node**:
+- Check for `package-lock.json` (npm) or `yarn.lock` (Yarn)
+- The setup script MUST run `npm ci` or `yarn install` before any framework commands.
+  Worktrees do NOT share `node_modules/`.
+
+**Python**:
+- Check for `requirements.txt`, `Pipfile.lock`, `pyproject.toml`
+- The setup script MUST create a venv and install deps if using virtual environments.
+
+### 1.5 Existing Setup Scripts
 
 Read existing setup/bootstrap scripts to match conventions:
 - `bin/setup`, `bin/dev`, `Makefile`, `script/bootstrap`
 - Note the language (Ruby, bash, etc.) and patterns (`system!`, `APP_ROOT`, etc.)
 - Docker compose files (if they define DB names)
 
-### 1.5 Dev Server Tools
+### 1.6 Dev Server Tools
 
 Check for local dev server routing tools:
 - puma-dev: `~/.puma-dev/` directory (macOS). Symlink-based app discovery.
@@ -127,10 +148,13 @@ The base names stay visible and readable in the database config file.
 4. Strip leading/trailing underscores
 5. If over max length: truncate and append `_` + 6-char SHA1 hash of the original branch name
 
-**Max slug length**: Calculate from the actual database name prefix. The longest
-prefix is typically `{app}_development_` — measure its length and subtract from
-the database engine's identifier limit (PostgreSQL: 63, MySQL: 64). For example,
-if the prefix is `myapp_development_` (18 chars), max slug = 63 - 18 = 45 chars.
+**Max slug length**: Use a fixed conservative constant (e.g., `MAX_SLUG = 40`).
+This leaves room for any reasonable database name prefix (e.g., `myapp_development_`)
+within PostgreSQL's 63-char identifier limit or MySQL's 64-char limit. Do NOT
+hardcode the database name prefix in the script — the script should not need to
+know the database naming structure (that belongs in `database.yml` or equivalent).
+PostgreSQL silently truncates identifiers over 63 chars, which breaks idempotency
+checks that grep for the full name.
 
 ### Environment Override Strategy
 
@@ -169,19 +193,42 @@ Node/Python. If `bin/setup` is Ruby, use `Pathname`, `system!`, `APP_ROOT` — s
    `/.git` suffix) with `git rev-parse --show-toplevel`. If equal, this is the main
    worktree — print a message and exit (do not abort; this allows safe use from hooks).
 
-2. **Copy boot-critical secrets from main worktree**: For each gitignored file needed
-   for boot (e.g., `config/master.key`), check if it exists in the current worktree.
-   If not, copy it from the main worktree path (derived from `--git-common-dir`).
-   This handles the manual `git worktree add` case where `.worktreeinclude` doesn't apply.
+   **GOTCHA**: `git rev-parse --git-common-dir` returns a RELATIVE path (`.git`) in
+   the main worktree but an absolute path in linked worktrees. Always call
+   `File.expand_path` (Ruby) or `realpath` (bash) on the result BEFORE comparing or
+   stripping the `/.git` suffix. Without this, the regex `/.git$` won't match the
+   bare `.git` and the main worktree guard silently fails — the script proceeds to
+   create databases and env files for the main branch.
 
-3. **Derive slug from branch**: Sanitize, collapse, truncate (see Design section).
+2. **Copy files listed in `.worktreeinclude`**: Read the `.worktreeinclude` file from
+   the project root. For each listed path, check if it exists in the current worktree.
+   If not, copy it from the main worktree (derived from `--git-common-dir`). Skip
+   blank lines and lines starting with `#`. This is the single source of truth for
+   which files to copy — do NOT hardcode file paths in the script.
 
-4. **Write env override files**: Set `DB_SUFFIX=<slug>`. Behavior per file:
+3. **Copy bundler/package manager config**: If the project uses a local dependency
+   path (e.g., `.bundle/config` with `BUNDLE_PATH`), copy the config file from the
+   main worktree so that `bundle install` respects the same path. Check if the file
+   exists in the main worktree's project-level config directory — if it's only set
+   globally, no copy is needed.
+
+4. **Install dependencies**: Run `bundle check || bundle install` (Ruby) or
+   `npm ci` / `yarn install` (Node) BEFORE any framework commands. Worktrees share
+   git history but NOT `vendor/bundle` or `node_modules/`. This step must come after
+   copying the bundler config (step 3) so the install respects the correct path.
+
+5. **Derive slug from branch**: Sanitize, collapse, truncate (see Design section).
+   For the SHA disambiguator on long branches, use a hash of the branch NAME
+   (`Digest::SHA1.hexdigest(branch_name)[0,6]`), NOT `git rev-parse HEAD`. Using
+   HEAD means the slug changes on every commit, breaking idempotency — setup would
+   create a new database after each commit.
+
+6. **Write env override files**: Set `DB_SUFFIX=<slug>`. Behavior per file:
    - If file doesn't exist: create it with `DB_SUFFIX=<slug>`
    - If file exists but has no `DB_SUFFIX=`: append `DB_SUFFIX=<slug>`
    - If file exists and already has `DB_SUFFIX=`: skip (print message)
 
-5. **Check databases independently**: Check BOTH dev and test databases before creating.
+7. **Check databases independently**: Check BOTH dev and test databases before creating.
    For Rails, use `bin/rails runner` to attempt a connection per environment:
    ```ruby
    system({ "RAILS_ENV" => env }, "bin/rails", "runner",
@@ -191,17 +238,25 @@ Node/Python. If `bin/setup` is Ruby, use `Pathname`, `system!`, `APP_ROOT` — s
    This is more reliable than parsing `psql -lqt` because it uses the actual
    Rails config with the suffix applied.
 
-6. **Create databases and load schema**:
+8. **Create databases and load schema**:
    - Dev (if missing): `db:create db:schema:load db:seed`
    - Test (if missing): `RAILS_ENV=test db:create db:schema:load`
    - Use `db:schema:load` not `db:migrate` — faster, no need to replay history.
+   - **ALWAYS pass `DB_SUFFIX` explicitly** in the environment hash for every
+     `bin/rails` command. Do NOT rely on dotenv loading the `.env.*.local` files —
+     this makes the dependency implicit and breaks if someone runs the command
+     outside of the setup script.
+   - **ALWAYS pass `RAILS_ENV` explicitly** — Rails `db:create` without `RAILS_ENV`
+     creates BOTH dev and test databases at once, but `db:schema:load` only loads
+     the development schema. This leaves the test database empty. Always run each
+     environment separately with explicit `RAILS_ENV`.
 
-7. **puma-dev (optional)**: If `~/.puma-dev/` exists, create symlink
+9. **puma-dev (optional)**: If `~/.puma-dev/` exists, create symlink
    `~/.puma-dev/{app}-{slug}` pointing to the worktree directory. Convert
    underscores to hyphens in the slug for domain names. Print the resulting
    URL so the user can access it, e.g.: `==> puma-dev: https://{app}-{slug}.test`
 
-8. **Print a final summary** that includes:
+10. **Print a final summary** that includes:
    - The dev and test database names
    - The puma-dev URL (if configured)
    - How to start the dev server
@@ -218,8 +273,12 @@ Node/Python. If `bin/setup` is Ruby, use `Pathname`, `system!`, `APP_ROOT` — s
 
 **Requirements**:
 - Accept an optional branch name argument (for cleanup from outside the worktree)
-- If no argument, derive branch from `git branch --show-current`
+- If no argument: first check if this is a linked worktree (same detection as setup).
+  If it's the main worktree, abort with a message: "Not a linked worktree. Pass the
+  branch name as an argument: `bin/teardown-worktree <branch-name>`". This prevents
+  accidentally deriving the slug from `main` and dropping the wrong databases.
 - Derive the same slug (must use identical logic as setup)
+- Pass `DB_SUFFIX` explicitly in the environment hash for every `bin/rails` command
 - Drop databases if they exist
 - Remove puma-dev symlink if present (use the same underscore-to-hyphen slug conversion as setup)
 - Remove env override files (`.env.development.local`, `.env.test.local`)
@@ -253,8 +312,8 @@ datasource db {
 
 ### .worktreeinclude
 
-Created in the project root, checked into git. Lists gitignored files that
-Claude Code should copy when creating worktrees:
+Created in the project root, checked into git. Lists gitignored files that should
+be copied into new worktrees — one path per line, blank lines and `#` comments allowed.
 
 ```
 config/master.key
@@ -265,10 +324,15 @@ Rules:
 - Do NOT list env override files (`.env.development.local`, `.env.test.local`)
   — these are generated by `bin/setup-worktree` with branch-specific values
 - Do NOT list `vendor/bundle`, `node_modules` — too large, package managers handle these
+- Do NOT list `.bundle/config` here — it's handled by the dependency step (requirement 3)
 
-This file is ONLY used by Claude Code's worktree feature. The `bin/setup-worktree`
-script independently copies these same files (see requirement 2), so it works
-regardless of how the worktree was created.
+This file serves TWO consumers:
+1. **Claude Code's worktree feature** reads it when creating worktrees via `--isolation worktree`
+2. **`bin/setup-worktree`** reads it (requirement 2) to copy the same files for manually
+   created worktrees
+
+Both consumers use the same file so there is a single source of truth. The setup script
+MUST NOT hardcode file paths — it should read `.worktreeinclude` to decide what to copy.
 
 ### .gitignore
 
@@ -297,6 +361,9 @@ After implementation, verify by walking through this checklist:
 9. **Teardown**: `bin/teardown-worktree` — drops databases, removes env files
 10. **Teardown idempotent**: Run teardown again — no errors
 11. **Remove worktree**: `cd .. && git worktree remove project-test-wt`
+    Note: This will likely require `--force` because untracked files (`vendor/bundle`,
+    copied secrets, generated env files) make the worktree "dirty". This is expected.
+    Run teardown first to clean up env files and databases, then force-remove.
 
 ## Out of Scope
 
