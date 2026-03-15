@@ -92,16 +92,24 @@ When the user says "pick a task", "next task", "what should I work on"
 When a task is selected, do ALL of these steps in order:
 
 1. Read the full task description from the PM tool.
-2. **Verify not already claimed.** Before multi-homing, check that the task
+2. **Read the task's comment history** (e.g., Asana stories). Comments often
+   contain scoping decisions, open questions, or prior agent triage notes.
+   If the comments indicate that the task still needs scoping or shaping
+   (e.g., open questions, "triage needed", multiple competing approaches,
+   unclear requirements), do NOT jump into implementation. Instead:
+   - Summarize the current state of the discussion.
+   - Propose a plan or recommendation addressing the open questions.
+   - Wait for the user's approval before writing any code.
+3. **Verify not already claimed.** Before multi-homing, check that the task
    is not already on the agent board's "current work" section. If it is,
    another agent already claimed it — do NOT proceed. Clear your PID file
    and return to "Pick Next Task".
-3. **Add to agent board (REQUIRED if configured).** Multi-home the task
+4. **Add to agent board (REQUIRED if configured).** Multi-home the task
    to the agent board's "current work" section. Use multi-homing (Asana
    `addProject` API) or cross-project references (Linear) — never
    duplicate the task. Do not skip this step.
-4. Move the task to the "in progress" section on the shared board.
-5. Announce the task title, description summary, and key requirements to
+5. Move the task to the "in progress" section on the shared board.
+6. Announce the task title, description summary, and key requirements to
    establish context for the session.
 
 ### 4. Update Task Status

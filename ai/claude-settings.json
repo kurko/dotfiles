@@ -83,7 +83,11 @@
       "mcp__chrome-devtools__fill",
       "mcp__chrome-devtools__fill_form",
       "mcp__chrome-devtools__drag",
-      "mcp__chrome-devtools__type_text"
+      "mcp__chrome-devtools__type_text",
+      "mcp__asana__asana_get_*",
+      "mcp__asana__asana_list_*",
+      "mcp__asana__asana_search_*",
+      "mcp__asana__asana_typeahead_*"
     ]
   },
   "hooks": {
