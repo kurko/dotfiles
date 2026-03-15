@@ -233,10 +233,17 @@ Node/Python. If `bin/setup` is Ruby, use `Pathname`, `system!`, `APP_ROOT` — s
    exists in the main worktree's project-level config directory — if it's only set
    globally, no copy is needed.
 
-4. **Install dependencies**: Run `bundle check || bundle install` (Ruby) or
-   `npm ci` / `yarn install` (Node) BEFORE any framework commands. Worktrees share
-   git history but NOT `vendor/bundle` or `node_modules/`. This step must come after
-   copying the bundler config (step 3) so the install respects the correct path.
+4. **Install dependencies and build assets**: Run `bundle check || bundle install`
+   (Ruby) or `npm ci` / `yarn install` (Node) BEFORE any framework commands. Worktrees
+   share git history but NOT `vendor/bundle` or `node_modules/`. This step must come
+   after copying the bundler config (step 3) so the install respects the correct path.
+
+   **CRITICAL: Build frontend assets after installing JS dependencies.** Worktrees do
+   NOT share `app/assets/builds/` (or equivalent compiled output directories). Without
+   building, any test that renders a view will fail with asset-not-found errors (e.g.,
+   `Sprockets::FileNotFound: couldn't find file 'application.js'`). Check `package.json`
+   scripts for `build` and `build:css` (or similar) and run them. For Rails with
+   esbuild/tailwind: `yarn build && yarn build:css`. For Vite: `npx vite build`.
 
 5. **Derive slug from branch**: Sanitize, collapse, truncate (see Design section).
    For the SHA disambiguator on long branches, use a hash of the branch NAME
