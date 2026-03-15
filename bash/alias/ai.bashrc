@@ -326,3 +326,8 @@ function git-worktree-done() {
 function annoying-claude() {
   with_prompt_attention claude-new "$@"
 }
+
+# Let Claude do anything without permission prompts
+function dangerous-claude() {
+  with_prompt_attention claude --dangerously-skip-permissions "$@"
+}
