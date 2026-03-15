@@ -202,9 +202,30 @@ Node/Python. If `bin/setup` is Ruby, use `Pathname`, `system!`, `APP_ROOT` — s
 
 2. **Copy files listed in `.worktreeinclude`**: Read the `.worktreeinclude` file from
    the project root. For each listed path, check if it exists in the current worktree.
-   If not, copy it from the main worktree (derived from `--git-common-dir`). Skip
-   blank lines and lines starting with `#`. This is the single source of truth for
-   which files to copy — do NOT hardcode file paths in the script.
+   If not, copy it from the main worktree. Skip blank lines and lines starting with
+   `#`. This is the single source of truth for which files to copy — do NOT hardcode
+   file paths in the script.
+
+   **Derive the main worktree path** by stripping `/.git` from `--git-common-dir` —
+   the same derivation used in `linked_worktree?`. Both methods MUST share this logic
+   (DRY: `linked_worktree?` should delegate to `main_worktree_path`):
+
+   ```ruby
+   def main_worktree_path
+     common_dir = File.expand_path(`git rev-parse --git-common-dir`.strip)
+     common_dir.sub(%r{/\.git\z}, "")
+   end
+
+   def linked_worktree?
+     main_worktree_path != `git rev-parse --show-toplevel`.strip
+   end
+   ```
+
+   **GOTCHA: `--git-common-dir` vs `--git-dir`**. `--git-common-dir` returns just
+   `.git` (or `/abs/path/.git`), NOT `.git/worktrees/<name>` — that's `--git-dir`.
+   The regex must strip just `/.git\z`, NOT `/.git/worktrees/.*\z`. Using the wrong
+   regex silently returns the `.git` directory as the "main worktree path", causing
+   file copies to look inside `.git/` instead of the project root.
 
 3. **Copy bundler/package manager config**: If the project uses a local dependency
    path (e.g., `.bundle/config` with `BUNDLE_PATH`), copy the config file from the
