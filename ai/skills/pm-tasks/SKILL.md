@@ -60,9 +60,16 @@ what THIS specific agent is working on.
 When the user says "pick a task", "next task", "what should I work on"
 (and no in-progress work exists from step 1):
 
-1. Fetch tasks from the shared board's priority section (the section
-   designated for "ready to start" work, e.g., "Up next", "Todo", "Ready").
+1. Fetch **incomplete** tasks from the shared board's priority section (the
+   section designated for "ready to start" work, e.g., "Up next", "Todo",
+   "Ready"). Use the PM tool's completion filter (e.g., Asana's
+   `completed_since=now` or `opt_fields=completed` and filter client-side)
+   to exclude tasks already marked as done.
    If a Priority tag or property exist, sort by it.
+   **Skip tasks assigned to someone else.** If a task has an assignee and
+   that assignee is not the current user (or the agent), do not include it
+   in the candidate list — someone else is responsible for it. Unassigned
+   tasks are fair game.
 2. If a private agent board is configured, also fetch its "current work"
    section to see which tasks other agents are already working on. Exclude
    those from the candidates presented to the user.
