@@ -8,22 +8,30 @@ Generate a quick recap for someone returning to this project after a few days aw
    - List all files to understand project structure
    - Note file names - they often indicate key topics/features
 
-2. **Extract task status from todo files**:
+2. **Check for active PMT task** (if project uses a PM tool):
+   - Read `tmp/current-task.pid` for a task ID
+   - If a task ID exists, fetch the task from the PM tool (e.g., Asana MCP)
+     and extract the title and a one-sentence summary of what it's about
+   - If no PID file exists, skip this step silently
+
+3. **Extract task status from todo files**:
    - Find files matching `ai-notes/**/todo.{txt,md}`
    - First, extract only lines matching `- [ ]`, `- [x]`, `- [/]` to get task overview
    - Use a subagent to read full todo files for deeper context if needed
 
-3. **Review recent conversation** (if any):
+4. **Review recent conversation** (if any):
    - Focus on the latest iteration - what was being worked on
    - Key decisions made
    - Blockers or open questions
 
-4. **Produce a condensed recap** in this format:
+5. **Produce a condensed recap** in this format:
 
 ```
 ## Recap
 
 **Context:** [1-2 sentences: what is this project/feature about]
+
+**Task:** [PMT task title — one-sentence summary of what it's about. Omit if no active task.]
 
 **Recent decisions:**
 - [bullet points of key decisions, if any]
