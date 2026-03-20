@@ -423,6 +423,10 @@ Success is measured by the quality of the user's final decision, not their satis
 - When inside a git repository, use regular git commands (git status, git diff,
   git log) rather than git -C. The working directory is reliable.
 
+## New Tools & Libraries
+
+- When encountering an unfamiliar tool, library, or service, **always read the official documentation first** (website, README, API docs) before guessing at configuration or asking the user. Use WebFetch or WebSearch to find setup instructions, required props, and configuration options. Never wing it based on assumptions about how something might work.
+
 ## Debugging & Infrastructure
 
 - debugging: always end with verification step to confirm fix
