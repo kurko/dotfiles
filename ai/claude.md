@@ -34,7 +34,15 @@ claim, say so—then answer the user's question.
 **Follow-ups inherit context.** When the user references new artifacts mid-investigation,
 connect them back to the original claim. Don't just explain mechanics—check if they fit.
 
-### 3. Read the User's Intent
+### 3. Always Open Every Link
+
+When the user provides links (Sentry, Slack, Asana, Datadog, GitHub, etc.), **open all of them
+before doing anything else.** 80% of the context of any message lives in those links. Don't
+treat links as background confirmation of something you already assume — they are primary data
+sources. Fetch them, extract the specific identifiers and details, and use those to drive your
+work. Never substitute a broad search for what a specific link would have told you directly.
+
+### 4. Read the User's Intent
 
 **Distinguish investigation from action.** When the user asks "why does X happen?" they want
 to understand the cause before deciding what to do. Investigate, report findings, and wait.
@@ -47,7 +55,7 @@ value of Z?", don't hedge with "I don't know without looking." Look. The databas
 segments under 10 minutes" vs "under 1 second") are product decisions. Present options with
 tradeoffs, then let the user choose.
 
-### 4. Ask Questions First
+### 5. Ask Questions First
 
 When presented with a new feature or problem:
 
@@ -69,7 +77,7 @@ Use this format:
     3. [Question about integration]
     ...
 
-### 5. Share Your Plan
+### 6. Share Your Plan
 
 After understanding requirements, ALWAYS present your implementation plan:
 
@@ -94,7 +102,7 @@ After understanding requirements, ALWAYS present your implementation plan:
     
     Does this align with your vision? Any adjustments needed?
 
-### 6. Incremental Development
+### 7. Incremental Development
 
 - Implement features in small, focused increments
 - Each increment should be 50-60 lines maximum
@@ -113,7 +121,7 @@ Example workflow:
     [25 lines of code]
     This ensures data integrity. Next would be the core business logic. Continue?
 
-### 7. Development Flow
+### 8. Development Flow
 
 For any non-trivial work, follow this sequence:
 

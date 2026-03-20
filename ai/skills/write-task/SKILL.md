@@ -100,18 +100,22 @@ The tl;dr is a single line at the very top that lets someone understand the core
 issue without reading the full task. It should capture the gap between
 expectation and reality, or the core problem in plain terms.
 
+**The "tl;dr" label must always be bold in non-plaintext output.** In markdown,
+use `**tl;dr**`. In Asana HTML, use `<b>tl;dr</b>`. Only omit bold when the
+output is strictly plaintext (e.g., the Asana `notes` field fallback).
+
 Examples:
-- "tl;dr use_new_vendor is confusing because the name suggests it controls all
-  card types, but it only affects prepaid cards, not debit."
-- "tl;dr checkout times out when carts have 50+ items because we load all item
-  images synchronously."
-- "tl;dr customers can't tell if a webhook failed on our side or theirs because
-  we don't log delivery attempts."
+- "**tl;dr** use_new_vendor is confusing because the name suggests it controls
+  all card types, but it only affects prepaid cards, not debit."
+- "**tl;dr** checkout times out when carts have 50+ items because we load all
+  item images synchronously."
+- "**tl;dr** customers can't tell if a webhook failed on our side or theirs
+  because we don't log delivery attempts."
 
 ### Short Template
 
 ```markdown
-tl;dr [One-line summary of the core issue]
+**tl;dr** [One-line summary of the core issue]
 
 ## Background
 [Explanation that makes the importance self-evident]
@@ -126,7 +130,7 @@ Use this when the task involves non-engineering stakeholders, new features, or
 needs context preservation.
 
 ```markdown
-tl;dr [One-line summary of the core issue]
+**tl;dr** [One-line summary of the core issue]
 
 ## Background
 [Explanation]
@@ -155,7 +159,7 @@ engineers determine implementation details and testing approaches.
 ### Short Template Example
 
 ```markdown
-tl;dr login form shows "Invalid credentials" for timeouts, confusing users who think their password is wrong.
+**tl;dr** login form shows "Invalid credentials" for timeouts, confusing users who think their password is wrong.
 
 ## Background
 The login form shows "Invalid credentials" when the authentication service times
@@ -172,7 +176,7 @@ errors instead of the generic credentials message.
 ### Full Template Example
 
 ```markdown
-tl;dr customers can't tell if a webhook failed on our side or theirs because we don't log delivery attempts.
+**tl;dr** customers can't tell if a webhook failed on our side or theirs because we don't log delivery attempts.
 
 ## Background
 When customers report missing or incorrect webhook notifications, we currently
@@ -216,7 +220,7 @@ yesterday?"
 When multiple approaches are valid, present them as options:
 
 ```markdown
-tl;dr use_new_vendor is confusing because the name suggests it controls all card types, but it only affects prepaid cards, not debit.
+**tl;dr** use_new_vendor is confusing because the name suggests it controls all card types, but it only affects prepaid cards, not debit.
 
 ## Background
 We have a config called `use_new_vendor` that controls whether prepaid cards use the new vendor or the legacy one. The name is misleading because it suggests it controls all card types, but it actually only affects prepaid cards. Debit cards use a completely different mechanism and are not affected by this config.
@@ -313,7 +317,7 @@ After creating the task:
    Markdown example:
    ```bash
    cat << 'EOF' | pbcopy
-   tl;dr The task content goes here...
+   **tl;dr** The task content goes here...
 
    ## Background
    More content with `inline code`...
@@ -323,7 +327,7 @@ After creating the task:
    Asana HTML example:
    ```bash
    cat << 'EOF' | pbcopy
-   tl;dr The task content goes here...
+   <b>tl;dr</b> The task content goes here...
 
    <b>Background</b>
    More content with <code>inline code</code>...
