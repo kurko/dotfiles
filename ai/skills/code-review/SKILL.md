@@ -677,6 +677,125 @@ in error tracking or logs, they'll draw the wrong conclusion about what happened
 Either reject the bad data loudly or store it with a marker that distinguishes
 it from legitimate values."
 
+#### Check for Backend/Frontend Boundary Violations
+
+These checks apply whenever code crosses the boundary between data (backend,
+serializers, APIs) and presentation (frontend, templates, components).
+
+**Pattern 1: Serializers emitting presentation values**
+
+When a serializer computes a position, index, offset, color, grid coordinate,
+or layout value, it's coupling to a specific consumer's rendering logic.
+
+```ruby
+# Bad: columnIndex is a grid concept — if the layout changes, this breaks
+def as_json
+  { columnIndex: (event.occurred_at - start_date).to_i, ... }
+end
+
+# Good: emit the domain fact — the consumer maps it to whatever layout it uses
+def as_json
+  { occurredAt: event.occurred_at.iso8601, ... }
+end
+```
+
+**Key question:** "Would this field still make sense if the consumer changed
+from a web timeline to a mobile list, a PDF report, or an API client?" If not,
+it's a presentation concern leaking into the data layer.
+
+**What to flag:** "This serializer emits a presentation value (`fieldName`).
+Emit the domain fact (date, state, relationship) instead — let the consumer
+handle positioning/layout."
+
+**Pattern 2: APIs hiding record lifecycle**
+
+When a new endpoint or serializer only returns active/current records, but the
+domain has a lifecycle (created → resolved, active → cancelled, open → closed),
+the consumer loses history.
+
+```ruby
+# Bad: only open alerts — resolved alerts disappear from the dashboard
+def alerts
+  object.alerts.where(resolved_at: nil)
+end
+
+# Good: return all non-dismissed alerts with resolved_at (nil when unresolved)
+# The consumer decides whether to show resolved records
+def alerts
+  object.alerts.where.not(status: :dismissed)
+end
+```
+
+**Detection:** Look for `where(ended_at: nil)`, `where(resolved_at: nil)`,
+`where(status: :active)`, or `.active` scopes in serializers/API endpoints.
+Ask: "Does the user of this API ever need to know that a record existed and
+was resolved?" If yes, the filter is hiding useful information.
+
+**Exception:** User-dismissed records (explicit editorial judgment) should be
+excluded.
+
+**What to flag:** "This filters to only active records, but the domain has a
+lifecycle. Include resolved records with their `resolved_at` timestamp — let
+the consumer decide what to show."
+
+**Pattern 3: Serializers querying the database**
+
+Serializers should only read data already loaded on the model. If a serializer
+triggers database queries — directly or through unloaded associations — it
+creates hidden performance costs and makes serializer behavior depend on how
+the caller loaded data.
+
+```ruby
+# Bad: serializer triggers a query — tags weren't eager-loaded
+class ArticleSerializer
+  def tag_names
+    Tag.where(article: object).pluck(:name)
+  end
+end
+
+# Bad: serializer calls an association that wasn't included — silent N+1
+class ArticleSerializer
+  def tag_names
+    object.tags.map(&:name)  # N+1 if not eager-loaded
+  end
+end
+
+# Good: controller eager-loads, serializer just reads what's already there
+# Controller: Article.includes(:tags)
+# Serializer: object.tags (already loaded, no query)
+```
+
+**Detection:** Look for:
+- Serializer methods that call `.where`, `.find_by`, `.count`, or other
+  query methods directly (not through a pre-loaded association)
+- Serializer methods that access associations not listed in the controller's
+  `includes`
+
+**What to flag:** "This serializer queries the database. Eager-load the
+association in the controller with `includes` and read from the model
+directly."
+
+**Pattern 4: Components named after their first use case**
+
+When a new component or class is named after a specific scenario rather than
+the category it belongs to, it'll need renaming when the second use case
+arrives.
+
+```javascript
+// Bad: named after the first scenario — what happens for email or SMS notifications?
+function SlackNotifier({ message }) { ... }
+
+// Good: named after the category — works for any channel
+function Notifier({ message, channel }) { ... }
+```
+
+**The test:** "If I needed a second instance of this category, would I have to
+rename this class/component?" If yes, the name is too specific.
+
+**What to flag:** "This is named after a specific instance (`SpecificName`)
+rather than the category it belongs to. Consider `CategoryName` — it'll
+accommodate future variants without renaming."
+
 ### 2. Review Priority (in order)
 
 1. **Security issues** - SQL injection, XSS, auth bypasses, exposed secrets
