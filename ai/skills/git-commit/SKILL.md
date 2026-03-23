@@ -58,6 +58,8 @@ The rules:
 - The third paragraph should explain what an ideal solution would look like this
   is not what the commit implements. It includes things that could be improved later,
   edge cases. It makes the current solution be intentional.
+- Never use em dashes or double hyphens in commit messages. Use commas,
+  parentheses, or separate sentences instead.
 - Do not push directly after committing. Wait for user confirmation.
 - Do not include Co-Authored-By: Claude <noreply@anthropic.com> or equivalent.
   You MUST NOT include any indication that an AI assisted in the commit or that
@@ -117,12 +119,12 @@ When committing in a repo that is NOT the current working directory, use
 permission prompts from safety hooks that flag `cd` to external directories.
 
 ```bash
-# Good — stays in current directory
+# Good: stays in current directory
 git -C ~/.dotfiles status
 git -C ~/.dotfiles add ai/skills/tool-sentry/
 git -C ~/.dotfiles commit -m "Add sentry skill"
 
-# Bad — triggers permission prompt for each command
+# Bad: triggers permission prompt for each command
 cd ~/.dotfiles && git status
 cd ~/.dotfiles && git add ai/skills/tool-sentry/
 cd ~/.dotfiles && git commit -m "Add sentry skill"
