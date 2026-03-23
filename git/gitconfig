@@ -114,3 +114,5 @@
 	format = ssh
 [tag]
 	gpgSign = true
+[include]
+	path = ~/.dotfiles/git/gitconfig.local
