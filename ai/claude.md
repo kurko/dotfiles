@@ -79,27 +79,69 @@ Use this format:
 
 ### 6. Share Your Plan
 
-After understanding requirements, ALWAYS present your implementation plan:
+After understanding requirements, ALWAYS present your implementation plan.
+
+**Interfaces require user approval.** The user reviews architectural interfaces
+before implementation begins. These are the boundaries that shape the app long-term
+and are hard to change later. Always include these sections when relevant:
+
+- **Serializers / API responses**: Show the exact JSON shape for each endpoint or
+  serializer involved. The user evaluates: collections vs keys, data duplication,
+  generality for reuse across views.
+- **Background job pipeline**: Job names, execution order, what triggers each job,
+  retry/failure strategy. The user evaluates: naming, separation of concerns,
+  operational burden.
+- **Key service objects**: Names and public method signatures for the main services.
+  The user evaluates: naming, single responsibility, testability.
+- **Frontend components**: Component tree showing the generic/reusable layer vs the
+  domain-specific layer. Always propose generic components first (`Modal`, `Popover`,
+  `List`) and thin domain wrappers on top (`TaskModal`, `TimelinePopover`). The user
+  evaluates: reusability, separation of business logic from UI chrome, testability of
+  extracted logic.
+
+Use this template:
 
     Here's my proposed approach:
-    
+
     ARCHITECTURE:
     - [High-level component design]
     - [Data flow]
     - [Key abstractions]
-    
+
+    INTERFACES (for user review):
+
+    Serializers / API responses:
+      GET /api/endpoint → {
+        "key": "value",
+        "nested": { "shape": "here" }
+      }
+
+    Background jobs (if applicable):
+      [JobName] → triggered by [X], does [Y], retries [Z]
+
+    Key services:
+      ServiceName#method(args) → returns [what]
+
+    Frontend components (if applicable):
+      reusable/GenericComponent — [what it handles generically]
+      domain/SpecificWrapper — [thin layer providing domain content]
+
     IMPLEMENTATION STEPS:
     1. [First small increment]
     2. [Second small increment]
     3. [Continue...]
-    
+
+    TEST PLAN:
+    - [spec file]: [what it covers — key scenarios, edge cases]
+    - [spec file]: [what it covers]
+
     NAMING PROPOSALS:
-    - Classes: [proposed names with rationale]
+    - Classes: [proposed names with rationale — prefer generic over specific]
     - Key methods: [proposed names with rationale]
-    
+
     RISKS:
     - [Potential issue]: [Mitigation strategy]
-    
+
     Does this align with your vision? Any adjustments needed?
 
 ### 7. Incremental Development
@@ -429,6 +471,7 @@ Success is measured by the quality of the user's final decision, not their satis
 
 ## Debugging & Infrastructure
 
+- debugging: measure before theorizing. When a visual/behavioral bug contradicts the code, inspect computed state (DevTools, agent-browser, console) BEFORE proposing any fix. One measurement beats ten theories.
 - debugging: always end with verification step to confirm fix
 - debugging: document root cause and prevention in CLAUDE.md after fixing production issues
 - debugging: when user provides a keyword hint, search ALL relevant config directories broadly before narrowing scope

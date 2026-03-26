@@ -129,21 +129,34 @@ When the user says "create task", "new task", "write task":
 1. Delegate to the `write-task` skill for content formatting. The write-task
    skill handles template selection (short vs full), content structure, and
    output format (HTML or markdown based on CLAUDE.md).
-2. Use the PM tool's MCP to create the task in the configured project.
+2. Use the PM tool's MCP to create the task in the **shared project only**.
 3. Place in the section the user specifies, defaulting to the "inbox" or
    "triage" section.
+4. **Do NOT add the task to the agent board.** Creating a task is not the
+   same as working on it. The agent board's "current work" section is
+   exclusively for tasks THIS agent is actively implementing. A newly
+   created task should be visible on the shared board so the user (or a
+   future agent session) can prioritize and pick it up through the normal
+   "Pick Next Task" flow. Adding it to the agent board makes it invisible
+   to other agents and implies someone is working on it when no one is.
 
 ### 6. Mark Task Complete
 
 When the user confirms a task is done (or an automated completion criterion
 defined by the user is met):
 
-1. Mark the task complete in the PM tool.
+1. **Set the task's completion status** in the PM tool. This is NOT the
+   same as moving it to a section — it means marking the task itself as
+   done (e.g., Asana: `asana_update_task` with `completed: true`; Linear:
+   update state to "Done"). **Verify** the API response confirms the task
+   is now marked complete before proceeding.
+   **Note (Asana):** Completed tasks automatically disappear from board
+   views, so no section move is needed on the shared board.
 2. If a private agent board is configured, move the task to the "done"
-   section there.
-3. CRITICAL: Delete the task id from `tmp/current-task.pid`. Only do so
+   section there as well.
+4. CRITICAL: Delete the task id from `tmp/current-task.pid`. Only do so
    when the task was QA'd and successfully marked complete in the PM tool.
-4. Announce completion and ask if the user wants to pick the next task.
+5. Announce completion and ask if the user wants to pick the next task.
 
 ### 7. Read Task Details
 
