@@ -64,7 +64,7 @@
 [user]
 	name = Alex Oliveira
 	email = kurko@users.noreply.github.com
-	signingkey = kurko@users.noreply.github.com
+	signingkey = /Users/alex/.ssh/id_rsa
 
 [color]
   diff = auto
@@ -105,8 +105,12 @@
 	browser = open
 [commit]
 	verbose = true
-	gpgsign = false
+	gpgsign = true
 [log]
 	date = iso
 [http]
 	postBuffer = 524288000
+[gpg]
+	format = ssh
+[tag]
+	gpgSign = true

@@ -775,11 +775,11 @@ end
 association in the controller with `includes` and read from the model
 directly."
 
-**Pattern 4: Components named after their first use case**
+**Pattern 4: Non-generic naming and component reusability**
 
-When a new component or class is named after a specific scenario rather than
-the category it belongs to, it'll need renaming when the second use case
-arrives.
+When a new component, class, or module is named after a specific scenario rather
+than the category it belongs to, it'll need renaming or duplicating when the
+second use case arrives.
 
 ```javascript
 // Bad: named after the first scenario — what happens for email or SMS notifications?
@@ -787,14 +787,87 @@ function SlackNotifier({ message }) { ... }
 
 // Good: named after the category — works for any channel
 function Notifier({ message, channel }) { ... }
+
+// Bad: domain-specific modal that bundles UI chrome with domain content
+function TimelineTaskModal({ task }) {
+  return <div className="modal-overlay">
+    <div className="modal-content">
+      <h2>{task.name}</h2>
+      <p>{task.description}</p>
+    </div>
+  </div>
+}
+
+// Good: generic modal in reusable/, thin domain wrapper on top
+// reusable/Modal.tsx
+function Modal({ title, children, onClose }) { ... }
+
+// domain/TaskDetail.tsx — just the content, no modal chrome
+function TaskDetail({ task }) {
+  return <Modal title={task.name} onClose={...}>
+    <p>{task.description}</p>
+  </Modal>
+}
 ```
 
-**The test:** "If I needed a second instance of this category, would I have to
-rename this class/component?" If yes, the name is too specific.
+**Three tests to apply:**
 
-**What to flag:** "This is named after a specific instance (`SpecificName`)
-rather than the category it belongs to. Consider `CategoryName` — it'll
-accommodate future variants without renaming."
+1. **Reuse test:** "If I needed this same UI chrome (modal, popover, dropdown)
+   on another page, would I have to duplicate it?" If yes, extract the generic
+   component to `reusable/`.
+
+2. **Naming test:** "If I needed a second instance of this category, would I
+   have to rename this class/component?" If yes, the name is too specific.
+
+3. **Logic extraction test:** "Is there conditional logic, data transformation,
+   or domain rules baked into this UI component that could be extracted into a
+   testable, reusable function?" If yes, extract it. Components should render
+   state; separate modules should compute it.
+
+**What to flag:**
+- "This is named after a specific instance (`SpecificName`) rather than the
+  category. Consider `CategoryName` — it'll accommodate future variants."
+- "This component mixes UI chrome (overlay, positioning, dismiss) with domain
+  content. Extract the generic UI to `reusable/` and keep domain content in a
+  thin wrapper."
+- "This component contains business logic (filtering, computation, conditional
+  rules) that should be in a separate module for testability and reuse."
+
+**Pattern 5: Business logic in UI components**
+
+When a frontend component contains conditional logic, data transformation,
+formatting rules, or domain decisions, that logic becomes untestable without
+rendering the component and unreusable outside it.
+
+```javascript
+// Bad: business logic (status derivation, date comparison) lives in the component
+function TaskCard({ task }) {
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+  const isBlocked = task.dependencies.some(d => d.status !== "done");
+  const priority = isOverdue ? "critical" : isBlocked ? "high" : "normal";
+  return <Card className={`priority-${priority}`}>...</Card>
+}
+
+// Good: logic extracted, testable without rendering
+// lib/taskStatus.ts
+function deriveTaskPriority(task) { ... }
+
+// components/TaskCard.tsx — just renders
+function TaskCard({ task }) {
+  const priority = deriveTaskPriority(task);
+  return <Card className={`priority-${priority}`}>...</Card>
+}
+```
+
+**Detection:** Look for:
+- Ternary chains or `if`/`switch` statements in render bodies
+- `new Date()`, `.filter()`, `.reduce()`, `.sort()` in components
+- Domain terms (status, priority, threshold, deadline) computed inline
+- Logic that would need to be duplicated if another component needs the same decision
+
+**What to flag:** "This component computes [business logic] inline. Extract to
+a separate module (e.g., `lib/taskStatus.ts`) so it can be unit-tested and
+reused across components."
 
 ### 2. Review Priority (in order)
 
@@ -805,9 +878,9 @@ accommodate future variants without renaming."
 5. **Missing error handling** - Unhandled exceptions, missing validations
 6. **Missing tests** - New methods without corresponding tests
 7. **N+1 queries / DB concerns** - Queries in loops, missing eager loading
-8. **API design / interface** - Public method signatures, breaking changes
+8. **API design / interface** - Serializer JSON shapes, public method signatures, breaking changes, data generality
 9. **Edge cases** - Boundary conditions, empty states
-10. **Naming clarity** - Misleading or vague names
+10. **Naming / genericity** - Names too specific for their category, components that should be generic, business logic mixed into UI
 11. **Method size** - Methods doing too much, extraction opportunities
 12. **Style** - Minor improvements, readability
 
