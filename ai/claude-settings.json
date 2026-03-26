@@ -44,6 +44,7 @@
       "Bash(uniq:*)",
       "Bash(ps:*)",
       "Bash(date:*)",
+      "Bash(echo:*)",
       "Bash(slack-readonly-cli *)",
       "mcp__asana__asana_get_*",
       "mcp__asana__asana_list_*",
@@ -91,7 +92,10 @@
       "mcp__asana__asana_get_*",
       "mcp__asana__asana_list_*",
       "mcp__asana__asana_search_*",
-      "mcp__asana__asana_typeahead_*"
+      "mcp__asana__asana_typeahead_*",
+      "Read(/Users/alex/.claude/memory/diary/*)",
+      "Write(/Users/alex/.claude/memory/diary/*)",
+      "Edit(/Users/alex/.claude/memory/diary/*)"
     ]
   },
   "hooks": {
