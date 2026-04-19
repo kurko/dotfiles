@@ -95,6 +95,11 @@ function update_symlinks(){
     [ -e "$f" ] && ln -nfs "$f" ~/.claude/agents/
   done
 
+  # Private prompts: in case the directory exists, run install.sh
+  if [ -d ~/.private-prompts ]; then
+    ~/.private-prompts/install.sh
+  fi
+
   # Claude hooks
   mkdir -p ~/.claude/hooks
   find ~/.claude/hooks -type l -lname "$HOME/.dotfiles/*" -delete 2>/dev/null || true

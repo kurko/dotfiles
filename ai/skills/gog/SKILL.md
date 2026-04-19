@@ -32,9 +32,18 @@ Set `GOG_ACCOUNT=you@gmail.com` to avoid repeating `--account`.
 
 - Search threads: `gog gmail search 'newer_than:7d' --max 10`
 - Search messages (per-email, ignores threading): `gog gmail messages search "in:inbox from:ryanair.com" --max 20`
-- Get message: `gog gmail get <messageId>`
+- Read thread (all messages): `gog gmail thread get <threadId>`
+- Read thread (full bodies, avoids truncation): `gog gmail thread get <threadId> --full`
+- Get single message: `gog gmail get <messageId>`
 - Download attachment: `gog gmail attachment <messageId> <attachmentId> --out /tmp/file.pdf`
+- Download all thread attachments: `gog gmail thread attachments <threadId> --download --out-dir /tmp/`
 - Get web URL: `gog gmail url <threadId>`
+
+**Important:**
+- `gog gmail read` is an alias for `gog gmail thread`. Both work.
+- Thread commands require a **thread ID** (from search results), not an individual message ID. Individual message IDs (from within a thread) will 404.
+- Long messages are truncated by default. Use `--full` to get complete message bodies.
+- Search flag is `--max`, not `--max-results` or `--limit`.
 
 ### Write
 
