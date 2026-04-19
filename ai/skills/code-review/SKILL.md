@@ -133,6 +133,19 @@ When reviewing a PR, fetch the full context:
    - Use the appropriate MCP tool for the task system (e.g., Asana MCP, Linear MCP)
    - Get the task title, description, acceptance criteria, and comments
    - This provides the original requirements the code should satisfy
+4. **Read PR comments AFTER completing your review** — not before. Reading
+   comments first biases your assessment toward issues others already found
+   and away from fresh observations. Complete your independent review, then
+   read comments so the final result is contextual (addresses existing
+   discussion) without being anchored by it.
+   - Fetch **both** issue-level comments (`gh pr view`) **and** inline review
+     comments on the diff (`gh api repos/{owner}/{repo}/pulls/{number}/comments`).
+     Inline comments often contain the author's explanations for design decisions
+     that directly address reviewer questions.
+   - **Revise your findings** before writing the final output: if the author
+     already explained a choice in an inline comment, drop or update that
+     finding rather than asking the author to confirm something they already
+     answered.
 
 ### Graceful Degradation
 
