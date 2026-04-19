@@ -339,6 +339,16 @@ gog gmail get <msgId> --json | jq -r '.payload.parts[] | select(.filename != "")
 gog sheets export <sheetId> --format csv --out /tmp/data.csv
 ```
 
+## Looking Up Emails from Gmail URLs
+
+Gmail web URLs (e.g. `https://mail.google.com/mail/u/0/#inbox/FMfcg...`) use a UI thread ID that doesn't match the API thread/message ID. To find the email:
+
+1. Extract context from the URL or user message (sender, subject, date)
+2. Search by sender/keywords: `gog gmail messages search "from:someone@example.com" --max 10`
+3. Once you find the right message ID, get the full content: `gog gmail get <messageId>`
+
+Do **not** try to use the Gmail URL's `FMfcg...` ID directly — it won't work with the API.
+
 ## Notes
 
 - Confirm before sending mail or creating events.
