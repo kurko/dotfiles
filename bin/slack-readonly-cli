@@ -346,6 +346,14 @@ COMMANDS:
     help
         Show this help message.
 
+GLOBAL OPTIONS:
+    --head N    Print only the first N lines of output.
+    --tail N    Print only the last N lines of output.
+
+    These can appear anywhere in the command line:
+        slack-readonly-cli search "query" --head 80
+        slack-readonly-cli --tail 20 channels "pattern"
+
 ENVIRONMENT:
     SLACK_BOT_TOKEN
         Required. Your Slack Bot Token (starts with xoxb-).
@@ -357,60 +365,91 @@ ENVIRONMENT:
             - channels:read (for channel listing)
 
 OUTPUT:
-    All commands output JSON that can be piped to jq for further processing.
+    All commands output JSON. Use --head/--tail to limit output length:
 
-    Examples:
-        # Get just message text from search results
-        ./slack-readonly-cli search "query" | jq '.messages.matches[].text'
+        slack-readonly-cli search "query" --count 10 --head 80
+        slack-readonly-cli channels "project-*" --head 40
 
-        # Get all message texts from a thread
-        ./slack-readonly-cli message https://workspace.slack.com/archives/C01/p123 | jq '.messages[].text'
+    For further processing with jq, pipe externally:
 
-        # Get user's real name
-        ./slack-readonly-cli user U123 | jq '.user.real_name'
+        slack-readonly-cli search "query" | jq '.messages.matches[].text'
+        slack-readonly-cli user U123 | jq '.user.real_name'
 
-        # Get list of channel names matching pattern
-        ./slack-readonly-cli channels "project-*" | jq '.channels[].name'
+AI AGENT USAGE:
+    Do NOT pipe this command through head, tail, grep, or other tools.
+    Shell pipes (|) create compound commands that trigger permission prompts.
+
+    Instead, use built-in flags:
+        slack-readonly-cli search "query" --count 10 --head 80
+        slack-readonly-cli channels --head 40
+
+    To read the help, call the command directly (no pipe to head):
+        slack-readonly-cli help
 
 EOF
 }
 
 # Main entry point
 main() {
-  if [[ $# -eq 0 ]]; then
+  local head_lines=""
+  local tail_lines=""
+  local args=()
+
+  # Extract global options (--head, --tail) from anywhere in the arg list
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --head)   [[ $# -lt 2 ]] && error "--head requires a number"; head_lines="$2"; shift 2 ;;
+      --head=*) head_lines="${1#*=}"; shift ;;
+      --tail)   [[ $# -lt 2 ]] && error "--tail requires a number"; tail_lines="$2"; shift 2 ;;
+      --tail=*) tail_lines="${1#*=}"; shift ;;
+      *)        args+=("$1"); shift ;;
+    esac
+  done
+
+  if [[ -n "$head_lines" ]] && ! [[ "$head_lines" =~ ^[0-9]+$ ]]; then
+    error "--head must be a positive integer"
+  fi
+  if [[ -n "$tail_lines" ]] && ! [[ "$tail_lines" =~ ^[0-9]+$ ]]; then
+    error "--tail must be a positive integer"
+  fi
+
+  if [[ ${#args[@]} -eq 0 ]]; then
     cmd_help
     exit 0
   fi
 
-  local command="$1"
-  shift
+  local command="${args[0]}"
+  local cmd_args=("${args[@]:1}")
 
+  # Handle help early (no token needed, no output filtering)
   case "$command" in
-    search)
-      check_token
-      cmd_search "$@"
-      ;;
-    message)
-      check_token
-      cmd_message "${1:-}"
-      ;;
-    user)
-      check_token
-      cmd_user "${1:-}"
-      ;;
-    channels)
-      check_token
-      cmd_channels "${1:-}"
-      ;;
     help|--help|-h)
       cmd_help
-      ;;
-    *)
-      error "Unknown command: $command
-
-Run '$0 help' for usage information."
+      exit 0
       ;;
   esac
+
+  check_token
+
+  local output
+  case "$command" in
+    search)   output=$(cmd_search "${cmd_args[@]+"${cmd_args[@]}"}")  ;;
+    message)  output=$(cmd_message "${cmd_args[0]:-}") ;;
+    user)     output=$(cmd_user "${cmd_args[0]:-}") ;;
+    channels) output=$(cmd_channels "${cmd_args[0]:-}") ;;
+    *)        error "Unknown command: $command
+
+Run '$0 help' for usage information." ;;
+  esac
+
+  if [[ -n "$head_lines" ]]; then
+    output=$(printf '%s' "$output" | head -n "$head_lines")
+  fi
+  if [[ -n "$tail_lines" ]]; then
+    output=$(printf '%s' "$output" | tail -n "$tail_lines")
+  fi
+
+  printf '%s\n' "$output"
 }
 
 main "$@"
