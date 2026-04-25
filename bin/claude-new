@@ -13,6 +13,7 @@ echo "Running claude"
 
 claude \
   "$@" \
+  --effort max \
   --allowedTools " \
     Bash(mkdir:*) \
     ,Bash(curl:*) \

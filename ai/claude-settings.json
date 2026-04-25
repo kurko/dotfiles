@@ -156,5 +156,6 @@
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "model": "claude-opus-4-6"
 }

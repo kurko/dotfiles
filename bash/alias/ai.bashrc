@@ -329,5 +329,5 @@ function annoying-claude() {
 
 # Let Claude do anything without permission prompts
 function dangerous-claude() {
-  with_prompt_attention claude --dangerously-skip-permissions "$@"
+  with_prompt_attention claude-new --dangerously-skip-permissions "$@"
 }
