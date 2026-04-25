@@ -300,6 +300,15 @@ When a class method is modified, check if the class has subclasses:
    - Search for tests related to each subclass that overrides the method
    - Flag if overridden behavior lacks test coverage
 
+5. **Check if new subclass methods belong in the base class** ("push up"):
+
+   When a new method is added to a subclass, grep for sibling subclasses and ask:
+   would this apply there too? Guards, validations, and cross-cutting concerns
+   (error wrapping, rate limiting, telemetry) almost always belong in the parent.
+   If all siblings except one special case (e.g., a local/mock adapter) need it,
+   it still belongs in the base class -- the exception overrides, not the other
+   way around.
+
 #### Check for Variable-Filter Semantic Mismatches
 
 When code assigns the result of a collection lookup to a variable, check whether
@@ -331,26 +340,18 @@ If unverifiable, flag it - the filter may need an additional predicate (e.g.,
 #### Check for Single Source of Truth Violations
 
 When a value is hardcoded that already exists elsewhere (constant, config file, or
-another definition), flag it. Reason: When the original value changes in the future, the
-duplicate will silently be forgotten, causing partial failures that are hard to diagnose.
-The intent is to prevent those future bugs.
+another definition), flag it. **Also flag when the same identifier string appears in
+multiple locations even if no constant exists yet** -- that duplication is the signal
+that a constant should be created. Reason: When the canonical meaning changes in the
+future, every duplicate must be found and updated. The more scattered the string, the
+higher the chance one gets missed, causing partial failures that are hard to diagnose.
 
-**Example 1 - String instead of constant:**
+**Two forms of this violation:**
 
-```ruby
-# Bad: string may duplicate an existing constant
-def expired?
-  status == "expired"
-end
-```
+**Form 1 - Constant exists but isn't used:**
 
-```typescript
-// Bad: string may duplicate an existing constant
-if (order.status === "expired") { ... }
-```
-
-**Detection:** When you see a hardcoded string that looks like a status, type, or
-category, search for existing constants:
+When you see a hardcoded string that looks like a status, type, or category, search
+for existing constants:
 
 ```bash
 # Search for constants containing the value (use regex, don't load full files).
@@ -362,7 +363,45 @@ grep -rE "(EXPIRED|expired.*=|:expired)" . --include="*.rb" --include="*.ts" -l
 If a constant like `Order::STATUS_EXPIRED` or `OrderStatus.EXPIRED` exists, flag
 the hardcoded string and recommend using the constant.
 
-**Example 2 - Infrastructure value in workflow:**
+```ruby
+# Bad: Order::STATUS_EXPIRED constant exists but code uses a string
+def expired?
+  status == "expired"
+end
+
+# Good
+def expired?
+  status == Order::STATUS_EXPIRED
+end
+```
+
+**Form 2 - No constant exists, but the same string appears in multiple places:**
+
+When you see a hardcoded string that acts as an identifier (type, status, category,
+kind, key in a registry hash), search for that same string across the codebase:
+
+```bash
+grep -rE "unanswered_question" . --include="*.rb" --include="*.ts" --include="*.yml" -l
+```
+
+If the same string appears in **2+ files** as an identifier (not just documentation
+or test descriptions), flag it and recommend extracting to a constant, even if one
+doesn't exist yet. The patterns to watch for:
+- Hash keys in registries or lookup tables (`SCHEMAS = { "unanswered_question" => ... }`)
+- Return values that identify a type (`def risk_type; "unanswered_question"; end`)
+- Conditional comparisons (`if type == "unanswered_question"`)
+- Config keys that are referenced in code (`risk_types.yml` key matched by string in Ruby)
+
+```ruby
+# Bad: "unanswered_question" appears in risk_types.yml, attention_helper.rb,
+# and risk_detection/tasks/unanswered_question.rb as a bare string
+{ "unanswered_question" => {color: "var(--unanswered-question)"} }
+
+# Good: extract to or use an existing constant, reference it everywhere
+{ Risk::TYPES.fetch(:unanswered_question) => {color: "var(--unanswered-question)"} }
+```
+
+**Example 3 - Infrastructure value in workflow:**
 
 ```yaml
 # .github/workflows/ci.yml - Bad: IP may duplicate config/deploy.yml
@@ -380,7 +419,39 @@ canonical source instead of duplicating.
 
 **Severity: MEDIUM-HIGH** - These violations cause subtle bugs when the canonical
 source is updated but the duplicate is forgotten. The system partially works,
-making the bug hard to diagnose.
+making the bug hard to diagnose. Form 2 (no constant yet) is equally dangerous --
+the absence of a constant is itself the problem to flag.
+
+#### Check for Silent Hash/Map Key Access
+
+When code accesses a hash with `[]` and the key is expected to always exist,
+`[]` silently returns `nil` on a missing key. The `nil` propagates through the
+system and causes a `NoMethodError` or wrong behavior far from the source.
+
+Use `.fetch(key)` when the key MUST exist. It raises `KeyError` immediately at
+the point of failure.
+
+```ruby
+# Bad: silently returns nil if risk_type is invalid
+schema = SCHEMAS[risk_type]
+
+# Good: raises KeyError immediately
+schema = SCHEMAS.fetch(risk_type)
+```
+
+**Detection:** Look for `CONSTANT[variable]` or `hash[dynamic_key]` where:
+- The hash is a known, finite lookup table (constants, type maps, registries)
+- The key is a variable or parameter (not a literal)
+- There is no `nil` check on the result before use
+
+**When `[]` is acceptable:**
+- Code explicitly handles `nil` after access (`return default if value.nil?`)
+- The hash is a cache/memo where `nil` means "not yet computed"
+- The access uses a literal key in a controlled context (e.g., `params[:id]`)
+
+**What to flag:** "This accesses `HASH[key]` without handling nil. Use
+`.fetch(key)` to fail immediately if the key is missing, or add explicit nil
+handling if nil is a valid case."
 
 #### Check for Magic Numbers and Unnamed Values
 
@@ -563,6 +634,47 @@ projects = user.projects
 condition into the query with `where`/`joins`/`merge` so the database handles
 the filtering. Less data transferred, less memory used."
 
+#### Check for Inline Query Conditions That Duplicate Model Scopes
+
+When code writes inline `where` conditions or raw SQL fragments, check whether
+the model already defines a scope for the same logic. Duplicated query conditions
+diverge silently — someone updates the scope but misses the inline copy.
+
+```ruby
+# Bad: service rewrites logic the model already encapsulates
+# (model has: scope :incomplete, -> { where(completed: false).or(where(completed: nil)) })
+Question.where("tasks.completed = false OR tasks.completed IS NULL")
+
+# Good: reuse the model scope
+Question.merge(Task.incomplete)
+```
+
+**Detection:** When you see an inline `where` condition, name the domain concept
+it represents ("incomplete", "unresolved", "active"), then search the model:
+
+```bash
+grep -n "scope :" app/models/task.rb
+grep -n "def self\." app/models/task.rb
+```
+
+Scopes don't need to be character-identical to match — `where(completed: [false, nil])`
+and `where("completed = false OR completed IS NULL")` are semantically the same.
+If a scope exists, recommend `merge()` or direct chaining. If no scope exists but
+the condition is reusable, recommend extracting a new scope.
+
+**When inline conditions are acceptable:**
+- One-off queries in migrations or data scripts that run once
+- Performance-critical queries where scope composition would prevent plan
+  optimization (CTEs, window functions)
+- Trivially simple conditions unlikely to change (e.g., `where(id: id)`)
+
+**What to flag:** "This inline `where` condition duplicates `ModelName.scope_name`.
+Use `merge(ModelName.scope_name)` — duplicated query logic diverges silently when
+one copy is updated but the other isn't."
+
+For reusable conditions with no existing scope: "Extract this condition into a
+scope on `ModelName` so it's defined once and reusable."
+
 #### Check for Leaky Abstractions (Data vs Decisions)
 
 When a method returns raw data that callers must interpret, the decision logic
@@ -676,6 +788,25 @@ value before storing it. When someone sees [nil / the default / the stale value]
 in error tracking or logs, they'll draw the wrong conclusion about what happened.
 Either reject the bad data loudly or store it with a marker that distinguishes
 it from legitimate values."
+
+#### Check for Temporal Snapshot Names
+
+When a computed value (duration, count, elapsed time) is stored in a record,
+the name must signal it's a snapshot. `hours_unanswered` reads as current;
+`hours_unanswered_at_analysis` makes the freeze point obvious.
+
+**Detection:** Columns, hash keys, or metadata containing `hours_`, `days_`,
+`count_`, `time_since_`, `_ago`, `_until`, `_elapsed` that are persisted
+(not computed on read).
+
+**The fix:** Append `_at_analysis`, `_as_of_date`, or `_when_computed`.
+
+**Skip:** Timestamps (`created_at`, `resolved_at`) and values recomputed on
+every read.
+
+**What to flag:** "This stores a computed duration/count (`field_name`) but
+the name reads as live. Rename to include temporal context (e.g.,
+`field_name_at_analysis`) so readers know it's a point-in-time snapshot."
 
 #### Check for Backend/Frontend Boundary Violations
 
@@ -905,6 +1036,17 @@ end
 Flag: "The rescue block falls back to `find_existing_record`, but there's no
 test verifying this fallback works."
 
+**When you recommend adding defensive code, require a test for it.** If the
+review suggests adding a clamp (`[value, max].min`), guard clause, validation,
+or any other defensive behavior, the recommendation MUST include writing a test
+that exercises the defensive path. Untested defensive code gives false
+confidence — it looks safe but nobody knows if it actually works. The test
+proves the invariant holds.
+
+Example: If you recommend `detected_at: [onset_at(subject), Time.current].min`
+to prevent future dates, also require a test that constructs a scenario where
+`onset_at` would return a future time and asserts `detected_at <= Time.current`.
+
 **CRITICAL: Never accept "matches existing pattern's test coverage" as justification
 for missing tests.** If similar code elsewhere lacks tests, that's technical debt to
 fix, not a pattern to follow. A pragmatic engineer improves the codebase rather than
@@ -1082,26 +1224,17 @@ tests for the new methods, and this is good to merge.
 |-----------------|--------|----------|
 | Basic data import service | ✅ DONE | `app/services/data_importer.rb` |
 | Change detection for updates | ❌ MISSING | No comparison of existing vs incoming records |
-| Soft delete detection | ❌ MISSING | No tracking of seen record IDs |
 | Audit trail events | ❌ MISSING | No event creation for changes |
-| Incremental sync support | ❌ MISSING | No since/cursor parameter |
 
-**BLOCKING: 4 planned features are missing.** This review cannot pass until:
+**BLOCKING: 2 planned features are missing.** This review cannot pass until:
 - Change detection is implemented
-- Soft delete detection is implemented
 - Audit trail events are implemented
-- Incremental sync is implemented
-
----
-
-[Code quality comments would follow, but they're secondary to the missing features]
 
 ---
 
 ## Summary
 
-The basic import works, but 4 of 5 planned features are not implemented.
-This is incomplete and should not be committed until the plan is fulfilled.
+2 of 3 planned features are missing. This is incomplete.
 ```
 
 ## Preserve Developer Intent
@@ -1203,13 +1336,78 @@ Only mention alternative approaches when:
 
 Don't suggest alternatives just because you'd do it differently.
 
-## Before Concluding Your Review
+## Investigative Questions
 
-Ask yourself these questions to escape checklist tunnel vision:
+The pattern checks above catch issues visible in the diff. The questions below
+catch issues that require **investigating the surrounding system** -- things no
+pattern matcher can see. For each question that seems relevant to the diff,
+spawn a subagent to investigate and return: **RELEVANT** (with finding) or
+**NOT RELEVANT** (with brief reason why it doesn't apply).
 
-- "What could a production incident reveal that I missed?"
-- "If two requests hit this code simultaneously, what happens?"
-- "Are there rescue/catch blocks without test coverage?"
-- "Are there inline values that should be named constants?"
-- "What feels wrong even if I can't name the pattern?"
+Use the most capable model available for these subagents. Each subagent gets:
+the question, the relevant file paths from the diff, and enough context to
+search the codebase. Spawn in parallel when questions are independent.
+
+### Scale & Bounds
+
+1. **Does any new query have an upper bound on the data it processes?**
+   Queries without time limits, `LIMIT` clauses, or pagination will silently
+   degrade as data accumulates over months and years.
+
+2. **If a collection is processed in a loop, what happens at 10x and 100x
+   current volume?**
+   In-memory iteration that works at today's scale can OOM or timeout when the
+   dataset grows -- check whether batching or streaming is needed.
+
+### Sophistication Mismatch
+
+3. **Does a cheap/naive step gate an expensive/sophisticated step?**
+   A simple string match before an LLM call, a regex before a complex
+   computation -- the cheap filter adds false negatives without meaningful cost
+   savings if the expensive step exists precisely to handle ambiguity.
+
+### Human Time vs Wall-Clock Time
+
+4. **Do any duration calculations involving people account for non-working
+   periods?**
+   "Hours since X" using wall-clock time is wrong for human activity -- it
+   counts weekends, holidays, and nights. If the threshold triggers actions
+   or alerts, this creates false positives on Monday mornings.
+
+### Silent Failures
+
+5. **Do any early returns on nil/blank/empty guard against conditions that
+   should never happen?**
+   `return if data.blank?` is correct when data is optional. When data should
+   always exist, the guard hides an upstream bug -- the code should raise or
+   log at a visible level instead.
+
+### Naming & Structural Fit
+
+6. **Would any new class/module name still work when a second variant arrives?**
+   A name like `StripeGateway` breaks when you need `StripeConnectGateway` vs
+   `StripeDirectGateway`. Names should accommodate the category, not just the
+   first instance.
+
+7. **Is any structured information encoded as a plain string that could drift
+   from its source of truth?**
+   JSON schemas in prompt strings, format descriptions in comments, duplicated
+   structure definitions -- if the string encodes something that also exists as
+   code (a schema, a type, a validation), connect them so mismatches are caught
+   at definition time.
+
+### Extraction Signals
+
+8. **Does any new calculation embed domain knowledge (calendars, configs,
+   business rules) that belongs in a shared layer?**
+   Time-difference calculations in work-tracking systems always eventually need
+   to exclude non-working periods. Cost calculations always eventually need
+   currency handling. If the domain knowledge is inline, it will be duplicated
+   when the next consumer needs the same calculation.
+
+9. **Does any new conditional branch represent a product decision that should
+   be configurable rather than hardcoded?**
+   Thresholds, limits, feature flags, and policy decisions embedded in code
+   require a deploy to change. If the value is likely to be tuned, it should
+   be extractable to configuration.
 
