@@ -105,7 +105,7 @@ function update_symlinks(){
   # Codex CLI config
   mkdir -p ~/.codex
   ln -nfs ~/.dotfiles/ai/codex-agents.md ~/.codex/AGENTS.md
-  ln -nfs ~/.dotfiles/ai/codex-config.toml ~/.codex/config.toml
+  ln -nfs ~/.private-prompts/codex-config.toml ~/.codex/config.toml
 
   # Codex skills (spec requires ~/.agents/skills/, not ~/.codex/skills/)
   mkdir -p ~/.agents/skills

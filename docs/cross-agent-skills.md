@@ -292,7 +292,7 @@ This is the main cross-agent compatibility commit.
 ### Commit 2: Codex configuration files
 
 - `ai/codex-agents.md` (new file, symlinked to `~/.codex/AGENTS.md`)
-- `ai/codex-config.toml` (new file, symlinked to `~/.codex/config.toml`)
+- `~/.private-prompts/codex-config.toml` (private file, symlinked to `~/.codex/config.toml`)
 
 Separate because Codex config is independent of the skill format changes and
 may need different review/iteration.
@@ -353,7 +353,7 @@ needs to work in Codex later, move it to `ai/skills/things3-applescript/SKILL.md
 
 ### 5. Codex multi_agent config
 
-The Codex config at `/Users/alex/.dotfiles/ai/codex-config.toml` sets
+The Codex config at `/Users/alex/.private-prompts/codex-config.toml` sets
 `multi_agent = true`. This is required for skills like code-review that
 instruct the agent to delegate to sub-processes. Without it, Codex would
 ignore subagent instructions silently.

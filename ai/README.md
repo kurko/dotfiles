@@ -10,7 +10,7 @@ locations via `update_symlinks` in `bashrc_source`.
 | `claude.md` | `~/.claude/CLAUDE.md` | Claude Code instructions |
 | `claude-settings.json` | `~/.claude/settings.json` | Claude Code settings |
 | `codex-agents.md` | `~/.codex/AGENTS.md` | Codex CLI instructions |
-| `codex-config.toml` | `~/.codex/config.toml` | Codex CLI settings |
+| `~/.private-prompts/codex-config.toml` | `~/.codex/config.toml` | Codex CLI settings |
 | `aider.conf.yml` | `~/.aider.conf.yml` | Aider configuration |
 | `skills/*/` | `~/.claude/skills/*/` | Claude skills (symlinked individually) |
 | `skills/*/` | `~/.agents/skills/*/` | Codex skills (symlinked individually) |

@@ -1,17 +1,3 @@
-# Codex CLI configuration
-# Symlinked from ~/.dotfiles/ai/codex-config.toml
-
-# model is intentionally omitted — Codex defaults to its latest
-# recommended model, which updates with each release.
-
-# Enable multi-agent so Codex can follow subagent instructions in skills
-# like code-review (experimental feature).
-multi_agent = true
-
-# MCP servers
-[mcp_servers.pencil]
-command = "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64"
-args = ["--ws-port", "51426"]
-
-[notice]
-"hide_gpt-5.1-codex-max_migration_prompt" = true
+# Codex config moved to ~/.private-prompts/codex-config.toml.
+# Keep this file non-sensitive so the public dotfiles repo does not hold
+# private Codex configuration.

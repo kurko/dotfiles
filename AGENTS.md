@@ -28,7 +28,7 @@ skill takes effect immediately without re-running the install.
 | `ai/agents/` | `~/.claude/agents/` | Claude Code only |
 | `ai/hooks/` | `~/.claude/hooks/` | Claude Code only |
 | `ai/codex-agents.md` | `~/.codex/AGENTS.md` | Codex CLI |
-| `ai/codex-config.toml` | `~/.codex/config.toml` | Codex CLI |
+| `~/.private-prompts/codex-config.toml` | `~/.codex/config.toml` | Codex CLI |
 | `ai/claude-settings.json` | `~/.claude/settings.json` | Claude Code |
 
 ### Writing New Skills
