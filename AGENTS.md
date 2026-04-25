@@ -1,5 +1,12 @@
 # Dotfiles Repository
 
+**This is a public repository.** Never commit sensitive content: API keys,
+tokens, passwords, private hostnames, internal company names, customer data,
+or anything that should remain private. When writing examples in skills or
+documentation, use generic domain concepts (e.g., `Order`, `Product`) rather
+than real internal names. Private configuration belongs in `~/.private-prompts/`
+or similar non-repo locations.
+
 Personal dotfiles managed via symlinks. The `update_symlinks` function in
 `bashrc_source` links configuration files to their expected locations.
 
