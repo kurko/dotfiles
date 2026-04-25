@@ -63,9 +63,12 @@ When the user says "pick a task", "next task", "what should I work on"
 1. Fetch **incomplete** tasks from the shared board's priority section (the
    section designated for "ready to start" work, e.g., "Up next", "Todo",
    "Ready"). Use the PM tool's completion filter (e.g., Asana's
-   `completed_since=now` or `opt_fields=completed` and filter client-side)
-   to exclude tasks already marked as done.
-   If a Priority tag or property exist, sort by it.
+   `opt_fields=completed` and filter client-side) to exclude tasks already
+   marked as done.
+   **Sort by priority.** If tasks have a Priority field (custom field, label,
+   or tag), always fetch it in the same request and sort results
+   **High > Medium > Low > unset** before presenting candidates. Never
+   present tasks in arbitrary section order when priority data is available.
    **Skip tasks assigned to someone else.** If a task has an assignee and
    that assignee is not the current user (or the agent), do not include it
    in the candidate list — someone else is responsible for it. Unassigned
@@ -89,10 +92,32 @@ When the user says "pick a task", "next task", "what should I work on"
 
 ### 3. Start Working on a Task
 
-When a task is selected, do ALL of these steps in order:
+When a task is selected, **claim it on the board IMMEDIATELY** — before
+reading details, comments, or doing any other work. This is a recurring
+failure mode: the agent reads task details, launches a spec or plan, and
+never moves the task on the board. Claim first, explore second.
 
-1. Read the full task description from the PM tool.
-2. **Read the task's comment history** (e.g., Asana stories). Comments often
+Do ALL of these steps in order:
+
+**PHASE 1: CLAIM THE TASK (do this BEFORE anything else)**
+
+1. **Verify not already claimed.** Check that the task is not already on
+   the agent board's "current work" section. If it is, another agent
+   already claimed it — do NOT proceed. Clear your PID file and return
+   to "Pick Next Task".
+2. **Move the task to the "in progress" section on the shared board.**
+   This is the FIRST visible action. Do it NOW.
+3. **Add to agent board (REQUIRED if configured).** Multi-home the task
+   to the agent board's "current work" section. Use multi-homing (Asana
+   `addProject` API) or cross-project references (Linear) — never
+   duplicate the task. Do not skip this step.
+4. **Write `tmp/current-task.pid`.** (Should already exist from Pick
+   Next Task, but verify it's set.)
+
+**PHASE 2: UNDERSTAND THE TASK (only after Phase 1 is complete)**
+
+5. Read the full task description from the PM tool.
+6. **Read the task's comment history** (e.g., Asana stories). Comments often
    contain scoping decisions, open questions, or prior agent triage notes.
    If the comments indicate that the task still needs scoping or shaping
    (e.g., open questions, "triage needed", multiple competing approaches,
@@ -100,16 +125,7 @@ When a task is selected, do ALL of these steps in order:
    - Summarize the current state of the discussion.
    - Propose a plan or recommendation addressing the open questions.
    - Wait for the user's approval before writing any code.
-3. **Verify not already claimed.** Before multi-homing, check that the task
-   is not already on the agent board's "current work" section. If it is,
-   another agent already claimed it — do NOT proceed. Clear your PID file
-   and return to "Pick Next Task".
-4. **Add to agent board (REQUIRED if configured).** Multi-home the task
-   to the agent board's "current work" section. Use multi-homing (Asana
-   `addProject` API) or cross-project references (Linear) — never
-   duplicate the task. Do not skip this step.
-5. Move the task to the "in progress" section on the shared board.
-6. Announce the task title, description summary, and key requirements to
+7. Announce the task title, description summary, and key requirements to
    establish context for the session.
 
 ### 4. Update Task Status
@@ -199,6 +215,12 @@ map to each workflow state.
   - Sections: Current session, Blocked/Needs input, Done
 - **Content format**: html
 ```
+
+**Asana: fetching priority.** To get priority data, include
+`custom_fields,custom_fields.name,custom_fields.enum_value,custom_fields.enum_value.name`
+in the `opt_fields` parameter when calling `asana_get_tasks`. The Priority
+custom field's `enum_value.name` will be "High", "Medium", or "Low". Tasks
+without a priority value will have `enum_value: null`.
 
 ### Linear Configuration Example
 
