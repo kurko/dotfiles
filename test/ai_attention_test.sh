@@ -73,6 +73,7 @@ test_force_disable_resets_without_active_alert() {
   assert_file_contains_line \
     "$tmpdir/tmux.log" \
     "select-pane -t %attention-test-$$ -P bg=default,fg=default"
+  assert_file_contains_line "$tmpdir/tmux.log" "refresh-client"
 }
 
 test_with_prompt_attention_resets_before_cleanup() {
@@ -84,6 +85,7 @@ test_with_prompt_attention_resets_before_cleanup() {
   assert_file_contains_line \
     "$tmpdir/tmux.log" \
     "select-pane -t %attention-test-$$ -P bg=default,fg=default"
+  assert_file_contains_line "$tmpdir/tmux.log" "refresh-client"
 }
 
 test_with_prompt_attention_preserves_exit_status() {

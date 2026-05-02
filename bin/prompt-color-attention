@@ -37,6 +37,7 @@ reset_pane_color() {
 
   echo "$(date): disable PANE_ID=$PANE_ID mode=$mode" >> "$LOG"
   tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
+  tmux refresh-client >/dev/null 2>&1 || true
 }
 
 # Manual reset path. This is intentionally unconditional so Option-Esc can
