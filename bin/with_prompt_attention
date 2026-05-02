@@ -13,16 +13,28 @@ if [[ $# -eq 0 ]]; then
   exit 1
 fi
 
-# Use TMUX_PANE (inherited env var for this pane), not tmux display-message
-# (which returns the focused pane - wrong if user clicked elsewhere)
-pane_id="${TMUX_PANE#%}"
-flag_file="/tmp/annoying-color-alert-$pane_id"
+pane_id=""
+flag_file=""
 
-touch "$flag_file"
-export ANNOYING_PANE_ID="$pane_id"
+if [[ -n "${TMUX:-}" ]]; then
+  # Use TMUX_PANE (inherited env var for this pane), not tmux display-message
+  # (which returns the focused pane - wrong if user clicked elsewhere).
+  if [[ -n "${TMUX_PANE:-}" ]]; then
+    pane_id="${TMUX_PANE#%}"
+  else
+    pane_id="$(tmux display-message -p '#{pane_id}' | tr -d '%')"
+  fi
+
+  flag_file="/tmp/annoying-color-alert-$pane_id"
+  touch "$flag_file"
+  export ANNOYING_PANE_ID="$pane_id"
+fi
 
 cleanup() {
-  rm -f "$flag_file"
+  if [[ -n "$flag_file" ]]; then
+    prompt-color-attention --disable >/dev/null 2>&1 || true
+    rm -f "$flag_file"
+  fi
 }
 trap cleanup EXIT INT TERM
 

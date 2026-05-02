@@ -10,7 +10,7 @@ locations via `update_symlinks` in `bashrc_source`.
 | `claude.md` | `~/.claude/CLAUDE.md` | Claude Code instructions |
 | `claude-settings.json` | `~/.claude/settings.json` | Claude Code settings |
 | `codex-agents.md` | `~/.codex/AGENTS.md` | Codex CLI instructions |
-| `~/.private-prompts/codex-config.toml` | `~/.codex/config.toml` | Codex CLI settings |
+| `$AI_PRIVATE_CONFIG_DIR/codex-config.toml` | `~/.codex/config.toml` | Codex CLI settings |
 | `aider.conf.yml` | `~/.aider.conf.yml` | Aider configuration |
 | `skills/*/` | `~/.claude/skills/*/` | Claude skills (symlinked individually) |
 | `skills/*/` | `~/.agents/skills/*/` | Codex skills (symlinked individually) |
@@ -40,3 +40,19 @@ annoying-claude "your prompt"
 ```
 
 Requires `terminal-notifier` (`brew install terminal-notifier`) and tmux.
+
+## Codex equivalents
+
+Use `codex-new` to start Codex with the normal interactive defaults:
+`--sandbox workspace-write` and `--ask-for-approval on-request`.
+
+Use `annoying-codex` for the same tmux attention behavior with Codex. It runs
+`codex-new` through the attention-color wrapper.
+
+Use `dangerous-codex` only in externally sandboxed environments. It runs Codex
+with `--dangerously-bypass-approvals-and-sandbox`, which disables approvals and
+Codex sandboxing.
+
+Codex attention alerts are configured in the private Codex config file through
+`PermissionRequest`, `Stop`, and `UserPromptSubmit` hooks. If the alert color
+gets stuck after Codex exits, press `Option-Esc` to force-reset the tmux pane.

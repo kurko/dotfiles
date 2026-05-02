@@ -331,3 +331,13 @@ function annoying-claude() {
 function dangerous-claude() {
   with_prompt_attention claude-new --dangerously-skip-permissions "$@"
 }
+
+# Make the screen orange every time Codex finishes or asks for permission.
+function annoying-codex() {
+  with_prompt_attention codex-new "$@"
+}
+
+# Let Codex do anything without approval prompts or sandboxing.
+function dangerous-codex() {
+  with_prompt_attention codex --dangerously-bypass-approvals-and-sandbox "$@"
+}

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Start a new Codex session with the normal interactive defaults.
+# Use with_prompt_attention to get orange screen alerts.
+#
+# Usage: codex-new "my prompt"
+#        with_prompt_attention codex-new "my prompt"
+
+set -euo pipefail
+
+echo "Running codex"
+
+codex \
+  --sandbox workspace-write \
+  --ask-for-approval on-request \
+  "$@"

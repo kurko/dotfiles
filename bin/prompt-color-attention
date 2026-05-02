@@ -4,8 +4,9 @@
 # Use ANNOYING_COLOR_ALERT=1 to enable.
 #
 # Usage:
-#   prompt-color-attention           # Activates attention color (if enabled)
-#   prompt-color-attention --disable # Resets to default
+#   prompt-color-attention                 # Activates attention color (if enabled)
+#   prompt-color-attention --disable       # Resets to default if alert is active
+#   prompt-color-attention --force-disable # Resets to default unconditionally
 #
 # Color alternatives:
 #   Green (current): bg=#74C476,fg=#00441B
@@ -16,14 +17,14 @@
 
 LOG="/tmp/prompt-color-attention.log"
 
-[[ -z "$TMUX" ]] && exit 0
+[[ -z "${TMUX:-}" ]] && exit 0
 
 # Use exported pane ID if available (from prompt-attention wrapper),
 # then TMUX_PANE (inherited env var, more reliable than display-message),
 # finally fall back to tmux display-message
-if [[ -n "$ANNOYING_PANE_ID" ]]; then
+if [[ -n "${ANNOYING_PANE_ID:-}" ]]; then
   PANE_ID="$ANNOYING_PANE_ID"
-elif [[ -n "$TMUX_PANE" ]]; then
+elif [[ -n "${TMUX_PANE:-}" ]]; then
   PANE_ID="${TMUX_PANE#%}"
 else
   PANE_ID=$(tmux display-message -p '#{pane_id}' | tr -d '%')
@@ -31,12 +32,25 @@ fi
 
 ALERT_FLAG_FILE="/tmp/annoying-color-alert-$PANE_ID"
 
+reset_pane_color() {
+  local mode="$1"
+
+  echo "$(date): disable PANE_ID=$PANE_ID mode=$mode" >> "$LOG"
+  tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
+}
+
+# Manual reset path. This is intentionally unconditional so Option-Esc can
+# recover after a wrapped command has exited and removed its flag file.
+if [[ "${1:-}" == "--force-disable" ]]; then
+  reset_pane_color force
+  exit 0
+fi
+
 # --disable: Only act if alert is active (flag file exists).
 # Safe to call on every Enter keypress - no-op without flag file.
-if [[ "$1" == "--disable" ]]; then
+if [[ "${1:-}" == "--disable" ]]; then
   [[ ! -f "$ALERT_FLAG_FILE" ]] && exit 0
-  echo "$(date): disable PANE_ID=$PANE_ID" >> "$LOG"
-  tmux select-pane -t "%$PANE_ID" -P 'bg=default,fg=default'
+  reset_pane_color active
   # Flag file owned by with_prompt_attention - don't delete it here
   exit 0
 fi
@@ -44,7 +58,7 @@ fi
 # Enable path - log for debugging
 echo "$(date): enable PANE_ID=$PANE_ID flag_exists=$(test -f "$ALERT_FLAG_FILE" && echo yes || echo no)" >> "$LOG"
 
-if [[ "$ANNOYING_COLOR_ALERT" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
+if [[ "${ANNOYING_COLOR_ALERT:-}" == "1" ]] || [[ -f "$ALERT_FLAG_FILE" ]]; then
   echo "Setting tmux pane to attention color."
   touch "$ALERT_FLAG_FILE"
   tmux select-pane -t "%$PANE_ID" -P 'bg=#FF8C00,fg=#ffffff'
