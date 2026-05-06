@@ -105,7 +105,13 @@ function update_symlinks(){
   # Codex CLI config
   mkdir -p ~/.codex
   ln -nfs ~/.dotfiles/ai/codex-agents.md ~/.codex/AGENTS.md
-  ln -nfs ~/.private-prompts/codex-config.toml ~/.codex/config.toml
+  if [ -n "${AI_PRIVATE_CONFIG_DIR:-}" ] && [ -f "$AI_PRIVATE_CONFIG_DIR/codex-config.toml" ]; then
+    ln -nfs "$AI_PRIVATE_CONFIG_DIR/codex-config.toml" ~/.codex/config.toml
+  elif [ -L ~/.codex/config.toml ]; then
+    true
+  else
+    ln -nfs ~/.dotfiles/ai/codex-config.toml ~/.codex/config.toml
+  fi
 
   # Codex skills (spec requires ~/.agents/skills/, not ~/.codex/skills/)
   mkdir -p ~/.agents/skills

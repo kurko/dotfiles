@@ -1,0 +1,6 @@
+interface:
+  display_name: "Sync Agent Assets"
+  short_description: "Sync skills and configs across agents"
+  default_prompt: "Use $sync-agent-assets to sync skills, permissions, and config changes across Claude Code and Codex."
+policy:
+  allow_implicit_invocation: true

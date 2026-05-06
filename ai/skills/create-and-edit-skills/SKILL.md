@@ -28,7 +28,7 @@ Skills are markdown files that extend Claude's capabilities. They follow the [Ag
 | Location | Source Path | Symlinked To | Scope |
 |----------|-------------|--------------|-------|
 | Public | `~/.dotfiles/ai/skills/<skill-name>/` | `~/.claude/skills/<skill-name>/` and `~/.agents/skills/<skill-name>/` | All projects, shareable (Claude + Codex) |
-| Private | `~/.private-prompts/skills/<skill-name>/` | `~/.claude/skills/<skill-name>/` | All projects, not committed |
+| Private | `$AI_PRIVATE_CONFIG_DIR/skills/<skill-name>/` | `~/.claude/skills/<skill-name>/` | All projects, not committed |
 | Project (Claude) | `.claude/skills/<skill-name>/` | N/A | Current project only |
 | Project (Codex) | `.agents/skills/<skill-name>/` | N/A | Current project only |
 
@@ -38,7 +38,7 @@ Skills are markdown files that extend Claude's capabilities. They follow the [Ag
 
 **Symlink Scripts**:
 - Public skills: Run `update_dotfiles` after creating/editing
-- Private skills: Run `~/.private-prompts/install.sh` after creating/editing
+- Private skills: Run `$AI_PRIVATE_CONFIG_DIR/install.sh` after creating/editing
 
 ## SKILL.md Format
 
@@ -270,7 +270,7 @@ If SKILL.md is getting long, extract reference material into supporting files. T
    - **Task** (performs actions): deployment, code generation, file manipulation
 4. **Choose location** (use AskUserQuestion):
    - **Public**: Shareable via dotfiles repo → `~/.dotfiles/ai/skills/<skill-name>/`
-   - **Private**: Not committed anywhere → `~/.private-prompts/skills/<skill-name>/`
+   - **Private**: Not committed anywhere -> `$AI_PRIVATE_CONFIG_DIR/skills/<skill-name>/`
    - **Project**: Current repo only → `.claude/skills/<skill-name>/`
 5. **Draft the description first**: Write the frontmatter description before the body. This forces you to articulate the skill's purpose and triggers. Share it with the user for feedback, since this single line determines whether the skill ever gets loaded.
 6. **Create the skill directory and SKILL.md** in the source location
@@ -281,7 +281,7 @@ If SKILL.md is getting long, extract reference material into supporting files. T
    update_dotfiles
 
    # For private skills
-   ~/.private-prompts/install.sh
+   "$AI_PRIVATE_CONFIG_DIR/install.sh"
    ```
 9. **Test**: Invoke with `/skill-name` and verify behavior
 
@@ -307,7 +307,7 @@ Commands (`.claude/commands/*.md`) are the older format. To convert:
 
 1. **Ask public or private** (use AskUserQuestion tool):
    - **Public**: `~/.dotfiles/ai/skills/<name>/`
-   - **Private**: `~/.private-prompts/skills/<name>/`
+   - **Private**: `$AI_PRIVATE_CONFIG_DIR/skills/<name>/`
 2. **Create directory**: `mkdir -p <source-path>/<name>/`
 3. **Move and rename**: `mv .claude/commands/<name>.md <source-path>/<name>/SKILL.md`
 4. **Update frontmatter**: Add `name:` field (commands only had `description:`)
@@ -318,12 +318,12 @@ Commands (`.claude/commands/*.md`) are the older format. To convert:
    update_dotfiles
 
    # For private skills
-   ~/.private-prompts/install.sh
+   "$AI_PRIVATE_CONFIG_DIR/install.sh"
    ```
 
 ## Workflow: Editing an Existing Skill
 
-1. **Find the source location**: Check if it's in `~/.dotfiles/ai/skills/` or `~/.private-prompts/skills/`
+1. **Find the source location**: Check if it's in `~/.dotfiles/ai/skills/` or `$AI_PRIVATE_CONFIG_DIR/skills/`
 2. **Read the current SKILL.md** from the source location (not the symlink)
 3. **Identify what needs improvement**
 4. **Preserve existing frontmatter fields** unless changing them
@@ -335,7 +335,7 @@ Commands (`.claude/commands/*.md`) are the older format. To convert:
    update_dotfiles
 
    # For private skills
-   ~/.private-prompts/install.sh
+   "$AI_PRIVATE_CONFIG_DIR/install.sh"
    ```
 
 ## Quality Checklist

@@ -15,7 +15,7 @@ open standard, which expects skills at `~/.agents/skills/<name>/SKILL.md`
 
 1. Rename all `skill.md` files to `SKILL.md` so both agents can load them.
 2. Dual-symlink public skills to `~/.claude/skills/` and `~/.agents/skills/`.
-3. Dual-symlink private skills (from `~/.private-prompts/`) to both agents.
+3. Dual-symlink private skills from the private agent config repo to both agents.
 4. Add conditional sections within skills that have agent-specific behavior
    (e.g., subagent spawning in Claude vs. Codex's multi-agent approach).
 5. Merge changes from two laptops cleanly (this laptop has renames + Codex
@@ -220,9 +220,9 @@ exists in the current working tree.
 
 ### Private Skills
 
-Source: `~/.private-prompts/skills/<name>/SKILL.md`
+Source: `$AI_PRIVATE_CONFIG_DIR/skills/<name>/SKILL.md`
 
-Current state: The install script at `~/.private-prompts/install.sh` only
+Current state: The private install script only
 symlinks to `~/.claude/skills/`:
 
 ```bash
@@ -231,7 +231,7 @@ for f in "$SCRIPT_DIR"/skills/*; do
 done
 ```
 
-**Required change** — add Codex linking to `~/.private-prompts/install.sh`:
+**Required change** - add Codex linking to the private install script:
 
 ```bash
 # After the existing Claude skills loop, add:
@@ -251,10 +251,10 @@ The install script also needs the stale-symlink cleanup pattern from
 `bashrc_source`:
 
 ```bash
-find ~/.agents/skills -type l -lname "$HOME/.private-prompts/*" -delete 2>/dev/null || true
+find ~/.agents/skills -type l -lname "$AI_PRIVATE_CONFIG_DIR/*" -delete 2>/dev/null || true
 ```
 
-**Important:** The `~/.private-prompts/` repo is separate from dotfiles. The
+**Important:** The private agent config repo is separate from dotfiles. The
 install.sh change must be committed there, not in the dotfiles repo.
 
 ## Create-and-Edit-Skills Template
@@ -292,17 +292,17 @@ This is the main cross-agent compatibility commit.
 ### Commit 2: Codex configuration files
 
 - `ai/codex-agents.md` (new file, symlinked to `~/.codex/AGENTS.md`)
-- `~/.private-prompts/codex-config.toml` (private file, symlinked to `~/.codex/config.toml`)
+- `$AI_PRIVATE_CONFIG_DIR/codex-config.toml` (private file, symlinked to `~/.codex/config.toml`)
 
 Separate because Codex config is independent of the skill format changes and
 may need different review/iteration.
 
-### Commit 3 (separate repo): Private-prompts install.sh
+### Commit 3 (separate repo): Private agent config install.sh
 
-- Update `~/.private-prompts/install.sh` to dual-link to `~/.agents/skills/`
+- Update the private install script to dual-link to `~/.agents/skills/`
 - Rename any private `skill.md` files to `SKILL.md`
 
-This commit happens in the `~/.private-prompts/` repository, not in dotfiles.
+This commit happens in the private agent config repository, not in dotfiles.
 
 ### Excluded from all commits
 
@@ -353,14 +353,14 @@ needs to work in Codex later, move it to `ai/skills/things3-applescript/SKILL.md
 
 ### 5. Codex multi_agent config
 
-The Codex config at `/Users/alex/.private-prompts/codex-config.toml` sets
+The private Codex config sets
 `multi_agent = true`. This is required for skills like code-review that
 instruct the agent to delegate to sub-processes. Without it, Codex would
 ignore subagent instructions silently.
 
 ### 6. Private skills directory may not exist
 
-The `~/.private-prompts/skills/` directory does not currently exist on this
+The private skills directory does not currently exist on this
 machine (verified during exploration). The install.sh update should handle this
 gracefully — the glob `"$SCRIPT_DIR"/skills/*/` simply matches nothing if the
 directory is empty or missing.
@@ -385,7 +385,7 @@ directory is empty or missing.
    each agent's expected location. Consider whether a loop over a config-defined
    list of agent paths would be cleaner if a third agent is added.
 
-4. **Private skills rename.** If any private skills in `~/.private-prompts/`
+4. **Private skills rename.** If any private skills in the private agent config repo
    still use lowercase `skill.md`, they need renaming too. This cannot be
-   verified from the dotfiles repo since the private-prompts directory has no
+   verified from the dotfiles repo since the private agent config directory has no
    skills subdirectory on this machine.

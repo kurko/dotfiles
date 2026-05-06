@@ -4,8 +4,8 @@
 tokens, passwords, private hostnames, internal company names, customer data,
 or anything that should remain private. When writing examples in skills or
 documentation, use generic domain concepts (e.g., `Order`, `Product`) rather
-than real internal names. Private configuration belongs in `~/.private-prompts/`
-or similar non-repo locations.
+than real internal names. Private configuration belongs in a non-repo location
+referenced by an environment variable such as `AI_PRIVATE_CONFIG_DIR`.
 
 Personal dotfiles managed via symlinks. The `update_symlinks` function in
 `bashrc_source` links configuration files to their expected locations.
@@ -35,7 +35,7 @@ skill takes effect immediately without re-running the install.
 | `ai/agents/` | `~/.claude/agents/` | Claude Code only |
 | `ai/hooks/` | `~/.claude/hooks/` | Claude Code only |
 | `ai/codex-agents.md` | `~/.codex/AGENTS.md` | Codex CLI |
-| `~/.private-prompts/codex-config.toml` | `~/.codex/config.toml` | Codex CLI |
+| `$AI_PRIVATE_CONFIG_DIR/codex-config.toml` | `~/.codex/config.toml` | Codex CLI |
 | `ai/claude-settings.json` | `~/.claude/settings.json` | Claude Code |
 
 ### Writing New Skills
