@@ -5,7 +5,9 @@ set -euo pipefail
 input="$(cat)"
 command="$(jq -r '.tool_input.command // ""' <<<"$input")"
 
-if printf '%s\n' "$command" | grep -qE '(^|[[:space:];|&])git[[:space:]]+(add|stage)([[:space:]]|$)'; then
+git_subcommand_pattern='(^|[[:space:];|&])git([[:space:]]+(-C|-c)[[:space:]]+([^[:space:]]+|"[^"]*"|'"'"'[^'"'"']*'"'"'))*[[:space:]]+(add|stage)([[:space:]]|$)'
+
+if printf '%s\n' "$command" | grep -qE "$git_subcommand_pattern"; then
   reminder="REMINDER: The agent must use the git-commit skill for all commits. Do not run raw git add/commit commands. The agent must ensure code review has been run before committing."
 
   if [[ -f "tmp/current-task.pid" ]]; then
