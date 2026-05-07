@@ -1,11 +1,21 @@
 ---
 name: gog
-description: Google Workspace CLI — Gmail, Calendar, Drive, Docs, Sheets, Slides, Tasks, Forms, Chat, People, Groups, Keep, Apps Script.
+description: >-
+  Google Workspace CLI — Gmail, Calendar, Drive, Docs, Sheets, Slides, Tasks, Forms,
+  Chat, People, Groups, Keep, Apps Script.
+  TRIGGER when: user provides a Google Sheets/Docs/Drive/Slides URL, or needs to
+  read/write/search any Google Workspace data. Use gog instead of WebFetch for all
+  Google URLs (WebFetch will 401 on authenticated Google content).
+  DEFAULT for spreadsheets: when a task involves reading or writing Google Sheets,
+  use `gog sheets get` / `gog sheets update` / `gog sheets append` directly.
 ---
 
 # gog
 
 Use `gog` for Google Workspace operations. Requires OAuth setup.
+
+**Default for Google URLs.** Never use WebFetch for Google Sheets, Docs, Drive, or Slides URLs.
+Use `gog` commands instead (WebFetch will fail with 401 on authenticated Google content).
 
 ## Setup (once)
 
