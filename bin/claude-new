@@ -124,13 +124,13 @@ claude \
     ,Bash(things3:*) \
     ,Bash(agent-browser:*) \
     ,Read(*) \
-    ,Read(//Users/alex/.claude/**) \
-    ,Read(//Users/alex/.dotfiles/**) \
-    ,Read(//Users/alex/.dotfiles/**) \
-    ,Read(//Users/alex/www) \
-    ,Read(//Users/alex/work) \
-    ,Read(//Users/alex/ai-notes) \
-    ,Read(//Users/alex/humanics) \
+    ,Read($HOME/.claude/**) \
+    ,Read($HOME/.dotfiles/**) \
+    ,Read($HOME/.dotfiles/**) \
+    ,Read($HOME/www) \
+    ,Read($HOME/work) \
+    ,Read($HOME/ai-notes) \
+    ,Read($HOME/humanics) \
     ,Read(/tmp/**) \
     ,WebFetch(domain:github.com) \
     ,WebFetch(domain:docs.anthropic.com) \

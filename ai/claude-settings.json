@@ -93,9 +93,9 @@
       "mcp__asana__asana_list_*",
       "mcp__asana__asana_search_*",
       "mcp__asana__asana_typeahead_*",
-      "Read(/Users/alex/.claude/memory/diary/*)",
-      "Write(/Users/alex/.claude/memory/diary/*)",
-      "Edit(/Users/alex/.claude/memory/diary/*)"
+      "Read(~/.claude/memory/diary/*)",
+      "Write(~/.claude/memory/diary/*)",
+      "Edit(~/.claude/memory/diary/*)"
     ]
   },
   "hooks": {
@@ -141,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/alex/.claude/hooks/sidebar-diff-hook.sh"
+            "command": "~/.claude/hooks/sidebar-diff-hook.sh"
           }
         ]
       }

@@ -58,7 +58,7 @@ open standard, which expects skills at `~/.agents/skills/<name>/SKILL.md`
 ### Symlink Flow
 
 `bashrc_source` function `update_symlinks()` handles all linking. The relevant
-section (lines 81-109 of `/Users/alex/.dotfiles/bashrc_source`):
+section (lines 81-109 of `~/.dotfiles/bashrc_source`):
 
 ```bash
 # Public commands/skills/agents from dotfiles
@@ -144,7 +144,7 @@ find ai/skills -name "skill.md" -type f
 
 Always `SKILL.md` (uppercase). Claude Code accepts both cases; Codex requires
 uppercase. This is already documented in
-`/Users/alex/.dotfiles/ai/skills/create-and-edit-skills/SKILL.md` line 37.
+`~/.dotfiles/ai/skills/create-and-edit-skills/SKILL.md` line 37.
 
 ### Frontmatter
 
@@ -214,7 +214,7 @@ Destinations:
 - `~/.agents/skills/<name>/` (symlink to directory)
 
 Both are handled by `update_symlinks()` in
-`/Users/alex/.dotfiles/bashrc_source` (lines 85-87 for Claude, lines 104-109
+`~/.dotfiles/bashrc_source` (lines 85-87 for Claude, lines 104-109
 for Codex). No changes needed to `bashrc_source` — the Codex section already
 exists in the current working tree.
 
@@ -260,7 +260,7 @@ install.sh change must be committed there, not in the dotfiles repo.
 ## Create-and-Edit-Skills Template
 
 The template skill at
-`/Users/alex/.dotfiles/ai/skills/create-and-edit-skills/SKILL.md` already
+`~/.dotfiles/ai/skills/create-and-edit-skills/SKILL.md` already
 reflects the cross-agent setup:
 
 - Line 30: Location table shows both `~/.claude/skills/` and

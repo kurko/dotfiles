@@ -64,7 +64,7 @@
 [user]
 	name = Alex Oliveira
 	email = kurko@users.noreply.github.com
-	signingkey = /Users/alex/.ssh/id_rsa
+	signingkey = ~/.ssh/id_rsa
 
 [color]
   diff = auto

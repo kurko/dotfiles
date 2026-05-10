@@ -111,7 +111,7 @@ openai_api_key = ENV['OPENAI_API_KEY']
 if work_notes_path.nil? || work_notes_path.empty?
   $stderr.puts "ERROR: WORK_NOTES_PATH environment variable not set"
   $stderr.puts "Please set it to your work notes directory:"
-  $stderr.puts "  export WORK_NOTES_PATH='/Users/alex/Documents/Work'"
+  $stderr.puts "  export WORK_NOTES_PATH=\"$HOME/Documents/Work\""
   exit 1
 end
 
