@@ -2,6 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
+      "Edit(~/.claude/jobs/**)",
+      "Write(~/.claude/jobs/**)",
       "mcp__pencil",
       "mcp__datadog-mcp*",
       "Bash(git show:*)",
