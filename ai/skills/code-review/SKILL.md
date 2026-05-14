@@ -1338,6 +1338,11 @@ prevents multiple database calls.
 - **No astronaut architecture** - don't suggest abstractions for one-time code
 - **Don't praise standard patterns** - only noteworthy decisions
 - **Don't be verbose** - keep comments concise
+- **No "wasted computation" flags when the computation feeds the guard** -
+  If code runs a query whose result is passed to a method that short-circuits
+  (`return if count <= 1`), the query is necessary — the guard cannot evaluate
+  without it. Only flag a computation as "wasted by a guard" when the guard
+  condition is independent of that computation's result
 
 ## Alternatives and Tradeoffs
 

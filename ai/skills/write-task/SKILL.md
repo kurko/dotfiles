@@ -23,6 +23,12 @@ If a Slack thread is passed in, use that as context for making it richer.
   high-level and let engineers determine the approach.
 - When there are multiple valid approaches, present them as options rather than
   picking one. Let the team decide which path to take.
+- State consequences as facts, not possibilities. When something is already
+  happening (e.g., broken balances, dead jobs), describe it directly:
+  "affecting balance checks" not "which can affect balance checks." Hedging
+  language ("can", "could", "may") is appropriate for speculative risks, but
+  when the impact is the reason the task exists, write it as the established
+  reality it is.
 
 ## Choosing the Right Template
 
