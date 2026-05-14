@@ -25,20 +25,38 @@ Unknown frontmatter keys are compatibility data, not clutter.
 6. Report what was synchronized, what has no equivalent, and what remains
    intentionally agent-specific.
 
-## Local Locations
+## Locate The Source Of Truth
 
-- Public shared skills: `~/.dotfiles/ai/skills/<name>/SKILL.md`
-- Private shared skills: `$AI_PRIVATE_CONFIG_DIR/skills/<name>/SKILL.md`
-- Claude skills: `~/.claude/skills/<name>/`
-- Codex skills: `~/.agents/skills/<name>/`
-- Claude commands: `~/.dotfiles/ai/commands/` linked to `~/.claude/commands/`
-- Claude settings: `~/.dotfiles/ai/claude-settings.json` linked to `~/.claude/settings.json`
-- Codex instructions: `~/.dotfiles/ai/codex-agents.md` linked to `~/.codex/AGENTS.md`
-- Codex config: `$AI_PRIVATE_CONFIG_DIR/codex-config.toml` linked to `~/.codex/config.toml`
+Treat agent runtime directories as entrypoints, not necessarily as the files to
+edit. A runtime file may be a symlink, generated output, a copied install
+artifact, or the true source file.
 
-Run `update_dotfiles` after adding public shared skills or changing symlinked
-dotfiles. Run `$AI_PRIVATE_CONFIG_DIR/install.sh` after adding private shared
-skills.
+1. Start from the active location used by the agent. Common examples include
+   project-local skill directories such as `./.agents/skills/<name>/` or
+   `./.claude/skills/<name>/`, global locations such as
+   `~/.claude/skills/<name>/`, `~/.agents/skills/<name>/`,
+   `~/.codex/skills/<name>/`, `~/.claude/commands/`,
+   `~/.claude/settings.json`, `~/.codex/AGENTS.md`,
+   `~/.codex/config.toml`, and `~/.codex/hooks.json`.
+   For Codex skills, check both `~/.agents/skills/<name>/` and
+   `~/.codex/skills/<name>/` when they exist. Different installers and Codex
+   versions may use one as the runtime location, a mirror, or a compatibility
+   path.
+2. If the user asks for project-local skills or the skill lives under the
+   current repository, treat the current repository as the working scope. Edit
+   files in that repo, preserve its conventions, and do not move the skill to a
+   global agent directory unless the user explicitly asks for a global install.
+3. Check whether the active file or directory is a symlink. Use `ls -l`,
+   `readlink`, or `pwd -P` to identify the real path.
+4. If it is a symlink, follow it to the source repository or source directory.
+   Edit the source, not the runtime symlink target, unless the user explicitly
+   asks for a local-only runtime change.
+5. Read the source repository's README, install script, or setup docs to learn
+   how changes are propagated back into the agent runtime directories.
+6. If the active file is not a symlink, inspect nearby docs and config before
+   deciding whether it is the canonical file or generated state.
+7. When source and runtime locations differ, report both paths and the command
+   or setup step used to refresh the runtime location.
 
 ## Skill File Rules
 
@@ -75,8 +93,8 @@ Map behavior, not flag names.
 Before finishing:
 
 - Confirm each shared skill has `SKILL.md`.
-- Confirm symlink destinations exist for both `~/.claude/skills` and
-  `~/.agents/skills` when the skill is meant to be shared.
+- Confirm the active agent locations point to the source files that were edited
+  when symlinks or generated installs are involved.
 - Use the agent CLI help or official docs before claiming a flag or config key
   is current.
 - Validate shell files with `bash -n` and machine-readable config with its
