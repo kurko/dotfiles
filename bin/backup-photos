@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# backup-photos - Sync photography files to external SSDs
+# backup-photos - Back up photos from this Mac to external SSDs
 #
 # DESCRIPTION:
-#   Syncs ~/Pictures/Photography/ to external SSDs matching "Alex 2Tb *".
+#   Backs up ~/Pictures/Photography/ to external SSDs matching "Alex 2Tb *".
+#   Does not import from cameras — only syncs what's already on this Mac.
 #   Handles partial syncs from multiple laptops with accumulative backups
 #   (never deletes files from backup).
 #
@@ -13,7 +14,8 @@
 # OPTIONS:
 #   --dry-run, -n       Show what would be copied without copying
 #   --verbose, -v       List each file as it's processed
-#   --delete-rejected   Move Photomator-rejected photos to Trash
+#   --delete-rejected   Move Photomator-rejected photos to local Trash
+#                       (does not delete from SSDs)
 #   --help, -h          Show usage information
 #
 # FILE TYPE BEHAVIOR:
@@ -110,7 +112,8 @@ show_help() {
     cat << EOF
 backup-photos v${VERSION}
 
-Sync photography files to external SSDs matching "Alex 2Tb *"
+Backs up photos from this Mac to external SSDs matching "Alex 2Tb *".
+Does not import from cameras — only syncs ~/Pictures/Photography/ to the drives.
 
 USAGE:
     backup-photos [OPTIONS]
@@ -118,7 +121,8 @@ USAGE:
 OPTIONS:
     -n, --dry-run       Show what would be copied without copying
     -v, --verbose       List each file as it's processed
-    --delete-rejected   Move Photomator-rejected photos to Trash
+    --delete-rejected   Move Photomator-rejected photos to local Trash
+                        (does not delete from SSDs)
     -h, --help          Show this help message
 
 EXAMPLES:
