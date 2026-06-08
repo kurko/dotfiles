@@ -133,9 +133,21 @@ OPTIONS:
     --allow-running   Export even while Photomator is open (not recommended)
     -h, --help        Show this help
 
-QUIT PHOTOMATOR FIRST: its catalog is written live; a snapshot while it runs can
-be incomplete. Sidecars are a one-way snapshot - re-run after more culling.
-Best routine: cull in Photomator, quit it, then run photos-cull.
+WORKFLOW (sidecars are a one-way snapshot, so order matters):
+    1. Cull in Photomator (rate / reject).
+    2. Quit Photomator. Its catalog is written live, so this tool refuses to run
+       while it is open (a mid-write snapshot can be incomplete).
+    3. Run photos-cull. Each run:
+         - writes a new sidecar for a photo that has none;
+         - updates a sidecar it previously wrote, if the rating changed;
+         - skips (preserves) any sidecar it did NOT create (e.g. Pixelmator
+           edit sidecars).
+    4. Only then re-open or "Refresh Folder" in Photomator.
+
+    Why the order: Photomator reads an adjacent sidecar but never writes ratings
+    back to one. If you change a rating in Photomator and let it re-read the
+    folder BEFORE you re-run photos-cull, the older sidecar value overrides your
+    change. Re-running photos-cull first keeps the sidecar in sync.
 
 EXAMPLES:
     photos-cull -n                                   # Dry run, whole library
