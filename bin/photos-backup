@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# backup-photos - Back up photos from this Mac to external SSDs
+# photos-backup - Back up photos from this Mac to external SSDs
 #
 # DESCRIPTION:
 #   Backs up ~/Pictures/Photography/ to external SSDs matching "Alex 2Tb *".
@@ -9,7 +9,7 @@
 #   (never deletes files from backup).
 #
 # USAGE:
-#   backup-photos [OPTIONS]
+#   photos-backup [OPTIONS]
 #
 # OPTIONS:
 #   --dry-run, -n       Show what would be copied without copying
@@ -41,7 +41,7 @@ SOURCE_DIR="$HOME/Pictures/Photography"
 DEST_PATTERN="Alex 2Tb *"
 DEST_SUBDIR="Photography"
 LOG_DIR="$HOME/.local/log"
-LOG_FILE="$LOG_DIR/backup-photos.log"
+LOG_FILE="$LOG_DIR/photos-backup.log"
 PHOTOMATOR_PLIST="$HOME/Library/Group Containers/4R6749AYRE.com.pixelmator/Library/Files Library/FilesLibrary.plist"
 
 # File extensions (case-insensitive matching)
@@ -110,13 +110,13 @@ dry_run_prefix() {
 
 show_help() {
     cat << EOF
-backup-photos v${VERSION}
+photos-backup v${VERSION}
 
 Backs up photos from this Mac to external SSDs matching "Alex 2Tb *".
 Does not import from cameras — only syncs ~/Pictures/Photography/ to the drives.
 
 USAGE:
-    backup-photos [OPTIONS]
+    photos-backup [OPTIONS]
 
 OPTIONS:
     -n, --dry-run       Show what would be copied without copying
@@ -126,11 +126,11 @@ OPTIONS:
     -h, --help          Show this help message
 
 EXAMPLES:
-    backup-photos                    # Sync to all matching drives
-    backup-photos --dry-run          # Preview what would happen
-    backup-photos --verbose          # Show each file during copy
-    backup-photos -n -v              # Verbose dry run
-    backup-photos --delete-rejected  # Trash rejected photos before sync
+    photos-backup                    # Sync to all matching drives
+    photos-backup --dry-run          # Preview what would happen
+    photos-backup --verbose          # Show each file during copy
+    photos-backup -n -v              # Verbose dry run
+    photos-backup --delete-rejected  # Trash rejected photos before sync
 EOF
 }
 
@@ -563,11 +563,11 @@ main() {
     mkdir -p "$LOG_DIR"
     echo "" >> "$LOG_FILE"
     echo "========================================" >> "$LOG_FILE"
-    echo "$(date): backup-photos started" >> "$LOG_FILE"
+    echo "$(date): photos-backup started" >> "$LOG_FILE"
 
     # Header
     log ""
-    log "${BOLD}backup-photos v${VERSION}${NC}"
+    log "${BOLD}photos-backup v${VERSION}${NC}"
     log "=================="
 
     if [[ "$DRY_RUN" == true ]]; then
@@ -648,7 +648,7 @@ main() {
     log ""
     log "Log written to: $LOG_FILE"
 
-    echo "$(date): backup-photos completed" >> "$LOG_FILE"
+    echo "$(date): photos-backup completed" >> "$LOG_FILE"
 
     # Exit with error if any sync failed
     if [[ "$SYNC_ERRORS" == true ]]; then
