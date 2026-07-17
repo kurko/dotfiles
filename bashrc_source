@@ -50,8 +50,8 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/vscode/vimrc ~/.vscodevimrc
 
   # neovim
-  ln -nfs ~/.dotfiles/vim/nvimrc ~/.config/nvim/init.vim
   mkdir -p ~/.config/nvim/colors/
+  ln -nfs ~/.dotfiles/vim/nvimrc ~/.config/nvim/init.vim
   ln -nfs ~/.dotfiles/vim/colorschemes/alex_ir_black.vim ~/.config/nvim/colors/
 
   mkdir -p ~/.vim/after/

@@ -42,7 +42,7 @@ function brew_cask_install_if_absent() {
   if [[ $? -eq 1 ]]
   then
     echo "brew installing... "
-    brew install cask $1
+    brew install --cask $1
     echo "done."
     return 0
   else
@@ -53,6 +53,11 @@ function brew_cask_install_if_absent() {
 
 function install_macos() {
   echo "> Installing applications..."
+
+  # Homebrew 6.0+ refuses to install formulae/casks from third-party taps
+  # (nodenv/nodenv, epk/epk, timrogers/tap below) unless they're trusted.
+  # These are taps we deliberately use, so opt out of the prompt.
+  export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
 
   printf "> rbenv: "
   rbenv --version &> /dev/null
@@ -98,8 +103,8 @@ function install_macos() {
   brew install --cask font-sf-mono
 
   brew_install_if_absent bash
-  brew_install_if_absent font-hack-nerd-font
-  brew_install_if_absent meetingbar
+  brew_cask_install_if_absent font-hack-nerd-font
+  brew_cask_install_if_absent meetingbar
   brew_install_if_absent wget
   brew_install_if_absent curl
   brew_install_if_absent tree
@@ -164,9 +169,9 @@ function install_macos() {
   brew tap homebrew/cask-versions
   brew tap epk/epk # sf-mono-nerd-font tap
 
-  # Litra glow
+  # Litra glow (CLI tool — a formula, not a cask)
   brew tap timrogers/tap
-  brew_cask_install_if_absent litra
+  brew_install_if_absent litra
 
   brew_cask_install_if_absent font-sf-pro
   brew_cask_install_if_absent font-sf-compact
@@ -177,9 +182,9 @@ function install_macos() {
   brew_cask_install_if_absent font-inconsolata
   brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent zoom
-  brew_cask_install_if_absent alfred5
-  brew_cask_install_if_absent terminal-notifier
-  brew_cask_install_if_absent firefox-developer-edition
+  brew_cask_install_if_absent alfred
+  brew_install_if_absent terminal-notifier
+  brew_cask_install_if_absent firefox@developer-edition
   brew_cask_install_if_absent google-chrome
   brew_cask_install_if_absent sync
 
