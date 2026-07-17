@@ -159,8 +159,8 @@ function install_macos() {
   # Like cat, but with syntax highlighting
   brew_install_if_absent bat
 
-  # Rustup (used to install Alacritty)
-  source $DOTFILES/installation/macos_features/rustup
+  # Rust/cargo (used to build Alacritty from source)
+  source $DOTFILES/installation/macos_features/rust
   source $DOTFILES/installation/macos_features/alacritty
   source $DOTFILES/installation/macos_features/dock
 

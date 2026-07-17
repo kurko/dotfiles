@@ -161,13 +161,23 @@ print_post_install_checklist() {
     fi
   fi
 
-  # Optional language toolchains / Alacritty (skipped: heavy or interactive).
+  # Optional language toolchains (skipped: heavy or interactive).
   n=$((n + 1))
   echo ""
   echo "${n}. Optional — install when you need them:"
   command -v rbenv  >/dev/null 2>&1 && echo "     rbenv install <version> && rbenv global <version>   # Ruby"
   command -v nodenv >/dev/null 2>&1 && echo "     nodenv install 20.9.0                                # Node"
-  [ -d "/Applications/Alacritty.app" ] || echo "     brew install --cask alacritty                        # Alacritty"
+
+  # Alacritty is built from source during install; only flag it if that failed.
+  if [ ! -d "/Applications/Alacritty.app" ]; then
+    n=$((n + 1))
+    echo ""
+    echo "${n}. Alacritty didn't build. Re-run ./install, or build it manually:"
+    echo "     brew install rust scdoc"
+    echo "     git clone https://github.com/alacritty/alacritty.git /tmp/alacritty \\"
+    echo "       && (cd /tmp/alacritty && make app) \\"
+    echo "       && cp -r /tmp/alacritty/target/release/osx/Alacritty.app /Applications/"
+  fi
 
   echo ""
   echo "Re-run ./install any time — it's idempotent."

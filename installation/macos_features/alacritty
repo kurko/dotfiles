@@ -1,14 +1,22 @@
 #! /bin/bash
 # Alacritty
+#
+# Built from source (the Homebrew cask is deprecated and fails macOS Gatekeeper,
+# scheduled for removal on 2026-09-01). Requires cargo (installed via the `rust`
+# formula in macos_features/rust) and scdoc (for the man pages bundled into the
+# .app). Uses `make app` (native arch) rather than `make app-universal`, because
+# Homebrew's `rust` ships only the host target.
 
 if [ -d "/Applications/Alacritty.app" ]; then
   echo "Alacritty already installed!"
 else
-  echo "Installing Alacritty...\n"
+  echo "Installing Alacritty..."
+
+  brew_install_if_absent scdoc
+
   git clone https://github.com/alacritty/alacritty.git ~/.tmp-alacritty-clone
   cd ~/.tmp-alacritty-clone
-  rustup target add x86_64-apple-darwin aarch64-apple-darwin
-  make app-universal
+  make app
   cp -r target/release/osx/Alacritty.app /Applications/
   cd ~
   rm -rf ~/.tmp-alacritty-clone
