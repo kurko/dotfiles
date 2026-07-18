@@ -74,22 +74,22 @@ y = 4
 
 [[keyboard.bindings]]
 action = "ResetFontSize"
-key = "Key0"
+key = "0"
 mods = "Command"
 
 [[keyboard.bindings]]
 action = "IncreaseFontSize"
-key = "Equals"
+key = "="
 mods = "Command"
 
 [[keyboard.bindings]]
 action = "IncreaseFontSize"
-key = "Plus"
-mods = "Command"
+key = "="
+mods = "Command|Shift"
 
 [[keyboard.bindings]]
 action = "DecreaseFontSize"
-key = "Minus"
+key = "-"
 mods = "Command"
 
 [[keyboard.bindings]]
@@ -187,12 +187,12 @@ mods = "Shift"
 
 [[keyboard.bindings]]
 chars = "\u001Bb"
-key = "Left"
+key = "ArrowLeft"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001Bf"
-key = "Right"
+key = "ArrowRight"
 mods = "Alt"
 
 [[keyboard.bindings]]
@@ -203,52 +203,52 @@ key = "NumpadEnter"
 
 [[keyboard.bindings]]
 chars = "\u001C1"
-key = "Key1"
+key = "1"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C2"
-key = "Key2"
+key = "2"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C3"
-key = "Key3"
+key = "3"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C4"
-key = "Key4"
+key = "4"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C5"
-key = "Key5"
+key = "5"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C6"
-key = "Key6"
+key = "6"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001E"
-key = "Key6"
+key = "6"
 mods = "Control"
 
 [[keyboard.bindings]]
 chars = "\u001C7"
-key = "Key7"
+key = "7"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C8"
-key = "Key8"
+key = "8"
 mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001C9"
-key = "Key9"
+key = "9"
 mods = "Command"
 
 [[keyboard.bindings]]
@@ -263,12 +263,12 @@ mods = "Command"
 
 [[keyboard.bindings]]
 chars = "\u001Cn"
-key = "RBracket"
+key = "]"
 mods = "Command|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001Cp"
-key = "LBracket"
+key = "["
 mods = "Command|Shift"
 
 [[keyboard.bindings]]
@@ -533,52 +533,52 @@ mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B1"
-key = "Key1"
+key = "1"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B2"
-key = "Key2"
+key = "2"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B3"
-key = "Key3"
+key = "3"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B4"
-key = "Key4"
+key = "4"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B5"
-key = "Key5"
+key = "5"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B6"
-key = "Key6"
+key = "6"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B7"
-key = "Key7"
+key = "7"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B8"
-key = "Key8"
+key = "8"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B9"
-key = "Key9"
+key = "9"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B0"
-key = "Key0"
+key = "0"
 mods = "Alt"
 
 [[keyboard.bindings]]
@@ -593,62 +593,62 @@ mods = "Control|Command"
 
 [[keyboard.bindings]]
 chars = "\u001B`"
-key = "Grave"
+key = "`"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B~"
-key = "Grave"
+key = "`"
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B."
-key = "Period"
+key = "."
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B*"
-key = "Key8"
+key = "8"
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B#"
-key = "Key3"
+key = "3"
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B>"
-key = "Period"
+key = "."
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B<"
-key = "Comma"
+key = ","
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B_"
-key = "Minus"
+key = "-"
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B%"
-key = "Key5"
+key = "5"
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B^"
-key = "Key6"
+key = "6"
 mods = "Alt|Shift"
 
 [[keyboard.bindings]]
 chars = "\u001B\\"
-key = "Backslash"
+key = "\\"
 mods = "Alt"
 
 [[keyboard.bindings]]
 chars = "\u001B|"
-key = "Backslash"
+key = "\\"
 mods = "Alt|Shift"
 
 [general]
@@ -657,22 +657,13 @@ live_config_reload = true
 [terminal]
 
 [mouse]
-faux_scrolling_lines = 1
 hide_when_typing = false
-
-[mouse.double_click]
-threshold = 300
-
-[mouse.triple_click]
-threshold = 300
 
 [[mouse.bindings]]
 action = "PasteSelection"
 mouse = "Middle"
 
 [scrolling]
-auto_scroll = false
-faux_multiplier = 3
 history = 100000
 multiplier = 1
 
