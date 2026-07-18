@@ -3,7 +3,6 @@
   "permissions": {
     "allow": [
       "Edit(~/.claude/jobs/**)",
-      "Write(~/.claude/jobs/**)",
       "mcp__pencil",
       "Bash(git show:*)",
       "Bash(git status:*)",
@@ -175,12 +174,12 @@
       "mcp__datadog__search_datadog_spans",
       "mcp__chrome-devtools__*",
       "Read(~/.claude/memory/diary/*)",
-      "Write(~/.claude/memory/diary/*)",
       "Edit(~/.claude/memory/diary/*)",
       "Read(~/Screenshots/**)",
       "Read(//var/folders/**/TemporaryItems/NSIRD_screencaptureui_*/**)"
     ]
   },
+  "model": "claude-opus-4-8[1m]",
   "hooks": {
     "Notification": [
       {
@@ -239,8 +238,11 @@
   "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "editorMode": "vim",
-  "preferredNotifChannel": "terminal_bell"
+  "preferredNotifChannel": "terminal_bell",
+  "agentPushNotifEnabled": true
 }
