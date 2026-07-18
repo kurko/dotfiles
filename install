@@ -18,17 +18,15 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     touch ~/.bash_profile
   fi
 
+  # Generate an SSH key non-interactively if one is missing: no email comment
+  # (-C ""), no passphrase (-N ""), and an explicit path (-f) so ssh-keygen
+  # never prompts. The clone below falls back to HTTPS when the key isn't on
+  # GitHub yet, and the post-install checklist reminds you to upload it.
   if [ ! -f ~/.ssh/id_rsa.pub ]; then
-    echo "No id_rsa.pub found. This is used to authenticate with Github/Gitlab. Let's generate a new key now."
-    read -p "Enter your email address on Github: " github_email
-    ssh-keygen -t rsa -b 4096 -C "$github_email"
-
-    echo ""
-    echo "Copy the text below and upload to https://github.com/settings/ssh/new:"
-    echo ""
-    cat ~/.ssh/id_rsa.pub
-    echo ""
-    read -n 1 -s -r -p "Press any key to continue"
+    echo "No SSH key found. Generating ~/.ssh/id_rsa (no passphrase)... "
+    mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    ssh-keygen -t rsa -b 4096 -C "" -f ~/.ssh/id_rsa -N "" -q
+    echo "done. Add it to GitHub when convenient: https://github.com/settings/ssh/new"
   fi
 
   # Install Homebrew early so it's guaranteed to be present, independent of
