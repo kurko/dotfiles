@@ -16,5 +16,26 @@ function pip_install_or_update() {
 function install_os_agnostic_packages() {
   pip_install_or_update 'files-to-prompt'
 
+  install_ai_clis
+
   printf "\n"
+}
+
+# AI coding CLIs (cross-platform install scripts, no sudo needed).
+function install_ai_clis() {
+  echo -n "> claude code: "
+  if command -v claude >/dev/null 2>&1; then
+    echo "already installed."
+  else
+    echo "installing..."
+    curl -fsSL https://claude.ai/install.sh | bash
+  fi
+
+  echo -n "> codex: "
+  if command -v codex >/dev/null 2>&1; then
+    echo "already installed."
+  else
+    echo "installing..."
+    curl -fsSL https://chatgpt.com/codex/install.sh | sh
+  fi
 }

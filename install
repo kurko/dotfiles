@@ -18,17 +18,30 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     touch ~/.bash_profile
   fi
 
+  # Generate an SSH key non-interactively if one is missing: no email comment
+  # (-C ""), no passphrase (-N ""), and an explicit path (-f) so ssh-keygen
+  # never prompts. The clone below falls back to HTTPS when the key isn't on
+  # GitHub yet, and the post-install checklist reminds you to upload it.
   if [ ! -f ~/.ssh/id_rsa.pub ]; then
-    echo "No id_rsa.pub found. This is used to authenticate with Github/Gitlab. Let's generate a new key now."
-    read -p "Enter your email address on Github: " github_email
-    ssh-keygen -t rsa -b 4096 -C "$github_email"
+    echo "No SSH key found. Generating ~/.ssh/id_rsa (no passphrase)... "
+    mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    ssh-keygen -t rsa -b 4096 -C "" -f ~/.ssh/id_rsa -N "" -q
+    echo "done. Add it to GitHub when convenient: https://github.com/settings/ssh/new"
+  fi
 
-    echo ""
-    echo "Copy the text below and upload to https://github.com/settings/ssh/new:"
-    echo ""
-    cat ~/.ssh/id_rsa.pub
-    echo ""
-    read -n 1 -s -r -p "Press any key to continue"
+  # Install Homebrew early so it's guaranteed to be present, independent of
+  # whether the git clone below succeeds. installation/macos guards against
+  # reinstalling, so this is safe to run here too.
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew not found. Installing... "
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [ -x /opt/homebrew/bin/brew ]; then
+      echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.bash_profile
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -x /usr/local/bin/brew ]; then
+      echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.bash_profile
+      eval "$(/usr/local/bin/brew shellenv)"
+    fi
   fi
 fi
 
@@ -41,8 +54,15 @@ then
   git pull --rebase origin master
   cd $LAST_DIR
 else
-  echo "Cloning git@github.com:kurko/dotfiles.git into ~/.dotfiles"
-  git clone git@github.com:kurko/dotfiles.git ~/.dotfiles
+  # Try SSH first (nicer for pushing later), but fall back to HTTPS so a fresh
+  # machine without a GitHub-registered SSH key still works. The SSH clone
+  # failing silently is what previously left ~/.dotfiles unset and skipped the
+  # entire macOS/Homebrew install.
+  echo "Cloning kurko/dotfiles into ~/.dotfiles"
+  if ! git clone git@github.com:kurko/dotfiles.git ~/.dotfiles 2>/dev/null; then
+    echo "SSH clone failed (no GitHub SSH key yet?). Falling back to HTTPS..."
+    git clone https://github.com/kurko/dotfiles.git ~/.dotfiles
+  fi
 fi
 
 echo ""
@@ -88,4 +108,79 @@ then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
   ~/.tmux/plugins/tpm/bin/install_plugins
 fi
+
+# ----------------------------------------------------------------------------
+# Post-install checklist: the manual, one-off steps this script can't do for
+# you (needs a GitHub login, App Store sign-in, a shell change, etc.). Each
+# item is conditional, so it only shows up while it's still pending.
+# ----------------------------------------------------------------------------
+print_post_install_checklist() {
+  local n=0
+  echo ""
+  echo "========================================================"
+  echo "  POST-INSTALL CHECKLIST — a few things still need you"
+  echo "========================================================"
+
+  # GitHub SSH key not yet authenticating?
+  if ! ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 \
+       | grep -q "successfully authenticated"; then
+    n=$((n + 1))
+    echo ""
+    echo "${n}. Add your SSH key to GitHub (it isn't authenticating yet):"
+    echo "     open https://github.com/settings/ssh/new"
+    [ -f ~/.ssh/id_rsa.pub ] && echo "     key: $(cat ~/.ssh/id_rsa.pub)"
+    echo "   Then point this repo at SSH so future clones/pushes use it:"
+    echo "     git -C ~/.dotfiles remote set-url origin git@github.com:kurko/dotfiles.git"
+  fi
+
+  # Login shell not bash?
+  case "$SHELL" in
+    */bash) ;;
+    *)
+      n=$((n + 1))
+      echo ""
+      echo "${n}. Switch your login shell to bash (these dotfiles are bash-based):"
+      echo "     chsh -s /bin/bash"
+      ;;
+  esac
+
+  # Mac App Store apps (need you signed into the App Store).
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    mas_ids=""
+    [ -d "/Applications/Things3.app" ] || mas_ids="${mas_ids} 904280696"
+    [ -d "/Applications/Timery.app" ]  || mas_ids="${mas_ids} 1425368544"
+    [ -d "/Applications/Super Agent.app" ] || mas_ids="${mas_ids} 1568262835"
+    if [ -n "$mas_ids" ]; then
+      n=$((n + 1))
+      echo ""
+      echo "${n}. Sign into the App Store, then install its apps"
+      echo "   (Things3, Timery, Super Agent for Safari):"
+      echo "     mas install${mas_ids}"
+    fi
+  fi
+
+  # Optional language toolchains (skipped: heavy or interactive).
+  n=$((n + 1))
+  echo ""
+  echo "${n}. Optional — install when you need them:"
+  command -v rbenv  >/dev/null 2>&1 && echo "     rbenv install <version> && rbenv global <version>   # Ruby"
+  command -v nodenv >/dev/null 2>&1 && echo "     nodenv install 20.9.0                                # Node"
+
+  # Alacritty is built from source during install; only flag it if that failed.
+  if [ ! -d "/Applications/Alacritty.app" ]; then
+    n=$((n + 1))
+    echo ""
+    echo "${n}. Alacritty didn't build. Re-run ./install, or build it manually:"
+    echo "     brew install rust scdoc"
+    echo "     git clone https://github.com/alacritty/alacritty.git /tmp/alacritty \\"
+    echo "       && (cd /tmp/alacritty && make app) \\"
+    echo "       && cp -r /tmp/alacritty/target/release/osx/Alacritty.app /Applications/"
+  fi
+
+  echo ""
+  echo "Re-run ./install any time — it's idempotent."
+  echo "========================================================"
+}
+
+print_post_install_checklist
 

@@ -5,39 +5,54 @@ Use these files in your bash to improve it.
 **Important:** `git/gitconfig` has my nickname/email for Github. Please change
 it.
 
-## Installation
+## Installation (new computer)
 
-The `./install` executable will install everything needed for a new computer. It
-includes:
+A fresh macOS install runs zsh and has no `git` or compiler, while these
+dotfiles are bash-based and Homebrew needs a compiler. Run the steps below
+**in order**; everything after step 2 is a single copy-paste.
 
-* cloning this repo, setting up symlinks for `gitconfig`, `tmux`, `bash`
-aliases, Allacritty configurations, and more
-* installs all software via Homebrew (e.g `rbenv`, `vim`, `ctags`, `1password`,
-`slack`, `google chrome`)
+### 1. Switch your shell to bash
 
-### New Computer Checklist (`./install`)
+These dotfiles are bash-based, and the installer is a bash script sourced into
+your current shell, so it needs to run under bash. Switch your login shell, then
+**open a new terminal window** so the remaining steps run in bash:
 
-1. **On MacOS:** run `chsh -s /bin/bash` to replace ZSH with Bash.
-1. Run `source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
+    chsh -s /bin/bash
 
-Notes:
+### 2. Install the Xcode Command Line Tools
 
-* the script should prompt you to generate your RSA keys the first time.  If
-you're having trouble, [setup the RSA key manually](#setup-id_rsa-for-github)
-(`~/.ssh/id_rsa.pub`) and upload to Github.
-* the script should install 1Password but if it doesn't, download it manually.
+This provides `git` (needed to clone the repo) and the compiler toolchain (a
+prerequisite for Homebrew):
 
-### More details
+    xcode-select --install
 
-You can run the follow command and it will show up errors that you can adjust, one by one
+Wait for the GUI installer to finish before moving on.
 
-    source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"
+### 3. Run the installer
 
-If it doesn't work, you can clone the files and use it directly (which is mostly what the command
-above does):
+    source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/dotfiles/master/install )"
+
+That one command does everything else:
+
+* **installs Homebrew** if it isn't already present
+* clones this repo to `~/.dotfiles`
+* sets up symlinks for `gitconfig`, `tmux`, bash aliases, Alacritty config, and more
+* installs all software via Homebrew (`rbenv`, `vim`, `ctags`, `1password`,
+  `slack`, `google chrome`, ...)
+* generates an SSH key at `~/.ssh/id_rsa.pub` if you don't have one
+
+The installer is idempotent, so you can re-run this command any time to fix or
+finish a partial install. A post-install checklist prints the few manual steps
+that remain, including uploading your SSH key to GitHub (App Store apps, etc.).
+It also installs 1Password; download it manually if that step fails.
+
+### Running the installer manually
+
+If you'd rather clone and run it directly (which is what the command above
+does under the hood):
 
 ```
-git clone git@github.com:kurko/.dotfiles.git ~/.dotfiles
+git clone git@github.com:kurko/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 ./install
 ```
@@ -46,7 +61,7 @@ cd ~/.dotfiles
 
 You can just run the same command
 
-`source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/.dotfiles/master/install )"`
+`source /dev/stdin <<<"$( curl -sS https://raw.githubusercontent.com/kurko/dotfiles/master/install )"`
 
 Or you can
 

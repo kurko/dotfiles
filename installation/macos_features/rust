@@ -1,0 +1,15 @@
+#! /bin/bash
+# Rust (cargo/rustc) — used to build Alacritty from source.
+#
+# We install Homebrew's `rust` formula rather than `rustup`. With `rust`, cargo
+# and rustc are symlinked into $(brew --prefix)/bin, so they're on PATH via brew
+# shellenv with no extra toolchain setup. The old rustup path relied on
+# `source $HOME/.cargo/env`, but the Homebrew rustup formula never creates that
+# file (it only links the `rustup` binary, not `cargo`), so `cargo` was never on
+# PATH and the Alacritty build died with "cargo: command not found".
+#
+# Trade-off: `rust` ships only the host target, so there's no universal
+# (x86_64 + aarch64) build available — the Alacritty step uses `make app`
+# (native) instead of `make app-universal`.
+
+brew_install_if_absent rust
