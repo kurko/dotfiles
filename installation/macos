@@ -94,6 +94,8 @@ function install_macos() {
   fi
 
   brew_cask_install_if_absent rectangle
+  # Brightness/volume control for external monitors over DDC
+  brew_cask_install_if_absent monitorcontrol
   brew_cask_install_if_absent slack
   brew_cask_install_if_absent 1password
   brew_cask_install_if_absent font-libre-caslon-text
