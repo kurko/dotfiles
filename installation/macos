@@ -130,6 +130,7 @@ function install_macos() {
   else
     echo "> vim: already installed."
   fi
+  brew_install_if_absent neovim
   brew_install_if_absent imagemagick@6 && brew link imagemagick@6
   brew_install_if_absent pkg-config && brew unlink pkgconfig && brew link pkgconfig
   brew_install_if_absent mosh

@@ -89,17 +89,46 @@ fi
 source $DOTFILES/installation/os_agnostic_packages
 install_os_agnostic_packages
 
-if [ ! -f ~/.vim/autoload/plug.vim ]
-then
+# Vim and Neovim each look for plug.vim in their own autoload directory, so
+# both need their own copy. The plugins themselves are shared: vimrc points
+# plug#begin at ~/.vim/plugins for both editors.
+install_vim_plug() {
+  local editor="$1"
+  local destination="$2"
+
+  if [ -f "$destination" ]
+  then
+    echo "$editor plugin manager: done. "
+    return
+  fi
+
   echo ""
-  printf "Vim plugin manager: "
-  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+  printf "%s plugin manager: " "$editor"
+  if curl -fLo "$destination" --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  then
+    echo "done. "
+  else
+    echo "> $editor plugin manager: download failed." >&2
+  fi
+}
+
+install_vim_plug "Vim" ~/.vim/autoload/plug.vim
+install_vim_plug "Neovim" ~/.local/share/nvim/site/autoload/plug.vim
+
+if command -v vim >/dev/null 2>&1
+then
+  vim +'PlugInstall --sync' +qa
 else
-  echo "Vim plugin manager: done. "
+  echo "> vim: not installed, skipping Vim plugin install." >&2
 fi
 
-vim +'PlugInstall --sync' +qa
+if command -v nvim >/dev/null 2>&1
+then
+  nvim --headless +'PlugInstall --sync' +qa
+else
+  echo "> nvim: not installed, skipping Neovim plugin install." >&2
+fi
 
 if [ ! -d ~/.tmux/plugins/tpm ]
 then

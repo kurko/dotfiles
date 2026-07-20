@@ -68,6 +68,7 @@ function install_linux_gnu_packages() {
   else
     echo "> vim: already installed."
   fi
+  install_linux_package neovim
   install_linux_package pkg-config
   install_linux_package mosh
   install_linux_package ctags

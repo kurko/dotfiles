@@ -16,9 +16,14 @@ let g:omni_sql_default_compl_type = 'syntax'
 " plug.vim: install it in case it doesn't exist.
 if has("nvim") " neovim?
   if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
-    silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
+    silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
+      \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    " Neovim caches its runtimepath scan, so a file downloaded mid-session
+    " isn't found by autoload. Source it directly or plug#begin below fails.
+    " Guarded so a failed download reports E117 only, not a confusing E484.
+    if !empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
+      source ~/.local/share/nvim/site/autoload/plug.vim
+    endif
     autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
   endif
 
@@ -29,6 +34,11 @@ else
   if empty(glob('~/.vim/autoload/plug.vim'))
     silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
       \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    " Same as the Neovim branch above: source the fresh download directly so
+    " plug#begin resolves in this session.
+    if !empty(glob('~/.vim/autoload/plug.vim'))
+      source ~/.vim/autoload/plug.vim
+    endif
     autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
   endif
 endif
