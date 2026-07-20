@@ -125,11 +125,15 @@ function update_symlinks(){
     [ -d "$f" ] && ln -nfs "$f" ~/.agents/skills/
   done
 
-  mkdir -p ~/.config/alacritty/
   # Alacritty switched from YAML to TOML (YAML deprecated since 0.13). Remove any
-  # stale YAML configs, then symlink the TOML into the ~/.alacritty.toml fallback.
+  # stale YAML configs, then symlink the TOML into ~/.config/alacritty/, which
+  # Alacritty checks BEFORE the legacy ~/.alacritty.toml fallback. Linking the
+  # fallback while this dir exists lets anything that writes here (e.g. Claude
+  # Code's /terminal-setup) silently shadow the whole config.
+  mkdir -p ~/.config/alacritty/
   rm -f ~/.config/alacritty/alacritty.yml ~/.alacritty.yml
-  ln -nfs ~/.dotfiles/alacritty/alacritty.toml ~/.alacritty.toml
+  ln -nfs ~/.dotfiles/alacritty/alacritty.toml ~/.config/alacritty/alacritty.toml
+  [ -L ~/.alacritty.toml ] && rm ~/.alacritty.toml || true
 
   # We don't use this directive anymore. We leave blank, which will default
   # to $HOME/.config/git/ignore.

@@ -202,6 +202,11 @@ chars = """
 key = "NumpadEnter"
 
 [[keyboard.bindings]]
+chars = "\u001B\r"
+key = "Return"
+mods = "Alt"
+
+[[keyboard.bindings]]
 chars = "\u001C1"
 key = "1"
 mods = "Command"
