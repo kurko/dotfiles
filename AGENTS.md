@@ -44,3 +44,8 @@ filename. Include all frontmatter fields — agents ignore fields they don't
 understand. If a skill needs agent-specific instructions (e.g., subagent
 spawning), use conditional sections (`## Claude Code`, `## Codex`) within
 the same file.
+
+### Process
+
+We don't use branches or worktrees for development, unless the user asks for it.
+We commit straight to the main branch.

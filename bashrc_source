@@ -210,6 +210,12 @@ if [[ $? -eq 0 ]]; then
   eval "$(nodenv init -)"
 fi
 
+# Ruby - if rbenv exists, eval it
+rbenv --version &> /dev/null
+if [[ $? -eq 0 ]]; then
+  eval "$(rbenv init - bash)"
+fi
+
 # disable XON/XOFF so I can use ctrl+s with `history`
 [[ $- == *i* ]] && stty -ixon
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
