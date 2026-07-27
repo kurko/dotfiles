@@ -125,6 +125,7 @@ claude \
     ,Read($HOME/www) \
     ,Read($HOME/work) \
     ,Read($HOME/ai-notes) \
+    ,Read($HOME/www/ai-notes) \
     ,Read($HOME/humanics) \
     ,Read(/tmp/**) \
     ,WebFetch(domain:github.com) \
