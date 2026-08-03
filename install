@@ -215,11 +215,12 @@ print_post_install_checklist() {
     [ -d "/Applications/Things3.app" ] || mas_ids="${mas_ids} 904280696"
     [ -d "/Applications/Timery.app" ]  || mas_ids="${mas_ids} 1425368544"
     [ -d "/Applications/Super Agent.app" ] || mas_ids="${mas_ids} 1568262835"
+    [ -d "/Applications/iA Writer.app" ] || mas_ids="${mas_ids} 775737590"
     if [ -n "$mas_ids" ]; then
       n=$((n + 1))
       echo ""
       echo "${n}. Sign into the App Store, then install its apps"
-      echo "   (Things3, Timery, Super Agent for Safari):"
+      echo "   (Things3, Timery, Super Agent for Safari, iA Writer):"
       echo "     mas install${mas_ids}"
     fi
   fi

@@ -237,4 +237,9 @@ function install_macos() {
   if [ ! -d "/Applications/Super Agent.app" ]; then
     mas install 1568262835
   fi
+
+  # iA Writer
+  if [ ! -d "/Applications/iA Writer.app" ]; then
+    mas install 775737590
+  fi
 }
