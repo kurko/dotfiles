@@ -135,6 +135,11 @@ function update_symlinks(){
   ln -nfs ~/.dotfiles/alacritty/alacritty.toml ~/.config/alacritty/alacritty.toml
   [ -L ~/.alacritty.toml ] && rm ~/.alacritty.toml || true
 
+  # Ghostty. The config is a single extensionless file, and ~/.config/ghostty/
+  # is the location Ghostty reads on macOS as well as Linux.
+  mkdir -p ~/.config/ghostty/
+  ln -nfs ~/.dotfiles/ghostty/config ~/.config/ghostty/config
+
   # We don't use this directive anymore. We leave blank, which will default
   # to $HOME/.config/git/ignore.
   #
@@ -198,6 +203,10 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 
 export PATH=~/.dotfiles/bin:$PATH
 export PATH=~/.dotfiles/bin/macos_only:$PATH
+# Where pipx puts the CLIs it installs (files-to-prompt) and where the Codex
+# installer drops its binary. Codex appends this to ~/.bash_profile itself, but
+# that edit isn't tracked here, so a fresh machine would lose it.
+export PATH=~/.local/bin:$PATH
 
 # MacOS only
 if [[ "$OSTYPE" == "darwin"* ]]; then

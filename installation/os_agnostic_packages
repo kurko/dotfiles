@@ -1,20 +1,31 @@
 #! /bin/bash
 
-# If the package is already installed, it will be upgraded if possible.
-function pip_install_or_update() {
+# Installs a Python CLI, upgrading it if it's already there.
+#
+# This used to call `pip`, which fails twice over on macOS: Homebrew installs
+# the binary as `pip3` (so `pip` is "command not found"), and its Python is
+# externally managed under PEP 668, so even `pip3 install` refuses with
+# "externally-managed-environment". pipx is what that error recommends, and it
+# keeps each CLI in its own venv.
+function pipx_install_or_update() {
   echo -n "> $1: "
-  if pip show $1 > /dev/null; then
-    print "already installed, upgrading..."
-    pip install --upgrade $1
-  else
-    echo "installing..."
-    pip install $1
+
+  if ! command -v pipx >/dev/null 2>&1; then
+    echo "skipped, pipx not installed."
+    return
   fi
-  printf "\n"
+
+  if pipx list --short 2>/dev/null | grep -q "^$1 "; then
+    echo "already installed, upgrading... "
+    pipx upgrade "$1"
+  else
+    echo "installing... "
+    pipx install "$1"
+  fi
 }
 
 function install_os_agnostic_packages() {
-  pip_install_or_update 'files-to-prompt'
+  pipx_install_or_update 'files-to-prompt'
 
   install_ai_clis
 

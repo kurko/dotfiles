@@ -46,9 +46,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   fi
 
   # GitHub auth through the CLI. `gh auth login` opens a browser and stores a
-  # token; `gh auth setup-git` wires that token into git's credential helper,
-  # so the clone below and every later push work over HTTPS. That replaces
-  # pasting an SSH public key into a web form by hand.
+  # token, which the credential helper in git/gitconfig then uses for HTTPS
+  # pushes. That replaces pasting an SSH public key into a web form by hand.
+  #
+  # Note there's no `gh auth setup-git` here: it writes the helper into
+  # ~/.gitconfig, which update_dotfiles symlinks to the tracked git/gitconfig,
+  # using an absolute /opt/homebrew/bin/gh path. git/gitconfig carries a
+  # portable version of those same blocks instead.
   #
   # The brew guard matters: if the Homebrew install above failed, `brew` isn't
   # on PATH and this would print a bare "command not found".
@@ -57,19 +61,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     brew install gh
   fi
 
-  if command -v gh >/dev/null 2>&1; then
-    if ! gh auth status >/dev/null 2>&1; then
-      echo ""
-      echo "Not logged into GitHub yet. Running 'gh auth login'... "
-      gh auth login
-    fi
-
-    # Outside the login branch on purpose, so re-running ./install repairs a
-    # machine that is authenticated but never got the credential helper.
-    if gh auth status >/dev/null 2>&1; then
-      gh auth setup-git
-    else
-      echo "> gh auth login was cancelled or failed; skipping git credential setup." >&2
+  if command -v gh >/dev/null 2>&1 && ! gh auth status >/dev/null 2>&1; then
+    echo ""
+    echo "Not logged into GitHub yet. Running 'gh auth login'... "
+    if ! gh auth login; then
+      echo "> gh auth login was cancelled or failed; HTTPS pushes won't authenticate." >&2
     fi
   fi
 fi
@@ -228,12 +224,23 @@ print_post_install_checklist() {
     fi
   fi
 
+  # Node is set up by installation/macos, so only mention it when the shim is
+  # actually broken (nodenv installed, but `node` still doesn't run). That's
+  # what breaks Copilot during nvim's PlugInstall.
+  if command -v nodenv >/dev/null 2>&1 && ! node --version >/dev/null 2>&1; then
+    n=$((n + 1))
+    echo ""
+    echo "${n}. Node isn't runnable. Install a version and set it as global:"
+    echo "     nodenv install <version> && nodenv global <version>"
+  fi
+
   # Optional language toolchains (skipped: heavy or interactive).
-  n=$((n + 1))
-  echo ""
-  echo "${n}. Optional — install when you need them:"
-  command -v rbenv  >/dev/null 2>&1 && echo "     rbenv install <version> && rbenv global <version>   # Ruby"
-  command -v nodenv >/dev/null 2>&1 && echo "     nodenv install 20.9.0                                # Node"
+  if command -v rbenv >/dev/null 2>&1; then
+    n=$((n + 1))
+    echo ""
+    echo "${n}. Optional — install when you need it:"
+    echo "     rbenv install <version> && rbenv global <version>   # Ruby"
+  fi
 
   # Alacritty is built from source during install; only flag it if that failed.
   if [ ! -d "/Applications/Alacritty.app" ]; then

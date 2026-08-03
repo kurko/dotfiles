@@ -17,6 +17,11 @@ echo ""
 INSTALLED_PACKAGE_LIST=$(brew list -1 --formula)
 BREW_CASK_LIST=$(brew list -1 --cask)
 
+# The node version nodenv installs and sets as global. Single definition so
+# the install and the `nodenv global` check below can't drift apart. Copilot
+# in Neovim refuses to start below 22, which is what pinned 20.9.0 broke.
+NODE_VERSION=24.18.0
+
 function brew_install_if_absent() {
   echo -n "> $1: "
   export HOMEBREW_NO_AUTO_UPDATE=1
@@ -148,7 +153,25 @@ function install_macos() {
   if [[ $EVAL_NODENV -eq 1 ]]; then
     eval "$(nodenv init -)"
     echo "Running: eval \"\$(nodenv init -)\""
-    nodenv install 20.9.0
+  fi
+
+  # nodenv defaults its global version to "system" and macOS ships no node, so
+  # the shim exits 127 with "node: command not found" even once a version is
+  # installed. Anything shelling out to node then breaks: this is what made
+  # nvim's PlugInstall report "[Copilot.lua] Could not determine Node.js
+  # version". rbenv above already sets its global; nodenv never did.
+  #
+  # Deliberately outside the EVAL_NODENV guard: a machine that already had
+  # nodenv skipped that branch, so it never got a version or a global either.
+  if ! nodenv versions --bare 2>/dev/null | grep -qx "$NODE_VERSION"; then
+    echo "> node $NODE_VERSION: installing... "
+    nodenv install "$NODE_VERSION"
+  fi
+
+  if [[ "$(nodenv global 2>/dev/null)" != "$NODE_VERSION" ]]; then
+    echo "> node: setting global version to $NODE_VERSION"
+    nodenv global "$NODE_VERSION"
+    nodenv rehash
   fi
 
   # Some projects don't use universal files, like .node-version. This pluging
@@ -159,6 +182,9 @@ function install_macos() {
   brew_install_if_absent yarn
   brew_install_if_absent jq
   brew_install_if_absent gh
+  # Installs Python CLIs into their own venvs. Homebrew's Python is externally
+  # managed (PEP 668), so plain `pip install` refuses to run.
+  brew_install_if_absent pipx
   # Like cat, but with syntax highlighting
   brew_install_if_absent bat
 
@@ -183,7 +209,6 @@ function install_macos() {
   brew_cask_install_if_absent font-new-york
   brew_cask_install_if_absent font-hack
   brew_cask_install_if_absent font-inconsolata
-  brew_cask_install_if_absent fliqlo
   brew_cask_install_if_absent zoom
   brew_cask_install_if_absent alfred
   brew_install_if_absent terminal-notifier
@@ -208,5 +233,8 @@ function install_macos() {
     mas install 1425368544
   fi
 
-  mas install 1568262835 # Super Agent for Safari
+  # Super Agent for Safari
+  if [ ! -d "/Applications/Super Agent.app" ]; then
+    mas install 1568262835
+  fi
 }
