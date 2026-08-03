@@ -93,7 +93,7 @@ function install_macos() {
     ruby -v
   fi
 
-  brew_cask_install_if_absent rectangle
+  brew_cask_install_if_absent rectangle-pro
   # Brightness/volume control for external monitors over DDC
   brew_cask_install_if_absent monitorcontrol
   brew_cask_install_if_absent slack

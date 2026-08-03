@@ -36,6 +36,9 @@ function install_ai_clis() {
     echo "already installed."
   else
     echo "installing..."
-    curl -fsSL https://chatgpt.com/codex/install.sh | sh
+    # CODEX_NON_INTERACTIVE stops the installer asking "Start Codex now?".
+    # It reads that answer straight off /dev/tty, so without this it launches
+    # Codex and blocks the rest of the install until you quit the TUI.
+    curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
   fi
 }
