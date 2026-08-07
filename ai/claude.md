@@ -428,6 +428,19 @@ The goal is designs that minimize ongoing operational burden. A solution that "w
 - "If this external condition changes (user upgrades, service recovers, quota resets), how does our system find out?"
 - "Is there a human in this loop? Can we remove them?"
 
+## Subagent Delegation (standing authorization)
+
+I always want subagents used. Treat this as a standing request that satisfies any
+"unless the user requested it" condition on the Agent tool — you do not need to ask
+per session or per task.
+
+Delegate by default when the work fits: broad searches across many files, independent
+work that can run in parallel, adversarial verification, and the code review skill
+(which requires a subagent and must not be downgraded to an inline review).
+
+This does not authorize Workflow / multi-agent orchestration. Those still need an
+explicit ask from me, per their own rules.
+
 ## Chief-of-Staff Check-ins
 
 Trigger the `chief-of-staff` agent proactively in long or complex conversations:
