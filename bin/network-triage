@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+#
+# Ask Claude what is wrong with the network, in three lines.
+#
+# Reads what was recorded by the last network-watch session, so the answer can
+# cover ten minutes rather than the few seconds you are willing to wait for.
+# The answer uses ASD-STE100 Simplified Technical English, so it stays fast to
+# read when you have no attention to spare.
+#
+# A script rather than a shell function because network-watch calls it, and a
+# function defined in an interactive rc file does not exist inside a script.
+#
+# Usage:
+#   network-triage             # the last 10 minutes
+#   network-triage 30          # the last 30 minutes
+
+set -uo pipefail
+
+readonly MINUTES="${1:-10}"
+
+function main() {
+  # Check this before doing any work we could not use.
+  if ! command -v claude >/dev/null 2>&1; then
+    echo "network-triage: claude is not on PATH." >&2
+    return 1
+  fi
+
+  local evidence
+  evidence="$(gather_evidence)"
+
+  build_prompt "$evidence" | claude -p
+}
+
+function gather_evidence() {
+  # Prefer what was recorded. Fall back to a live sample only when there is
+  # nothing, and say which one it is: a verdict drawn from 15 seconds deserves
+  # less trust than one drawn from ten minutes.
+  local recorded
+  if recorded="$(network-digest "$MINUTES" 2>&1)" && [[ "$recorded" != NO\ DATA* ]]; then
+    echo "$recorded"
+    return 0
+  fi
+
+  echo "Nothing recorded. Taking a live sample instead..." >&2
+  live_sample
+}
+
+function live_sample() {
+  local route_info iface gateway
+  route_info="$(route -n get default 2>/dev/null)"
+  iface="$(awk '/interface: /{print $2}' <<<"$route_info")"
+  gateway="$(awk '/gateway: /{print $2}' <<<"$route_info")"
+
+  if [[ -z "$iface" ]]; then
+    echo "NO DATA: there is no default route."
+    return 1
+  fi
+
+  echo "NOTE: this is a single 15-second sample, not recorded history."
+  echo "Drops come in bursts, so a window this short misses most of them."
+  echo "Record properly with: network-watch"
+  echo
+  echo "Interface: $iface"
+  echo "Gateway: ${gateway:-unknown}"
+
+  # Only ping a real address. When a VPN holds the default route, macOS
+  # reports an interface name here, and ping would only produce an error.
+  if [[ "$gateway" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # A throwaway packet first: the opening pings often time out while ARP
+    # resolves, which reads as ~15% loss that is not real.
+    ping -c 1 -t 2 "$gateway" >/dev/null 2>&1
+
+    echo
+    echo "Ping gateway:"
+    ping -c 10 -i 0.5 -t 6 "$gateway" 2>&1 | tail -3
+  fi
+
+  echo
+  echo "Per-hop trace (only loss reaching the last hop is real):"
+
+  # Say so loudly when there is no trace. Silence reads as "traced fine, found
+  # nothing", and a confident verdict built on no data is worse than an error.
+  local trip_errors="${TMPDIR:-/tmp}/network-triage-trip.err"
+
+  if ! command -v trip >/dev/null 2>&1; then
+    echo "UNAVAILABLE: trip is not installed (brew install trippy)."
+  elif ! trip -u -I "$iface" -m csv --report-cycles 8 1.1.1.1 2>"$trip_errors"; then
+    echo "UNAVAILABLE: the trace failed: $(tail -1 "$trip_errors")"
+  fi
+}
+
+function build_prompt() {
+  local evidence="$1"
+
+  # Private context wins, so anything you would rather not publish can live
+  # outside this repo. The committed doc is the fallback.
+  local context_doc="${AI_PRIVATE_CONFIG_DIR:+$AI_PRIVATE_CONFIG_DIR/NETWORK.md}"
+  [[ -f "$context_doc" ]] || context_doc="$HOME/.dotfiles/docs/NETWORK.md"
+
+  echo "You triage a live network fault. Reply in exactly this format:"
+  echo
+  echo "VERDICT: <what is wrong>"
+  echo "BLAME: <the device or hop at fault>"
+  echo "DO: <one action to try now>"
+  echo
+  echo "Rules:"
+  echo "- Write in ASD-STE100 Simplified Technical English."
+  echo "- Use the active voice and the present tense."
+  echo "- Write a maximum of 20 words in each sentence."
+  echo "- Give three lines only. No preamble, markdown, or notes."
+  echo "- Use plain text. Do not use backticks."
+  echo "- Ignore loss at every hop but the last one. Routers, including"
+  echo "  hop 1, give a low priority to ICMP. Only loss that continues to"
+  echo "  the last hop is real."
+  echo "- Trust the gateway ping (hop 0) more than hop 1 of the trace."
+  echo "- If the data says UNAVAILABLE, STALE, NOTE, or NO DATA, say this."
+  echo "  Do not guess the cause."
+  echo "- Give the times of the drops, because the user reports them."
+  echo "- The action must take less than 60 seconds."
+  echo "- Do not tell the user to install software."
+  echo "- If you find no fault, write: VERDICT: No fault found."
+
+  if [[ -f "$context_doc" ]]; then
+    echo
+    echo "Network context:"
+    cat "$context_doc"
+  fi
+
+  echo
+  echo "Evidence:"
+  echo "$evidence"
+}
+
+main "$@"

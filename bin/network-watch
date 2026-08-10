@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#
+# Watch the network during a call.
+#
+# Starts a collector, prints one short line a minute while it runs, and asks
+# Claude for a verdict when packets actually start dropping. Stops everything
+# when the time is up or when you press Ctrl-C.
+#
+# Nothing survives this command. The collector is a child process with its own
+# deadline, so there is no daemon, nothing to install, and nothing left running
+# when you walk away.
+#
+# Usage:
+#   network-watch              # five minutes
+#   network-watch 20           # twenty minutes
+#   network-watch 20 30        # twenty minutes, a line every 30 seconds
+
+set -uo pipefail
+
+readonly MINUTES="${1:-5}"
+readonly INTERVAL="${2:-60}"
+
+# How far back each status line and verdict looks. Kept at or below the run
+# length so a verdict never describes drops from a previous session.
+readonly WINDOW_MINUTES=10
+
+collector_pid=""
+
+function main() {
+  if ! [[ "$MINUTES" =~ ^[0-9]+$ ]] || [[ "$MINUTES" -lt 1 ]]; then
+    echo "network-watch: minutes must be a positive whole number." >&2
+    exit 1
+  fi
+
+  # Validate this too. An unusable interval makes `sleep` fail instantly, and
+  # the reporting loop then spins at ~90% of a core for the whole run: a typo
+  # in an argument should not heat up the laptop.
+  if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [[ "$INTERVAL" -lt 5 ]]; then
+    echo "network-watch: interval must be a whole number of seconds, 5 or more." >&2
+    exit 1
+  fi
+
+  trap stop_collector EXIT INT TERM
+
+  network-logger "$MINUTES" &
+  collector_pid=$!
+
+  # Report the duration the collector will honour, not the one that was asked
+  # for, so a capped run does not silently disagree with its own banner.
+  local announced="$MINUTES"
+  [[ "$announced" -gt 120 ]] && announced=120
+
+  echo "Watching for $announced minutes. Press Ctrl-C to stop early."
+
+  wait_for_first_measurement
+  report_until_done
+}
+
+function stop_collector() {
+  if [[ -z "$collector_pid" ]] || ! kill -0 "$collector_pid" 2>/dev/null; then
+    return 0
+  fi
+
+  # Kill the children (trippy, ping) BEFORE the collector itself. Bash defers
+  # a signal until its current foreground child finishes, so signalling only
+  # the collector leaves Ctrl-C hanging for up to 20 seconds while a trace
+  # completes. Killing the child first makes stopping feel immediate.
+  pkill -P "$collector_pid" 2>/dev/null
+  kill "$collector_pid" 2>/dev/null
+
+  # No broader sweep than this. Matching on "trip -u -I" would also match a
+  # trippy-monitor running in another terminal, and killing the user's own
+  # session to tidy up after ourselves is worse than the mess.
+  wait "$collector_pid" 2>/dev/null
+}
+
+# The first round takes ~30s to complete, which is a long silence when you are
+# waiting to find out whether your connection is the problem. Say something as
+# soon as there is anything at all to say.
+function wait_for_first_measurement() {
+  local waited=0
+
+  while [[ "$waited" -lt 45 ]]; do
+    if network-digest "$WINDOW_MINUTES" --status >/dev/null 2>&1; then
+      return 0
+    fi
+
+    sleep 3
+    waited=$((waited + 3))
+  done
+
+  echo "(no measurement yet after ${waited}s)"
+}
+
+function report_until_done() {
+  local previous_state="OK"
+
+  while kill -0 "$collector_pid" 2>/dev/null; do
+    local status state="OK"
+    status="$(network-digest "$WINDOW_MINUTES" --status 2>&1)"
+    echo "$status"
+
+    if [[ "$status" == *BURST* ]]; then
+      state="BURST"
+    fi
+
+    # Ask Claude when the trouble STARTS, not on every line. A four-minute
+    # problem should produce one verdict, not eight identical ones.
+    if [[ "$state" == "BURST" && "$previous_state" != "BURST" ]]; then
+      echo
+      network-triage "$WINDOW_MINUTES" | sed 's/^/  /'
+      echo
+    fi
+
+    previous_state="$state"
+    sleep "$INTERVAL"
+  done
+
+  echo "Done. Ask about it any time with: network-triage"
+}
+
+main

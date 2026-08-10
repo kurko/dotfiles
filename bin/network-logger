@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+#
+# Record the quality of the default network path for a fixed length of time.
+#
+# This ALWAYS stops on its own. An earlier version looped forever, was started
+# by hand, and ran for 27 hours at a third of a CPU core before anyone noticed.
+# A run with no end is the bug, so the duration is part of the design rather
+# than an option: no argument means five minutes, not forever.
+#
+# Usually started by network-watch rather than run directly.
+#
+# Usage:
+#   network-logger              # five minutes
+#   network-logger 20           # twenty minutes
+#
+# Deliberately NOT `set -e`: a transient failure (the route disappears, DNS
+# blips) should not end a recording that is meant to last a set time.
+
+set -uo pipefail
+
+readonly TRIP=/opt/homebrew/bin/trip
+readonly TIMEOUT=/opt/homebrew/bin/timeout
+readonly PING=/sbin/ping
+readonly ROUTE=/sbin/route
+readonly AWK=/usr/bin/awk
+readonly DATE=/bin/date
+
+# Not configurable. network-digest has to recognise the final hop by address,
+# so a target that only this script knew about would leave the digest unable
+# to tell a clean path from a broken one.
+readonly TARGET=1.1.1.1
+
+readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/network-logger"
+readonly LOG="$STATE_DIR/trace.csv"
+readonly LOCK="$STATE_DIR/collector.lock"
+
+readonly DEFAULT_MINUTES=5
+readonly MAX_MINUTES=120
+
+# One round is a gateway ping (~10s) plus a per-hop trace (~20s), so a fresh
+# row lands roughly every 30 seconds. The drops seen here last 15-45s, so
+# coarser rounds would average them away: a 42s drop at 14% loss folded into a
+# 2-minute bucket reads as ~5% and stops looking like a fault at all.
+readonly PING_COUNT=20
+readonly PING_INTERVAL=0.5
+readonly TRACE_CYCLES=20
+
+# Neither probe can be trusted to end by itself. ping has -t, but trippy has
+# no equivalent, and a wedged trace would hold the round open indefinitely:
+# the deadline is only checked between rounds, so one stuck child is enough to
+# recreate the 27-hour run. These caps are generous multiples of the expected
+# duration, so they only fire when something is genuinely stuck.
+readonly PING_TIMEOUT=40
+readonly TRACE_TIMEOUT=90
+
+# A floor on the round, so a round where both probes fail instantly cannot
+# spin the loop. Without it, a VPN gateway (which skips the ping) plus a
+# trippy error (17ms) turns this into a busy-loop at ~85% of a core.
+readonly MIN_ROUND_SECONDS=25
+
+# Hop 0 is the gateway, measured with a real ping rather than read from the
+# trace. Routers give TTL-expired replies a low priority, and this Deco has
+# been seen reporting 86% loss at hop 1 while a simultaneous ping showed 0%.
+readonly GATEWAY_HOP=0
+
+readonly PING_RAW="$STATE_DIR/.ping.$$"
+readonly TRACE_RAW="$STATE_DIR/.trace.$$"
+
+# The trace or ping running right now, so a signal handler can end it.
+current_child=""
+
+function main() {
+  local minutes="${1:-$DEFAULT_MINUTES}"
+
+  if [[ ! "$minutes" =~ ^[0-9]+$ ]] || [[ "$minutes" -lt 1 ]]; then
+    echo "network-logger: minutes must be a positive whole number." >&2
+    return 1
+  fi
+
+  # An upper bound as well as a default. Even a deliberate long run should end
+  # by itself, so a forgotten terminal cannot cost another 27 hours.
+  if [[ "$minutes" -gt "$MAX_MINUTES" ]]; then
+    echo "network-logger: capped at $MAX_MINUTES minutes." >&2
+    minutes="$MAX_MINUTES"
+  fi
+
+  mkdir -p "$STATE_DIR"
+  claim_lock || return 1
+
+  # A signal must STOP this, not just tidy up after it. Trapping INT and TERM
+  # with a handler that only cleans up makes bash run the handler and then
+  # carry on looping, which turns `kill` into a no-op and leaves a collector
+  # nobody can stop without -9.
+  trap cleanup EXIT
+  trap 'stop_now 130' INT
+  trap 'stop_now 143' TERM
+
+  lower_own_priority
+  write_header_if_new
+
+  local deadline
+  deadline=$(( $("$DATE" +%s) + minutes * 60 ))
+
+  while [[ "$("$DATE" +%s)" -lt "$deadline" ]]; do
+    local round_start
+    round_start="$("$DATE" +%s)"
+
+    record_round
+    pad_round "$round_start"
+  done
+}
+
+# Priority is set here, not by whatever started this. A launchd plist could
+# carry it, but a plist cannot help a run started from a shell, and those are
+# the runs that caused trouble.
+function lower_own_priority() {
+  renice 10 $$ >/dev/null 2>&1
+
+  # macOS-specific: puts the process in the background QoS tier, so it yields
+  # to the video call this is meant to be diagnosing.
+  if command -v taskpolicy >/dev/null 2>&1; then
+    taskpolicy -b -p $$ >/dev/null 2>&1
+  fi
+}
+
+function cleanup() {
+  rm -f "$PING_RAW" "$TRACE_RAW"
+  release_lock
+}
+
+# Take the current trace or ping down with us, otherwise bash waits for that
+# child to finish before acting and stopping appears to hang for ~20 seconds.
+function stop_now() {
+  local code="$1"
+
+  if [[ -n "$current_child" ]]; then
+    kill "$current_child" 2>/dev/null
+  fi
+
+  pkill -P $$ >/dev/null 2>&1
+  cleanup
+  exit "$code"
+}
+
+# Run something without becoming deaf to signals.
+#
+# Bash runs a trap only between commands, so a signal arriving while trippy
+# holds the foreground sits queued for its full run: `kill` appears to do
+# nothing. Backgrounding the command and waiting for it makes the wait
+# interruptible, so Ctrl-C and kill take effect at once.
+function run_interruptible() {
+  "$@" &
+  current_child=$!
+
+  wait "$current_child"
+  local code=$?
+
+  current_child=""
+  return "$code"
+}
+
+# Keep every round at least MIN_ROUND_SECONDS long, so a round where the
+# probes fail immediately still costs nothing.
+function pad_round() {
+  local round_start="$1"
+  local elapsed remaining
+
+  elapsed=$(( $("$DATE" +%s) - round_start ))
+  remaining=$(( MIN_ROUND_SECONDS - elapsed ))
+
+  if [[ "$remaining" -gt 0 ]]; then
+    run_interruptible sleep "$remaining"
+  fi
+}
+
+# One collector at a time. Two would double the cost and interleave rows.
+#
+# The lock records the command as well as the PID: a bare PID goes stale after
+# a kill -9 or a flat battery, and once the system reuses that number the tool
+# refuses to start forever with no hint about why.
+function claim_lock() {
+  if [[ -f "$LOCK" ]]; then
+    local holder
+    holder="$(cut -d' ' -f1 "$LOCK" 2>/dev/null)"
+
+    if [[ "$holder" =~ ^[0-9]+$ ]] && kill -0 "$holder" 2>/dev/null; then
+      if ps -o args= -p "$holder" 2>/dev/null | grep -q "network-logger"; then
+        echo "network-logger: already running (pid $holder)." >&2
+        return 1
+      fi
+    fi
+  fi
+
+  echo "$$ $("$DATE" +%s)" >"$LOCK"
+}
+
+function release_lock() {
+  # Only remove a lock we still own, so a rejected second instance cannot
+  # delete the running collector's claim.
+  local holder
+  holder="$(cut -d' ' -f1 "$LOCK" 2>/dev/null)"
+
+  if [[ "$holder" == "$$" ]]; then
+    rm -f "$LOCK"
+  fi
+}
+
+function write_header_if_new() {
+  if [[ ! -s "$LOG" ]]; then
+    echo "epoch,time,iface,hop,ip,loss_pct,sent,recv,avg_ms" >"$LOG"
+  fi
+}
+
+function record_round() {
+  # One route lookup per round. Two could straddle a Wi-Fi/wired handover and
+  # pair one interface with the other path's gateway.
+  local route_info
+  route_info="$("$ROUTE" -n get default 2>/dev/null)"
+
+  local iface gateway epoch stamp
+  iface="$("$AWK" '/interface: /{print $2}' <<<"$route_info")"
+  gateway="$("$AWK" '/gateway: /{print $2}' <<<"$route_info")"
+  epoch="$("$DATE" +%s)"
+  stamp="$("$DATE" +%Y-%m-%dT%H:%M:%S)"
+
+  # Record the outage rather than skipping it. A gap in the log is ambiguous
+  # (asleep? crashed?); an explicit row is not.
+  if [[ -z "$iface" ]]; then
+    echo "$epoch,$stamp,none,$GATEWAY_HOP,offline,100.00,0,0," >>"$LOG"
+    return
+  fi
+
+  record_gateway_ping "$epoch" "$stamp" "$iface" "$gateway"
+  record_trace "$epoch" "$stamp" "$iface"
+}
+
+function record_gateway_ping() {
+  local epoch="$1" stamp="$2" iface="$3" gateway="$4"
+
+  # With a VPN holding the default route, macOS reports an interface name
+  # here instead of an address, and ping would only produce an error.
+  if [[ ! "$gateway" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    return 0
+  fi
+
+  # A throwaway packet first. The opening pings to the gateway often time out
+  # while ARP resolves, which reads as ~15% loss that is not real.
+  "$PING" -c 1 -t 2 "$gateway" >/dev/null 2>&1
+
+  run_interruptible "$TIMEOUT" "$PING_TIMEOUT" \
+    "$PING" -c "$PING_COUNT" -i "$PING_INTERVAL" -t 20 "$gateway" \
+    >"$PING_RAW" 2>/dev/null
+
+  local summary loss avg
+  summary="$(tail -2 "$PING_RAW" 2>/dev/null)"
+  loss="$("$AWK" '/packet loss/ {for (i = 1; i <= NF; i++) if ($i ~ /%$/) {gsub(/%/, "", $i); print $i + 0}}' <<<"$summary")"
+  avg="$("$AWK" -F/ '/round-trip/ {print $5}' <<<"$summary")"
+
+  # No summary at all means ping itself failed, which is a total local
+  # failure and worth recording as such.
+  echo "$epoch,$stamp,$iface,$GATEWAY_HOP,$gateway,${loss:-100},$PING_COUNT,,${avg:-}" >>"$LOG"
+}
+
+function record_trace() {
+  local epoch="$1" stamp="$2" iface="$3"
+
+  # Trippy CSV columns: Target,TargetIp,Hop,IPs,Addrs,Loss%,Snt,Recv,Last,Avg,...
+  # The IPs field uses colons for multi-path hops, never commas, so it stays
+  # CSV-safe when copied through.
+  run_interruptible "$TIMEOUT" "$TRACE_TIMEOUT" \
+    "$TRIP" -u -I "$iface" -m csv --report-cycles "$TRACE_CYCLES" "$TARGET" \
+    >"$TRACE_RAW" 2>/dev/null
+
+  tail -n +2 "$TRACE_RAW" 2>/dev/null |
+    "$AWK" -F, -v e="$epoch" -v s="$stamp" -v i="$iface" \
+      '{print e "," s "," i "," $3 "," $4 "," $6 "," $7 "," $8 "," $10}' >>"$LOG"
+}
+
+main "$@"

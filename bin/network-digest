@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+#
+# Summarise the recent network log into something small enough to read at a
+# glance, or to hand to an LLM without paying for a thousand raw rows.
+#
+# Usage:
+#   network-digest [minutes]        # default 10
+#   network-digest 10 --status      # one line, for a watch loop
+#
+# Both network-watch and network-triage summarise through this script, so the
+# live status line and the AI verdict can never disagree about what happened.
+
+set -uo pipefail
+
+readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/network-logger"
+readonly LOG="$STATE_DIR/trace.csv"
+
+# Loss below this is normal internet weather, not a fault worth naming.
+readonly BURST_THRESHOLD=2.0
+
+# Nothing runs in the background, so data is usually from the last session
+# rather than from now. That is fine to report on, but the reader has to be
+# told how old it is: "no drops" from yesterday means nothing about today.
+readonly STALE_SECONDS=180
+
+function main() {
+  local minutes="${1:-10}"
+  local mode="${2:-full}"
+
+  # Tolerate being called as `network-digest --status` with no minutes, rather
+  # than feeding the flag into arithmetic.
+  if [[ "$minutes" == --* ]]; then
+    mode="$minutes"
+    minutes=10
+  fi
+
+  if [[ ! "$minutes" =~ ^[0-9]+$ ]] || [[ "$minutes" -lt 1 ]]; then
+    echo "network-digest: minutes must be a positive whole number." >&2
+    return 1
+  fi
+
+  if [[ ! -s "$LOG" ]]; then
+    echo "NO DATA: nothing has been recorded yet."
+    echo "Record some with: network-watch"
+    return 1
+  fi
+
+  # The log is non-empty the moment the header is written, which is the state
+  # for the first ~30s of every session, so "has a header" is not "has data".
+  local newest
+  newest="$(tail -1 "$LOG" | cut -d, -f1)"
+
+  if [[ ! "$newest" =~ ^[0-9]+$ ]]; then
+    echo "NO DATA: recording has started but no measurement has finished yet."
+    return 1
+  fi
+
+  local now cutoff age
+  now="$(date +%s)"
+  cutoff=$(( now - minutes * 60 ))
+  age=$(( now - newest ))
+
+  # --status feeds the live watch loop, where anything stale means the
+  # collector has stopped and the line would be misleading.
+  if [[ "$mode" == "--status" && "$age" -gt "$STALE_SECONDS" ]]; then
+    echo "STALE: newest measurement is ${age}s old."
+    return 1
+  fi
+
+  if [[ "$age" -gt "$STALE_SECONDS" ]]; then
+    printf 'NOTE: nothing is recording now. Newest measurement is %s old.\n\n' \
+      "$(humanise_age "$age")"
+  fi
+
+  summarise "$cutoff" "$minutes" "$mode"
+}
+
+function humanise_age() {
+  local seconds="$1"
+
+  if [[ "$seconds" -lt 3600 ]]; then
+    pluralise "$((seconds / 60))" minute
+  elif [[ "$seconds" -lt 86400 ]]; then
+    pluralise "$((seconds / 3600))" hour
+  else
+    pluralise "$((seconds / 86400))" day
+  fi
+}
+
+function pluralise() {
+  local count="$1" noun="$2"
+
+  if [[ "$count" -eq 1 ]]; then
+    echo "1 $noun"
+  else
+    echo "$count ${noun}s"
+  fi
+}
+
+function summarise() {
+  local cutoff="$1" minutes="$2" mode="$3"
+
+  awk -F, \
+    -v cutoff="$cutoff" \
+    -v minutes="$minutes" \
+    -v threshold="$BURST_THRESHOLD" \
+    -v mode="$mode" \
+    '
+    NR == 1 { next }
+    $1 < cutoff { next }
+
+    {
+      epoch = $1; stamp = $2; iface = $3; hop = $4; ip = $5; loss = $6 + 0
+
+      if (!(epoch in seen_round)) { seen_round[epoch] = 1; rounds[++round_count] = epoch }
+      time_of[epoch] = substr(stamp, 12)
+      iface_of[epoch] = iface
+
+      # Hop 0 is the real gateway ping. Everything else comes from the trace.
+      if (hop == 0) { gateway_loss[epoch] = loss; next }
+
+      hop_ip[hop] = ip
+      hop_loss[epoch, hop] = loss
+      if (hop + 0 > max_hop) max_hop = hop + 0
+
+      # The last hop is the one that answered as the target, NOT the highest
+      # hop number. The path length here changes between 12 and 15 hops during
+      # a fault, so a positional guess would compare different routers.
+      #
+      # Anchored: an unanchored match also accepts 11.1.1.10 and 1.1.1.100.
+      # The multi-path form is "1.1.1.1:172.19.14.129", hence the colon.
+      if (ip ~ /^1\.1\.1\.1(:|$)/ || ip ~ /:1\.1\.1\.1(:|$)/) {
+        if (!(epoch in final_loss) || hop + 0 > final_hop[epoch]) {
+          final_loss[epoch] = loss
+          final_hop[epoch] = hop + 0
+        }
+      }
+    }
+
+    END {
+      if (round_count == 0) {
+        print "NO DATA in the last " minutes " minutes."
+        exit 1
+      }
+
+      # Sort rounds chronologically (insertion sort: at most a few hundred).
+      for (i = 2; i <= round_count; i++) {
+        v = rounds[i]
+        for (j = i - 1; j >= 1 && rounds[j] > v; j--) rounds[j + 1] = rounds[j]
+        rounds[j + 1] = v
+      }
+
+      latest = rounds[round_count]
+      bad_rounds = 0
+
+      # Group consecutive faulty rounds into bursts.
+      burst_count = 0
+      in_burst = 0
+      for (i = 1; i <= round_count; i++) {
+        e = rounds[i]
+        f = (e in final_loss) ? final_loss[e] : 0
+        g = (e in gateway_loss) ? gateway_loss[e] : 0
+        faulty = (f > threshold || g > threshold)
+
+        if (faulty) {
+          bad_rounds++
+          for (h = 1; h <= max_hop; h++) {
+            if ((e, h) in hop_loss && hop_loss[e, h] > burst_hop_max[h]) {
+              burst_hop_max[h] = hop_loss[e, h]
+            }
+          }
+          if (!in_burst) {
+            burst_count++
+            burst_start[burst_count] = time_of[e]
+            burst_worst[burst_count] = f
+            in_burst = 1
+          }
+          burst_end[burst_count] = time_of[e]
+          if (f > burst_worst[burst_count]) burst_worst[burst_count] = f
+        } else {
+          in_burst = 0
+        }
+      }
+
+      latest_final = (latest in final_loss) ? final_loss[latest] : 0
+      latest_gw = (latest in gateway_loss) ? gateway_loss[latest] : 0
+      state = (latest_final > threshold || latest_gw > threshold) ? "BURST" : "OK"
+
+      if (mode == "--status") {
+        printf "%s %s  gw %.1f%%  final %.1f%%   %s\n",
+          time_of[latest], iface_of[latest], latest_gw, latest_final, state
+        exit 0
+      }
+
+      printf "Window: last %d minutes | Interface: %s | Rounds: %d\n",
+        minutes, iface_of[latest], round_count
+      printf "Rounds with loss above %.1f%%: %d of %d\n\n",
+        threshold, bad_rounds, round_count
+
+      if (burst_count == 0) {
+        print "No bursts in this window."
+      } else {
+        printf "Bursts detected: %d\n", burst_count
+        for (b = 1; b <= burst_count; b++) {
+          printf "  %s to %s   worst final-hop loss %.1f%%\n",
+            burst_start[b], burst_end[b], burst_worst[b]
+        }
+        print ""
+        print "Highest loss seen at each hop during those bursts:"
+        print "(loss only counts if it continues to the last hop)"
+        for (h = 1; h <= max_hop; h++) {
+          if (h in hop_ip) {
+            printf "  hop %-3d %-34s %5.1f%%\n", h, hop_ip[h], burst_hop_max[h]
+          }
+        }
+      }
+    }
+  ' "$LOG"
+}
+
+main "$@"
