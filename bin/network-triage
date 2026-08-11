@@ -2,12 +2,12 @@
 #
 # Ask Claude what is wrong with the network, in three lines.
 #
-# Reads what was recorded by the last network-watch session, so the answer can
+# Reads what was recorded by the last network-check session, so the answer can
 # cover ten minutes rather than the few seconds you are willing to wait for.
 # The answer uses ASD-STE100 Simplified Technical English, so it stays fast to
 # read when you have no attention to spare.
 #
-# A script rather than a shell function because network-watch calls it, and a
+# A script rather than a shell function because network-check calls it, and a
 # function defined in an interactive rc file does not exist inside a script.
 #
 # Usage:
@@ -58,7 +58,7 @@ function live_sample() {
 
   echo "NOTE: this is a single 15-second sample, not recorded history."
   echo "Drops come in bursts, so a window this short misses most of them."
-  echo "Record properly with: network-watch"
+  echo "Record properly with: network-check"
   echo
   echo "Interface: $iface"
   echo "Gateway: ${gateway:-unknown}"

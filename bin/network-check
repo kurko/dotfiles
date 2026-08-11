@@ -11,9 +11,9 @@
 # when you walk away.
 #
 # Usage:
-#   network-watch              # five minutes
-#   network-watch 20           # twenty minutes
-#   network-watch 20 30        # twenty minutes, a line every 30 seconds
+#   network-check              # five minutes
+#   network-check 20           # twenty minutes
+#   network-check 20 30        # twenty minutes, a line every 30 seconds
 
 set -uo pipefail
 
@@ -28,7 +28,7 @@ collector_pid=""
 
 function main() {
   if ! [[ "$MINUTES" =~ ^[0-9]+$ ]] || [[ "$MINUTES" -lt 1 ]]; then
-    echo "network-watch: minutes must be a positive whole number." >&2
+    echo "network-check: minutes must be a positive whole number." >&2
     exit 1
   fi
 
@@ -36,7 +36,7 @@ function main() {
   # the reporting loop then spins at ~90% of a core for the whole run: a typo
   # in an argument should not heat up the laptop.
   if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [[ "$INTERVAL" -lt 5 ]]; then
-    echo "network-watch: interval must be a whole number of seconds, 5 or more." >&2
+    echo "network-check: interval must be a whole number of seconds, 5 or more." >&2
     exit 1
   fi
 
@@ -50,7 +50,10 @@ function main() {
   local announced="$MINUTES"
   [[ "$announced" -gt 120 ]] && announced=120
 
-  echo "Watching for $announced minutes. Press Ctrl-C to stop early."
+  local unit="minutes"
+  [[ "$announced" -eq 1 ]] && unit="minute"
+
+  echo "Watching for $announced $unit. Press Ctrl-C to stop early."
 
   wait_for_first_measurement
   report_until_done
@@ -94,10 +97,21 @@ function wait_for_first_measurement() {
 
 function report_until_done() {
   local previous_state="OK"
+  local previous_status=""
 
   while kill -0 "$collector_pid" 2>/dev/null; do
     local status state="OK"
     status="$(network-digest "$WINDOW_MINUTES" --status 2>&1)"
+
+    # A round takes about 30 seconds, so a shorter interval asks again before
+    # there is anything new. Printing the same line twice looks like a fault
+    # in the tool rather than a quiet network.
+    if [[ "$status" == "$previous_status" ]]; then
+      sleep "$INTERVAL"
+      continue
+    fi
+
+    previous_status="$status"
     echo "$status"
 
     if [[ "$status" == *BURST* ]]; then
@@ -116,7 +130,18 @@ function report_until_done() {
     sleep "$INTERVAL"
   done
 
-  echo "Done. Ask about it any time with: network-triage"
+  report_final_verdict
+}
+
+# Always finish with an answer.
+#
+# Asking for the verdict used to be a second command, which meant the tool
+# stopped one step short of the thing you actually wanted to know. Ending a
+# run without saying what happened is the wrong default.
+function report_final_verdict() {
+  echo
+  echo "--- Result for the whole session ---"
+  network-triage "$MINUTES"
 }
 
 main

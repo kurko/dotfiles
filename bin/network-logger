@@ -7,7 +7,7 @@
 # A run with no end is the bug, so the duration is part of the design rather
 # than an option: no argument means five minutes, not forever.
 #
-# Usually started by network-watch rather than run directly.
+# Usually started by network-check rather than run directly.
 #
 # Usage:
 #   network-logger              # five minutes

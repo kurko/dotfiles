@@ -7,7 +7,7 @@
 #   network-digest [minutes]        # default 10
 #   network-digest 10 --status      # one line, for a watch loop
 #
-# Both network-watch and network-triage summarise through this script, so the
+# Both network-check and network-triage summarise through this script, so the
 # live status line and the AI verdict can never disagree about what happened.
 
 set -uo pipefail
@@ -41,7 +41,7 @@ function main() {
 
   if [[ ! -s "$LOG" ]]; then
     echo "NO DATA: nothing has been recorded yet."
-    echo "Record some with: network-watch"
+    echo "Record some with: network-check"
     return 1
   fi
 
