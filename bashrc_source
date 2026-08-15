@@ -208,6 +208,11 @@ export PATH=~/.dotfiles/bin/macos_only:$PATH
 # that edit isn't tracked here, so a fresh machine would lose it.
 export PATH=~/.local/bin:$PATH
 
+# agent-browser - the daemon closes its browser and exits after 1h without
+# commands, so AI-launched Chrome instances can't outlive their session and
+# drain the battery. The daemon inherits this from the shell that spawns it.
+export AGENT_BROWSER_IDLE_TIMEOUT_MS=3600000
+
 # MacOS only
 if [[ "$OSTYPE" == "darwin"* ]]; then
   export PATH="/opt/homebrew/bin:$PATH"
