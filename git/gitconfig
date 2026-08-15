@@ -116,3 +116,16 @@
 	gpgSign = true
 [include]
 	path = ~/.dotfiles/git/gitconfig.local
+# Lets HTTPS pushes authenticate with the token from `gh auth login`.
+#
+# `gh auth setup-git` writes these same blocks, but with an absolute
+# /opt/homebrew/bin/gh that only resolves on Apple Silicon, and it writes them
+# into ~/.gitconfig, which is a symlink to this tracked file. Keeping a bare
+# `gh` here works on Intel and Linux too, and stops the installer from
+# committing a machine-specific path into a public repo.
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
