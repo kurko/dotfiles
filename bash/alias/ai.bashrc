@@ -351,3 +351,12 @@ function claude-qwen-3-6-35b() {
   CLAUDE_CODE_MAX_CONTEXT_TOKENS=55000 \
   claude --model qwen-cc "$@"
 }
+
+# Same setup for Qwen 3.8 27B (qwen3.8-cc: qwen3.8:27b-mlx with 64K context):
+# better coding benchmarks than 3.6 but ~3x slower generation (dense, not MoE).
+function claude-qwen-3-8-27b() {
+  ANTHROPIC_BASE_URL=http://localhost:11434 \
+  ANTHROPIC_AUTH_TOKEN=ollama \
+  CLAUDE_CODE_MAX_CONTEXT_TOKENS=55000 \
+  claude --model qwen3.8-cc "$@"
+}
