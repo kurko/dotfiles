@@ -802,6 +802,58 @@ in error tracking or logs, they'll draw the wrong conclusion about what happened
 Either reject the bad data loudly or store it with a marker that distinguishes
 it from legitimate values."
 
+#### Check for Comments That Document Downstream Consumers
+
+When a comment on a config file, constant, or shared data structure explains
+**what other code does with the value**, it is a stale comment waiting to
+happen. Consumers get added and removed without anyone opening the data file,
+so the list rots silently and then actively misleads the next reader.
+
+```yaml
+# ❌ Don't - enumerates consumers, and goes stale the first time one changes
+# Countries where our issuing bank restricts card spend.
+#
+# Separate from prohibited_countries.yml: that list stops us doing business with
+# a country at all (onboarding, catalog, payouts, SMS), while this one only
+# blocks prepaid card authorizations at merchants in the country.
+- name: Bangladesh
+  country_code: BD
+```
+
+```yaml
+# ✅ Do - describes what the list IS, and the distinction that stops a bad merge
+# Countries restricted by our card issuing bank.
+#
+# Separate from prohibited_countries.yml, the wider list of countries our bank
+# prohibits us from doing business with. Do not merge the two.
+- name: Bangladesh
+  country_code: BD
+```
+
+**The test:** could this sentence become false because of a change in a file
+that does not include this one? If yes, it does not belong here.
+
+**Detection:** comments on config files, YAML/JSON fixtures, seed data,
+constants, and enum definitions that contain:
+- Lists of features, systems, or call sites that read the value
+  ("used by onboarding, catalog, payouts")
+- Counts ("read in about a dozen places")
+- Descriptions of downstream behaviour ("blocks authorizations at merchants",
+  "hides the row from the dashboard")
+
+**What belongs instead:** the identity and provenance of the data (what it is,
+who owns it, where it came from), and any constraint a future editor must not
+violate ("do not merge the two", "order is significant", "codes are ISO 3166-1
+numeric"). Those stay true regardless of who reads the file.
+
+**Where consumer detail does belong:** at the consumer. The code that blocks an
+authorization is the right place to say that it blocks authorizations.
+
+**What to flag:** "This comment lists what reads this value. That list will go
+stale the next time a consumer is added or removed, and a stale comment is worse
+than none. Describe what the data is and any rule for editing it; leave the
+behaviour documented where the behaviour lives."
+
 #### Check for Temporal Snapshot Names
 
 When a computed value (duration, count, elapsed time) is stored in a record,
