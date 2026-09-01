@@ -1,0 +1,167 @@
+<!--
+  Quiz section for the explain-diff-html skill.
+
+  Paste these blocks into the generated page in this order: the <section>, the
+  <style>, the data <script>, the engine <script>. The engine reads the section
+  and the data when it runs, so it must come after them. Adapt the style block
+  to the page's palette; keep the engine script unchanged.
+
+  How the anti-gaming works:
+  - The correct option is ALWAYS the first entry of "options" in the data.
+    The engine shuffles the display order with a PRNG seeded from
+    document.title plus the raw quiz data, so the author never picks a
+    position, the order is stable on reload, and it differs between pages
+    even when a title is missing or repeated.
+  - All text is rendered with textContent, so markup inside the strings shows
+    as literal text and cannot inject HTML. Inside JSON strings write "</" as
+    "<\/" so a quoted tag cannot close the data block.
+-->
+
+<section id="quiz">
+  <h2>Quiz</h2>
+  <p>Five questions. Pick an answer to see whether it is right and why.</p>
+  <div id="quiz-root"></div>
+  <p id="quiz-score" aria-live="polite"></p>
+</section>
+
+<style>
+  .quiz-question { margin: 1.5rem 0; padding: 1rem; border: 1px solid #d0d7de; border-radius: 8px; }
+  .quiz-question h3 { margin-top: 0; }
+  .quiz-options { list-style: none; padding: 0; margin: 0; }
+  .quiz-options li { margin: 0.5rem 0; }
+  .quiz-option { display: block; width: 100%; text-align: left; padding: 0.6rem 0.8rem; border: 1px solid #d0d7de; border-radius: 6px; background: #fff; color: inherit; font: inherit; cursor: pointer; }
+  .quiz-option:hover:not(:disabled) { background: #f6f8fa; }
+  .quiz-option:focus-visible { outline: 3px solid #0969da; outline-offset: 2px; }
+  .quiz-option:disabled { cursor: default; }
+  .quiz-option.is-correct { border-color: #1a7f37; background: #dafbe1; }
+  .quiz-option.is-incorrect { border-color: #cf222e; background: #ffebe9; }
+  .quiz-feedback { margin-top: 0.75rem; padding: 0.75rem; border-radius: 6px; background: #f6f8fa; }
+  .quiz-feedback[hidden] { display: none; }
+</style>
+
+<script id="quiz-data" type="application/json">
+[
+  {
+    "question": "Question text?",
+    "options": [
+      { "text": "Correct answer (always first here; the page shuffles)", "explanation": "Why this is right." },
+      { "text": "Distractor", "explanation": "Why this is wrong, and the misunderstanding behind it." },
+      { "text": "Distractor", "explanation": "Why this is wrong." },
+      { "text": "Distractor", "explanation": "Why this is wrong." }
+    ]
+  }
+]
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  // FNV-1a hash of a string, used to derive the shuffle seed.
+  function hashString(text) {
+    var hash = 0x811c9dc5;
+    for (var i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash;
+  }
+
+  // mulberry32: a small seedable PRNG (Math.random cannot be seeded).
+  function seededRandom(seed) {
+    return function () {
+      seed = (seed + 0x6D2B79F5) | 0;
+      var t = seed;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Fisher-Yates over indexes so each button can map back to its source option.
+  function shuffledIndexes(count, seed) {
+    var random = seededRandom(seed);
+    var indexes = [];
+    for (var i = 0; i < count; i++) indexes.push(i);
+    for (var j = count - 1; j > 0; j--) {
+      var k = Math.floor(random() * (j + 1));
+      var swap = indexes[j];
+      indexes[j] = indexes[k];
+      indexes[k] = swap;
+    }
+    return indexes;
+  }
+
+  function element(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  var answered = 0;
+  var correct = 0;
+
+  function updateScore() {
+    document.getElementById('quiz-score').textContent =
+      'Score: ' + correct + ' / ' + answered + ' answered';
+  }
+
+  function feedbackText(chosenIndex, options) {
+    if (chosenIndex === 0) return 'Correct. ' + options[0].explanation;
+    return 'Not quite. ' + options[chosenIndex].explanation +
+      ' The correct answer is "' + options[0].text + '": ' + options[0].explanation;
+  }
+
+  function reveal(buttons, order, chosenIndex, options, feedback) {
+    buttons.forEach(function (button, position) {
+      button.disabled = true;
+      if (order[position] === 0) button.classList.add('is-correct');
+      else if (order[position] === chosenIndex) button.classList.add('is-incorrect');
+    });
+    feedback.textContent = feedbackText(chosenIndex, options);
+    feedback.hidden = false;
+    answered += 1;
+    if (chosenIndex === 0) correct += 1;
+    updateScore();
+  }
+
+  function renderQuestion(entry, number, pageSeed) {
+    var container = element('div', 'quiz-question');
+    var list = element('ul', 'quiz-options');
+    var feedback = element('div', 'quiz-feedback');
+    feedback.hidden = true;
+    feedback.setAttribute('role', 'status');
+
+    // Any odd constant separates the per-question seeds; the PRNG mixes it.
+    var order = shuffledIndexes(entry.options.length, pageSeed + number * 7919);
+    var buttons = order.map(function (sourceIndex, position) {
+      var label = String.fromCharCode(65 + position) + '. ' + entry.options[sourceIndex].text;
+      var button = element('button', 'quiz-option', label);
+      button.type = 'button';
+      button.addEventListener('click', function () {
+        reveal(buttons, order, sourceIndex, entry.options, feedback);
+      });
+      var item = element('li');
+      item.appendChild(button);
+      list.appendChild(item);
+      return button;
+    });
+
+    container.appendChild(element('h3', null, number + '. ' + entry.question));
+    container.appendChild(list);
+    container.appendChild(feedback);
+    return container;
+  }
+
+  // Seeding from the data as well as the title means a missing or reused
+  // title cannot give two pages the same order.
+  var dataText = document.getElementById('quiz-data').textContent;
+  var questions = JSON.parse(dataText);
+  var root = document.getElementById('quiz-root');
+  var pageSeed = hashString(document.title + dataText);
+  questions.forEach(function (entry, index) {
+    root.appendChild(renderQuestion(entry, index + 1, pageSeed));
+  });
+})();
+</script>
