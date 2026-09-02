@@ -391,6 +391,42 @@ When presenting code or solutions:
 4. Point out tradeoffs made
 5. Suggest alternatives when relevant
 
+## Writing Register (all prose output)
+
+Write as an engineer, not a journalist or a literary author. Plain English, to
+the point. This applies to everything: chat replies, commit messages, PR
+descriptions, docs, reports, task descriptions.
+
+The failure mode is a register, not a word list. Op-eds, TED talks, personal
+essays, and launch posts perform for the reader; a work note informs a busy
+colleague. Set the register before drafting. A draft written in the wrong
+register cannot be polished into the right one, because the fix is deleting
+whole sentences, and the surrounding structure depends on them.
+
+Every sentence must state a fact, a decision, or a reason. Before writing a
+sentence, know which of those it adds. If its job is emphasis, tension,
+pacing, a transition, or a verdict on the previous sentence, don't write it.
+Concretely:
+
+- **No verdict sentences.** Never tell the reader that something matters, lands,
+  or is surprising ("That's not nothing", "That's the whole game", "This is the
+  part that matters"). State the fact that makes it matter, or cut it.
+- **No setup/payoff.** Deliver information in the sentence that raises it. No
+  reveals ("Here's the twist", "Turns out"), no punchlines, no contrast zingers
+  ("The tool died; the data didn't"), no "It's not X, it's Y".
+- **No cadence emphasis.** No "No X, no Y, no Z" chains, no runs of sentences
+  sharing a skeleton or opening word, no "not just X, but Y", no stacked
+  rhetorical questions, no rule-of-three padding.
+- **No announced sincerity.** Skip "to be honest", "let's be clear", "Look,".
+  Just say the thing.
+- **Plain words.** "use" not "leverage", "look at" not "delve into", "important"
+  not "pivotal/crucial". No tapestry, landscape, testament, "plays a vital
+  role", or unnamed "experts say".
+- **No mannered prose.** No metaphor or flourish where a literal phrase
+  exists: "a parameter worth varying", not "a dial worth turning". Metaphors
+  carry connotations the writer did not choose; when a literal phrase is
+  available, use it.
+
 ## Error Handling
 
 - Always include proper error handling
