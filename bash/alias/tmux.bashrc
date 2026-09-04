@@ -9,9 +9,13 @@ function tmuxa(){
 
   if [ ! $? -eq 0 ]; then
     echo "Restoring Tmux..."
-    tmux new -d -s delete-me && \
-      tmux run-shell ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh && \
-      tmux kill-session -t delete-me
+    tmux new -d -s delete-me
+    if [ -f ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh ]; then
+      tmux run-shell ~/.tmux/plugins/tmux-resurrect/scripts/restore.sh
+    else
+      echo "tmux-resurrect is not installed yet; skipped session restore." >&2
+    fi
+    tmux kill-session -t delete-me
   fi
 
   if [ $# -eq 0 ]; then

@@ -152,13 +152,8 @@ else
   echo "> nvim: not installed, skipping Neovim plugin install." >&2
 fi
 
-if [ ! -d ~/.tmux/plugins/tpm ]
-then
-  echo ""
-  echo "Install Tmux Plugin Manager on ~/.tmux/plugins/tpm... "
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-  ~/.tmux/plugins/tpm/bin/install_plugins
-fi
+# tmux plugins are not installed here: tmux.conf bootstraps tpm and the
+# declared plugins itself on server start (see bin/tmux-ensure-plugins).
 
 # ----------------------------------------------------------------------------
 # Post-install checklist: the manual, one-off steps this script can't do for

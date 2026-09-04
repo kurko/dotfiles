@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+#
+# Ensure every tmux plugin declared in tmux.conf is installed: clone tpm when
+# absent, then let tpm's idempotent install_plugins fetch whatever else is
+# missing. Runs from tmux.conf on every server start; instant no-op when
+# nothing is missing. If a download fails (e.g. offline), it retries on the
+# next server start.
+#
+# Usage: tmux-ensure-plugins [--notify]
+#
+#   --notify   tmux.conf mode: write output to <plugins dir>/../ensure-plugins.log
+#              instead of stdout (run-shell pops a copy-mode view for any
+#              output, even when backgrounded) and announce installs with
+#              `tmux display-message`.
+#
+# Env overrides (used by tests): TMUX_PLUGINS_DIR, TMUX_CONF, TPM_REPO
+
+set -euo pipefail
+
+plugins_dir="${TMUX_PLUGINS_DIR:-$HOME/.tmux/plugins}"
+tmux_conf="${TMUX_CONF:-$HOME/.tmux.conf}"
+tpm_repo="${TPM_REPO:-https://github.com/tmux-plugins/tpm}"
+notify=false
+
+if [ "${1:-}" = "--notify" ]; then
+  notify=true
+  log_file="$(dirname "$plugins_dir")/ensure-plugins.log"
+  mkdir -p "$(dirname "$log_file")"
+  exec >>"$log_file" 2>&1
+fi
+
+dir_missing_or_empty() {
+  [ ! -d "$1" ] || [ -z "$(ls -A "$1" 2>/dev/null)" ]
+}
+
+# Derives directory names the way tpm does: strip any '#branch' suffix first,
+# then take the basename, then drop a '.git' extension.
+declared_plugin_names() {
+  grep -E "^[[:space:]]*set(-option)?[[:space:]]+-g[[:space:]]+@plugin[[:space:]]" "$tmux_conf" |
+    sed -E "s/^[^'\"]*['\"]([^'\"]+)['\"].*/\1/" |
+    sed -E "s|#.*||; s|.*/||; s|\.git$||"
+}
+
+any_declared_plugin_missing() {
+  local name
+  while read -r name; do
+    if dir_missing_or_empty "$plugins_dir/$name"; then
+      return 0
+    fi
+  done < <(declared_plugin_names)
+  return 1
+}
+
+ensure_tpm() {
+  if dir_missing_or_empty "$plugins_dir/tpm"; then
+    echo "Cloning tpm into $plugins_dir/tpm"
+    git clone --quiet "$tpm_repo" "$plugins_dir/tpm"
+  fi
+}
+
+# install_plugins resolves plugin paths through the TMUX_PLUGIN_MANAGER_PATH
+# server variable and aborts when it is unset. tpm's init normally sets it, but
+# on a fresh machine's first boot that init has not run (tpm was just cloned),
+# so set it here.
+ensure_tpm_env() {
+  if ! tmux show-environment -g TMUX_PLUGIN_MANAGER_PATH >/dev/null 2>&1; then
+    tmux set-environment -g TMUX_PLUGIN_MANAGER_PATH "$plugins_dir/" || true
+  fi
+}
+
+report_installed() {
+  local count="$1"
+
+  if [ "$count" -eq 0 ]; then
+    return 0
+  fi
+
+  echo "Installed $count missing tmux plugin(s)"
+  if $notify; then
+    tmux display-message "tmux: installed $count missing plugin(s); run 'tmux source ~/.tmux.conf' to activate" || true
+  fi
+}
+
+main() {
+  ensure_tpm
+
+  if any_declared_plugin_missing; then
+    ensure_tpm_env
+    local count
+    # "Installing" prints before the download is attempted; "download success"
+    # prints only after it worked, so count that to avoid announcing failures.
+    count="$("$plugins_dir/tpm/bin/install_plugins" | grep -c "download success" || true)"
+    report_installed "$count"
+  fi
+}
+
+main
