@@ -1,0 +1,149 @@
+# Ghostty configuration
+#
+# Reload in place with cmd+shift+,
+#
+# Only settings that differ from the defaults are listed here. Run
+# `ghostty +show-config --default --docs` to see every setting with its
+# documentation.
+
+# FONT
+#
+# Comment this line out to fall back to Ghostty's bundled default of JetBrains
+# Mono, which has a heavier stroke and a larger x-height.
+#
+# Either way there is no loss of glyph coverage: Ghostty draws the powerline
+# separators itself as internal sprites, and bundles "Symbols Nerd Font" for
+# the rest of the Nerd Font range, so the icons in the tmux status line
+# resolve even without a Nerd Font patched family. Check any codepoint with:
+#
+#     ghostty +show-face --cp=0xF240
+font-family = Hack Nerd Font Mono
+
+# Ghostty's default is 13.
+font-size = 14
+
+# Extra leading between lines. Drop this if the lines feel too airy, for
+# example after switching to a font with looser metrics.
+adjust-cell-height = 4
+
+# Note: `font-thicken = true` thickens strokes on macOS. It is off here, to
+# match the stock rendering. It is the knob to reach for if a future font
+# change brings back the thin look.
+
+# COLORS
+background = #0b0d0f
+foreground = #f8f8f2
+
+cursor-color = #f8f8f2
+cursor-text = #414d58
+
+selection-background = #414d58
+selection-foreground = #f8f8f2
+
+# Draw bold text with the bright palette. `bold-is-bright` was renamed to this
+# in Ghostty 1.2.
+bold-color = bright
+
+# normal
+palette = 0=#4d4e4d
+palette = 1=#fc634f
+palette = 2=#cbfb89
+palette = 3=#fef8a2
+palette = 4=#94c9fe
+palette = 5=#fb73ff
+palette = 6=#d2cafe
+palette = 7=#dfe0df
+
+# bright
+palette = 8=#7b7c7b
+palette = 9=#fdb7ae
+palette = 10=#d0fba2
+palette = 11=#fefdc5
+palette = 12=#b5dbff
+palette = 13=#fb9cff
+palette = 14=#dedeff
+palette = 15=#feffff
+
+# WINDOW
+window-width = 120
+window-height = 40
+window-padding-x = 2
+window-padding-y = 2
+
+# SHELL
+command = /opt/homebrew/bin/bash --login
+
+# SELECTION
+#
+# Differs from Ghostty's default only by dropping ';' and '$' and adding a
+# space.
+selection-word-chars = " \t'\"│`|:,()[]{}<>"
+
+# SCROLLBACK
+#
+# Counted in bytes, not lines. This is the default (10MB), stated explicitly.
+scrollback-limit = 10000000
+
+# Applies to discrete (notched) mouse wheels. Trackpad scrolling is unaffected.
+mouse-scroll-multiplier = discrete:1
+
+# KEYBINDINGS
+#
+# Ghostty already binds, with no configuration needed:
+#   cmd+c / cmd+v / copy / paste        copy and paste
+#   cmd+= / cmd+- / cmd+0               font size
+#   cmd+k                               clear screen
+#   cmd+n / cmd+q                       new window, quit
+#   cmd+ctrl+f                          fullscreen
+#   alt+left / alt+right                esc+b / esc+f word motion
+#
+# Make the macOS Option key behave as Alt.
+macos-option-as-alt = true
+
+# tmux window control. tmux.conf sets `prefix C-a`, so these send \x01 first.
+#
+# Ghostty binds each digit twice, once by physical key (`digit_1`) and once by
+# the character the layout produces (`1`). Both have to be replaced, or the
+# default goto_tab survives on the half that was left alone.
+keybind = super+digit_1=text:\x011
+keybind = super+digit_2=text:\x012
+keybind = super+digit_3=text:\x013
+keybind = super+digit_4=text:\x014
+keybind = super+digit_5=text:\x015
+keybind = super+digit_6=text:\x016
+keybind = super+digit_7=text:\x017
+keybind = super+digit_8=text:\x018
+keybind = super+digit_9=text:\x019
+keybind = super+one=text:\x011
+keybind = super+two=text:\x012
+keybind = super+three=text:\x013
+keybind = super+four=text:\x014
+keybind = super+five=text:\x015
+keybind = super+six=text:\x016
+keybind = super+seven=text:\x017
+keybind = super+eight=text:\x018
+keybind = super+nine=text:\x019
+keybind = super+t=text:\x01c
+keybind = super+shift+]=text:\x01n
+keybind = super+shift+[=text:\x01p
+
+# Scrollback paging. Ghostty binds these to adjust_selection by default.
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+keybind = shift+home=scroll_to_top
+keybind = shift+end=scroll_to_bottom
+
+# ctrl+^ for vim's alternate file, and ctrl+space as NUL.
+keybind = ctrl+six=text:\x1e
+keybind = ctrl+space=text:\x00
+
+# Block the macOS emoji picker so it cannot steal the chord.
+keybind = ctrl+super+space=ignore
+
+# esc+CR, for shells and REPLs that treat it as "insert newline".
+keybind = alt+enter=text:\x1b\r
+
+# Ghostty binds cmd+left to \x01 (ctrl+a) for "start of line". That is also the
+# tmux prefix, so inside tmux it opens prefix-wait mode instead. Drop it rather
+# than live with the collision.
+keybind = super+arrow_left=unbind
