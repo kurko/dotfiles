@@ -32,11 +32,14 @@ function join_array() {
     value="$(echo "${array[$i]}")"
     value="$(echo $(echo $value))"
 
+    # The delimiter belongs between values we kept, not between array slots.
+    # Keying it off the index instead would prefix the first non-empty value
+    # whenever an earlier slot was empty.
     if [[ ! -z "${value/ /}" ]]; then
-      if [ "$i" -gt 0 ]; then
-        result="$result$delimiter$value"
+      if [[ -z "$result" ]]; then
+        result="$value"
       else
-        result="$result$value"
+        result="$result$delimiter$value"
       fi
     fi
   done

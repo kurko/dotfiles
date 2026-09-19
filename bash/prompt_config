@@ -2,6 +2,7 @@
 
 source $DOTFILES/bash/alias/bash.bashrc
 source $DOTFILES/bash/autocomplete/make.bashrc
+source $DOTFILES/bash/remote_session
 PROMPT_COMMAND=""
 
 # - Add command to PROMPT_COMMAND (runs before each command)
@@ -224,9 +225,14 @@ function set_ps1() {
   ''"${js_info}"'')
   DirInfoString="$(echo $(join_array DirInfo ', '))"
 
+  __refresh_remote_host_tag
+
   export PS1=""
+  if [ "${__REMOTE_HOST_TAG}" != "" ]; then
+    export PS1="\[$BCYAN\]${__REMOTE_HOST_TAG}\[${NO_COLOR}\] "
+  fi
   if [ "${DirInfoString}" != "" ]; then
-    export PS1="\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\] "
+    export PS1="${PS1}\[$YELLOW\](${DirInfoString})\[${NO_COLOR}\] "
   fi
   export PS1="${PS1}\w "
 

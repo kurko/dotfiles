@@ -1,0 +1,103 @@
+#!/bin/bash
+#
+# Tells the prompt whether this shell was reached over ssh or mosh, and which
+# machine it is running on. Both laptops share these dotfiles, so a bare "~"
+# says nothing about which one is on the other end of the connection.
+#
+# mosh sets no environment variable identifying its sessions (it reads
+# SSH_CONNECTION to choose a bind address but does not pass it to the shell),
+# so the only dependable signal is the process ancestry: the login shell
+# descends from mosh-server or sshd. Inside tmux the pane descends from the
+# tmux server instead, and that server outlives any single connection, so
+# there we walk up from the attached client rather than from the pane.
+
+__MAX_ANCESTRY_DEPTH=16
+
+# Walks the parent chain from a pid looking for a process whose name starts
+# with any of the given markers.
+#
+#   __process_ancestry_includes 4242 sshd mosh-server
+#
+function __process_ancestry_includes {
+  local pid="$1"
+  shift
+
+  local marker ppid comm
+  local depth=0
+
+  while [[ "$pid" =~ ^[0-9]+$ ]] && [ "$pid" -gt 1 ]; do
+    if [ "$depth" -ge "$__MAX_ANCESTRY_DEPTH" ]; then
+      return 1
+    fi
+
+    read -r ppid comm <<< "$(ps -o ppid=,comm= -p "$pid" 2>/dev/null)"
+    if [ -z "$ppid" ]; then
+      return 1
+    fi
+
+    for marker in "$@"; do
+      # ps reports the executable path, so compare on the basename. The prefix
+      # match is what lets "sshd" also cover OpenSSH's "sshd-session" child.
+      case "${comm##*/}" in
+        "$marker"*) return 0 ;;
+      esac
+    done
+
+    pid="$ppid"
+    depth=$((depth + 1))
+  done
+
+  return 1
+}
+
+# The process that knows how this session was reached: the attached tmux
+# client when inside tmux, otherwise this shell itself. A tmux session with no
+# client attached reports an empty pid, so fall back to the shell there too.
+function __session_client_pid {
+  local client_pid=""
+
+  if [ -n "${TMUX:-}" ]; then
+    client_pid="$(tmux display-message -p '#{client_pid}' 2>/dev/null)"
+  fi
+
+  echo "${client_pid:-$$}"
+}
+
+# MacBook-Air -> MBA, MacBook-Pro -> MBP, anything else keeps its hostname.
+function __short_machine_name {
+  local host
+  host="$(hostname -s 2>/dev/null)"
+
+  case "$(echo "$host" | tr '[:upper:]' '[:lower:]')" in
+    *macbook-air*|*macbookair*) echo 'MBA' ;;
+    *macbook-pro*|*macbookpro*) echo 'MBP' ;;
+    # Without a hostname the tag would render as a bare "[]", which reads like
+    # a glitch rather than a machine.
+    *) echo "${host:-remote}" ;;
+  esac
+}
+
+# Sets __REMOTE_HOST_TAG to "[MBA]" when this shell was reached over ssh or
+# mosh, and to "" when it was not.
+#
+# The prompt calls this directly instead of reading an echoed value, because a
+# command substitution would throw away the cache along with its subshell. The
+# cache is keyed on the pid we walk up from: outside tmux that is the shell
+# itself and never changes, and inside tmux it is the attached client, which
+# changes exactly when the session is reattached from somewhere else.
+function __refresh_remote_host_tag {
+  local client_pid
+  client_pid="$(__session_client_pid)"
+
+  if [ "$client_pid" = "${__REMOTE_SESSION_CLIENT_PID:-}" ]; then
+    return 0
+  fi
+
+  __REMOTE_SESSION_CLIENT_PID="$client_pid"
+
+  if __process_ancestry_includes "$client_pid" sshd mosh-server; then
+    __REMOTE_HOST_TAG="[$(__short_machine_name)]"
+  else
+    __REMOTE_HOST_TAG=""
+  fi
+}
