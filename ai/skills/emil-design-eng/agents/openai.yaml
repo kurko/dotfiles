@@ -1,0 +1,5 @@
+interface:
+  display_name: "Emil Design Eng"
+  short_description: "Emil Kowalski's UI polish and animation principles"
+policy:
+  allow_implicit_invocation: false

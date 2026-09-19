@@ -1,0 +1,5 @@
+interface:
+  display_name: "Better UI"
+  short_description: "Design engineering details for polished interfaces"
+policy:
+  allow_implicit_invocation: false
