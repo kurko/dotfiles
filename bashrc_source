@@ -213,6 +213,11 @@ export PATH=~/.local/bin:$PATH
 # drain the battery. The daemon inherits this from the shell that spawns it.
 export AGENT_BROWSER_IDLE_TIMEOUT_MS=3600000
 
+# gog (Google Workspace CLI) - runtime guard blocking mutating API requests.
+# Belt-and-braces: the OAuth token itself is granted read-only scopes via
+# `gog auth add --readonly`. This blocks writes even if scopes ever widen.
+export GOG_READONLY=1
+
 # MacOS only
 if [[ "$OSTYPE" == "darwin"* ]]; then
   export PATH="/opt/homebrew/bin:$PATH"

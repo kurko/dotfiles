@@ -17,13 +17,55 @@ Use `gog` for Google Workspace operations. Requires OAuth setup.
 **Default for Google URLs.** Never use WebFetch for Google Sheets, Docs, Drive, or Slides URLs.
 Use `gog` commands instead (WebFetch will fail with 401 on authenticated Google content).
 
+## ⚠️ Check for a READ-ONLY install first
+
+This install may be deliberately read-only. Check before attempting any write:
+
+```bash
+gog auth list --json | jq '.accounts[].scopes'   # all *.readonly = read-only
+echo "$GOG_READONLY"                             # non-empty = writes blocked
+```
+
+Two independent layers can enforce it: OAuth scopes (`--readonly` at auth time, so Google
+itself refuses writes) and the `GOG_READONLY=1` runtime guard, which blocks mutations before
+they leave the machine.
+
+When either is active, **every write command below will fail** — `gmail send`, drafts, labels,
+archive/trash, `sheets update`/`append`/`clear`, `docs write`/`find-replace`,
+`drive upload`/`share`/`delete`, `calendar create`/`update`, `tasks add`. Treat them as
+reference only.
+
+The restriction is intentional: never "fix" a failure by unsetting `GOG_READONLY` or
+re-authorizing with wider scopes. Ask the User first. For writes to a Sheet, look for an Apps
+Script webhook path in their other skills, which is unaffected.
+
+## Accounts
+
+Refer to accounts by alias, never by literal address — `gog auth alias list` shows what is
+configured, conventionally `work` and `personal`:
+
+    gog <cmd> --account work
+
+Set `GOG_ACCOUNT` in a private, non-committed shell file to pick the default.
+
 ## Setup (once)
 
-- `gog auth credentials /path/to/client_secret.json`
-- `gog auth add you@gmail.com --services gmail,calendar,drive,contacts,docs,sheets,tasks,slides,forms,chat,people,groups,keep,appscript`
-- `gog auth list`
+```bash
+gog auth credentials set /path/to/client_secret.json   # --client <name> for a 2nd client
+gog auth add <email> --readonly --services gmail,calendar,drive,docs,sheets,slides,contacts,tasks
+gog auth alias set work <email>
+gog auth doctor --check   # verify; diagnose auth/keyring/token issues
+```
 
-Set `GOG_ACCOUNT=you@gmail.com` to avoid repeating `--account`.
+Install with `brew install openclaw/tap/gogcli`. Refresh tokens live in the OS keyring.
+
+**Two OAuth clients are needed when accounts span organizations** — a Workspace app with an
+*Internal* consent screen rejects outside accounts (`Error 403: org_internal`). Give the
+second account its own `--client` bucket.
+
+**APIs are enabled per GCP project**, so a new client starts with most disabled
+(`403 accessNotConfigured`). Enable the named API; no re-auth needed if the token already
+carries the scope.
 
 ## Top-Level Aliases
 

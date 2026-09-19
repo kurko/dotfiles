@@ -1,19 +1,22 @@
 ---
 name: git-commit
-description: Stage and commit git changes with conventional commit messages. Use when user wants to commit changes, or asks to save their work, even when committing your own work after completing a task. Also activates when user says "commit changes", simply "commit", or similar git workflow requests. Never commit without loading this skill.
+description: Stage and commit git changes, and open PRs. Use when committing, pushing, or opening a pull request, including when wrapping up your own work in a background job. Activates on "commit", "push", "create a PR", "open a PR", "draft PR", or any end-of-task workflow that produces a commit or PR. Never commit or open a PR without loading this skill.
 ---
 
-# Git Commit Workflow
+# Git Commit and PR Workflow
 
-Stage all relevant changes, and create a conventional commit following patterns below.
+Stage all relevant changes, create a conventional commit following patterns below.
+When the workflow also calls for a PR, open one using the commit message as the
+description (see the "Pull Requests" section).
 
 ## When to Use
 
-Automatically activate when the user:
-- Explicitly asks to push changes ("push this", "commit and push")
-- Mentions saving work to remote ("save to github", "push to remote")
-- Completes a feature and wants to share it
-- Says phrases like "let's push this up" or "commit these changes"
+Automatically activate when:
+- The user asks to commit, push, or open a PR
+- You are finishing work (background job, worktree task) and need to commit, push, or open a PR
+- The user says "commit and push", "push this up", "save to github", "create a PR",
+  "open a PR", "draft PR", "open a pull request", or similar
+- Another skill or workflow asks you to commit or create a PR
 
 ## Commit Message Patterns
 
@@ -149,3 +152,43 @@ git commit -m $'paragraph 1\n\nparagraph 2\n- bullet point\n- bullet point'
 ```
 
 Once you commit, let me know what the commit title was.
+
+## Pull Requests
+
+When the workflow includes opening a PR (background job wrap-up, user asks for
+a PR, pushing a worktree branch):
+
+1. Push the branch with `git push -u origin <branch>`.
+2. Open the PR with `gh pr create`. Use `--draft` unless told otherwise.
+3. **The PR description is the commit message body, plus a task link.** Nothing
+   else. No bullet-point summaries, no "## Summary" sections, no test plan
+   checklists, no reformatting. Copy the commit body paragraphs verbatim.
+4. If there is an Asana task, Linear issue, or similar link, append it after the
+   commit body as a plain line (e.g. `https://app.asana.com/...`).
+5. The PR title is the commit summary line.
+
+```bash
+# Example: single-commit branch, task link known
+gh pr create --draft \
+  --title "Add Looking Glass resource for vendor_incidents" \
+  --body "$(cat <<'EOF'
+The vendor_incidents table tracks catalog outages synced to the Instatus
+status page, but there was no way to query it through Looking Glass.
+Investigating stale incidents required either a Rails console session
+or a new tool.
+
+This commit adds a VendorIncidentResource exposing all non-sensitive
+columns plus three association-derived attributes. It includes custom
+filters for product_id and product_public_token and declares
+serialization_preloads to avoid N+1 queries on list requests.
+
+A richer resource could expose the vendor_error_metrics table as well.
+That can be a separate resource if the need arises.
+
+https://app.asana.com/0/1201647585774820/1218502568297202
+EOF
+)"
+```
+
+For multi-commit branches, use the full `git log --format` body of all commits
+on the branch (not just the latest), separated by blank lines.

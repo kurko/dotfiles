@@ -186,6 +186,7 @@ function install_macos() {
   source $DOTFILES/installation/macos_features/rust
   source $DOTFILES/installation/macos_features/alacritty
   source $DOTFILES/installation/macos_features/dock
+  source $DOTFILES/installation/macos_features/text_services
 
   # casks
   brew tap homebrew/cask-fonts

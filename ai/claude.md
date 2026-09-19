@@ -260,6 +260,7 @@ Exceptions: config files (.env), infrastructure, documentation, dependency locks
 - Each method should do ONE thing
 - Extract complex logic into well-named private methods
 - Prefer many small, named methods over few large methods with comments
+- Write predicate methods as a single boolean expression (`match? && enabled?`), not early-return guards (`return false unless match?` followed by the second check). Guard clauses are for exiting real work early, not for composing booleans; `&&` short-circuits the same way and reads as one fact.
 
 Example (Ruby):
 
