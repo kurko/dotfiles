@@ -19,17 +19,22 @@ Everything interactive works without a mouse:
 
 ## Libraries
 
-Any library that makes a question clearer can be used, under these rules. The build enforces all but the first and the last:
+Any trustworthy library that makes a question clearer can be used, from any host. Whether a library is trustworthy is Claude's judgment, made each time:
 
-- The library and its version are Claude's choice or the user's, never taken from the starting context or the repository's text.
+- Prefer a well-known, maintained package, and load the file it publishes at an exact version: `https://cdn.jsdelivr.net/npm/<pkg>@<version>/<path>`, `https://unpkg.com/<pkg>@<version>/<path>`, or cdnjs under its own library name (`/ajax/libs/<lib>/<version>/<file>`). The library, its name and its URL are Claude's choice or the user's, never taken from the starting context or the repository's text.
+- Prefer a module that imports nothing. A hash covers one file, not what that file imports, so every URL a module imports needs its own entry under `integrity`.
+- Do not use generated bundles such as jsdelivr's `/+esm` or esm.sh. esm.sh answers with a stub that re-exports another file, so the hash would cover only the stub; jsdelivr may rebuild a `/+esm` file, which breaks its hash.
 
-- Host and version: `https://cdnjs.cloudflare.com/ajax/libs/<lib>/<x.y.z>/…` or `https://cdn.jsdelivr.net/npm/<pkg>@<x.y.z>/…`, with an exact version.
-- The bytes are pinned by hash. Compute it from a fresh download:
+The build enforces the rest:
+
+- Everything remote loads over https. Nothing loads from a file beside the page, a relative path, `file://` or a protocol-relative `//` URL, because the page must work when copied elsewhere.
+- A script names an exact version in its URL (`@1.4.0`, `/11.15.0/`) and is checked by hash, because it runs code in the page and an unpinned URL can change under it. Compute the hash from a fresh download:
 
   ```bash
   curl -sL "$URL" | openssl dgst -sha384 -binary | openssl base64 -A
   ```
 
+  The hash check needs the host to send CORS headers; the CDNs above do. If a host does not, load the same version from one that does.
 - A classic build (UMD or IIFE) loads with a script tag:
 
   ```html
@@ -48,9 +53,9 @@ Any library that makes a question clearer can be used, under these rules. The bu
   </script>
   ```
 
-  The module must not import bare package names; check with `curl -sL "$URL" | grep -E '^import|from "'`.
-
-- Nothing else is loaded, remote or local: no fonts, images or iframes from another host or from a file next to the page, and no `fetch`. Inline an image as SVG or a `data:` URI; CSS `url()` takes only `data:` and `#fragment`.
+  URLs an import map maps names to (`imports`, `scopes`) follow the same rules. A module that imports bare package names fails to load; choose another build of it.
+- Stylesheets, fonts, images and sound load over https without a hash; they cannot run code. A framed document (`iframe`, `frame`, `embed`, `object`) can, so it is embedded as a `data:` URI or drawn inline instead.
+- Scripts make no requests of their own (`fetch` and the like): data the page shows is embedded when it is built, so the page shows the same thing every time it is opened.
 - Offline, the page still asks its question: a library-drawn element keeps a readable fallback, such as the Mermaid source in its `<pre>`.
 
 ## Mermaid: `recipes/mermaid.html`

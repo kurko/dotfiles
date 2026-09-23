@@ -13,11 +13,8 @@ const PAGE_KEYS = ['id', 'title', 'round', 'summary', 'sections'];
 const SECTION_KEYS = ['title', 'intro', 'questions'];
 const QUESTION_KEYS = ['id', 'header', 'question', 'context', 'visual', 'multiSelect', 'options'];
 const OPTION_KEYS = ['label', 'description', 'recommended', 'visual'];
-const PINNED_LIBRARY = [
-  /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/[^/]+\/\d+\.\d+\.\d+[^/]*\//,
-  /^https:\/\/cdn\.jsdelivr\.net\/npm\/(?:@[^/]+\/)?[^/@]+@\d+\.\d+\.\d+[^/]*\//,
-];
-const NOT_PINNED = 'not a pinned library URL (cdnjs.cloudflare.com/ajax/libs/<lib>/<x.y.z>/ or cdn.jsdelivr.net/npm/<pkg>@<x.y.z>/)';
+const EXACT_VERSION = /^v?\d+\.\d+\.\d+(?:[-+][0-9a-z.]+)?$/i;
+const FRAME_TAGS = ['iframe', 'frame', 'embed', 'object'];
 const CHROME_CANDIDATES = [
   process.env.CHROME_BIN,
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -156,14 +153,38 @@ const recipeProblems = (html) => {
     .map((recipe) => `a visual uses ${recipe.label}; add --include recipes/${recipe.name}.html`);
 };
 
-// Network and files: pinned, hash-checked libraries from two CDNs; everything else is inline, so a copied page still works
+// Files. A copied page must still work, so nothing loads from beside it. Scripts run code, so each pins a
+// version and is checked by hash; which libraries are trustworthy is judged by the author, not listed here.
 
 const attribute = (tag, name) => {
   const match = tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`, 'i'));
   return match ? (match[1] ?? match[2] ?? match[3]) : undefined;
 };
 
-const standsAlone = (url) => /^(?:data:|#)/i.test(url.trim());
+const reach = (url) => {
+  const value = url.trim();
+  if (/^(?:data:|#)/i.test(value)) return 'inline';
+  if (/^https:\/\//i.test(value)) return 'https';
+  return /^http:\/\//i.test(value) ? 'http' : 'local';
+};
+
+const reachProblems = (url) => ({
+  inline: [],
+  https: [],
+  http: [`${url}: load it over https`],
+  local: [`${url}: a copied page would lose it; load it over https or inline it`],
+})[reach(url)];
+
+// npm-style paths carry the version after the package's "@"; others, like cdnjs, as a path segment of its own.
+const pinnedVersion = (url) => {
+  const segments = URL.canParse(url) ? new URL(url).pathname.split('/') : [];
+  const tagged = segments
+    .filter((segment) => segment.lastIndexOf('@') > 0)
+    .map((segment) => segment.slice(segment.lastIndexOf('@') + 1));
+  return tagged.length ? tagged.every((version) => EXACT_VERSION.test(version)) : segments.some((segment) => EXACT_VERSION.test(segment));
+};
+
+const versionProblems = (url) => (pinnedVersion(url) ? [] : [`${url}: pin an exact version (x.y.z) in the URL`]);
 
 const withoutData = (html) => html.replace(/<script id="spec-data"[^>]*>[\s\S]*?<\/script>/, '');
 
@@ -171,22 +192,38 @@ const inlineScripts = (html) => [...withoutData(html).matchAll(/<script\b([^>]*)
   .filter(([, attributes]) => attribute(attributes, 'src') === undefined)
   .map(([, attributes, body]) => ({ type: (attribute(attributes, 'type') ?? '').toLowerCase(), body }));
 
-const importMapIntegrity = (html) => inlineScripts(html)
+const importMaps = (html) => inlineScripts(html)
   .filter((script) => script.type === 'importmap')
-  .flatMap((script) => {
-    try { return Object.keys(JSON.parse(script.body).integrity ?? {}); } catch { return []; }
+  .map((script) => {
+    try { return { map: JSON.parse(script.body) }; } catch { return { invalid: true }; }
   });
 
-const libraryTagProblems = (html) => [...html.matchAll(/<(script|link)\b[^>]*>/gi)].flatMap(([tag, name]) => {
-  const url = attribute(tag, name.toLowerCase() === 'script' ? 'src' : 'href');
-  if (!url) return [];
-  if (!PINNED_LIBRARY.some((pattern) => pattern.test(url))) return [`${url}: ${NOT_PINNED}`];
-  if (name.toLowerCase() === 'link' && attribute(tag, 'rel')?.toLowerCase() !== 'stylesheet') return [`${url}: only stylesheets may be linked`];
+const importMapIntegrity = (maps) => maps.flatMap(({ map }) => Object.keys(map?.integrity ?? {}));
+
+const importMapUrls = (maps) => maps.flatMap(({ map }) => [
+  ...Object.values(map?.imports ?? {}),
+  ...Object.values(map?.scopes ?? {}).flatMap((scope) => Object.values(scope)),
+]);
+
+const scriptTagProblems = (tag, url) => {
   const hashed = /^sha(256|384|512)-/.test(attribute(tag, 'integrity') ?? '') && attribute(tag, 'crossorigin') === 'anonymous';
-  return hashed ? [] : [`${url}: add integrity="sha384-…" and crossorigin="anonymous"`];
+  return [...versionProblems(url), ...(hashed ? [] : [`${url}: add integrity="sha384-…" and crossorigin="anonymous"`])];
+};
+
+const linkProblems = (tag, url) => (reach(url) === 'https' && attribute(tag, 'rel')?.toLowerCase() !== 'stylesheet'
+  ? [`${url}: only stylesheets may be linked`]
+  : []);
+
+const libraryTagProblems = (html) => [...html.matchAll(/<(script|link)\b[^>]*>/gi)].flatMap(([tag, name]) => {
+  const script = name.toLowerCase() === 'script';
+  const url = attribute(tag, script ? 'src' : 'href');
+  if (!url) return [];
+  const reached = reachProblems(url);
+  if (reached.length) return reached;
+  return script ? scriptTagProblems(tag, url) : linkProblems(tag, url);
 });
 
-const MEDIA_TAGS = /<(?:img|iframe|frame|audio|video|source|embed|object|track|image|use|feimage|input)\b[^>]*>/gi;
+const MEDIA_TAGS = /<(img|iframe|frame|audio|video|source|embed|object|track|image|use|feimage|input)\b[^>]*>/gi;
 const MEDIA_ATTRIBUTES = ['src', 'srcset', 'data', 'href', 'xlink:href', 'poster'];
 
 const mediaUrls = (tag) => MEDIA_ATTRIBUTES.flatMap((name) => {
@@ -195,32 +232,41 @@ const mediaUrls = (tag) => MEDIA_ATTRIBUTES.flatMap((name) => {
   return name === 'srcset' && !/^data:/i.test(value) ? value.split(',').map((candidate) => candidate.trim().split(/\s+/)[0]) : [value];
 });
 
-const mediaProblems = (html) => [...html.matchAll(MEDIA_TAGS)]
-  .flatMap(([tag]) => mediaUrls(tag))
-  .filter((url) => !standsAlone(url))
-  .map((url) => `${url}: the page must stand alone; inline media as SVG or a data: URI`);
+// Images and sound cannot run code, so any https host will do; a framed document can, so it stays inline.
+const framedProblems = (url) => (reach(url) === 'inline'
+  ? []
+  : [`${url}: a framed document runs its own code; embed it as a data: URI or draw it inline`]);
 
-const cssUrlProblems = (markup) => [
-  ...[...markup.matchAll(/url\(\s*['"]?([^'")\s]+)/gi)]
-    .map(([, url]) => url)
-    .filter((url) => !standsAlone(url))
-    .map((url) => `${url}: the page must stand alone; CSS may only use data: URIs and #fragments`),
-  ...[...markup.matchAll(/@import\s+(?:url\()?\s*['"]?([^'");\s]+)/gi)].map(([, url]) => `${url}: stylesheets may not import files`),
-];
+const mediaProblems = (html) => [...html.matchAll(MEDIA_TAGS)].flatMap(([tag, name]) =>
+  mediaUrls(tag).flatMap(FRAME_TAGS.includes(name.toLowerCase()) ? framedProblems : reachProblems));
+
+const cssUrlProblems = (markup) => [...new Set([
+  ...[...markup.matchAll(/url\(\s*['"]?([^'")\s]+)/gi)].map(([, url]) => url),
+  ...[...markup.matchAll(/@import\s+(?:url\()?\s*['"]?([^'");\s]+)/gi)].map(([, url]) => url),
+])].flatMap(reachProblems);
+
+const moduleUrlProblems = (url, hashed) => {
+  const reached = reachProblems(url);
+  if (reached.length) return reached;
+  const version = versionProblems(url);
+  if (version.length) return version;
+  return hashed.includes(url) ? [] : [`${url}: list it under "integrity" in a <script type="importmap"> so the browser checks its hash`];
+};
 
 const scriptUrlProblems = (html) => {
-  const hashed = importMapIntegrity(html);
+  const maps = importMaps(html);
+  const hashed = importMapIntegrity(maps);
   const scripts = inlineScripts(html).filter((script) => script.type !== 'importmap' && script.type !== 'application/json');
-  const urls = scripts.flatMap((script) => [...script.body.matchAll(/['"`](https?:\/\/[^'"`\s]+)['"`]/g)].map((match) => match[1]));
-  return [...new Set(urls)].flatMap((url) => {
-    if (!PINNED_LIBRARY.some((pattern) => pattern.test(url))) return [`${url}: ${NOT_PINNED}`];
-    return hashed.includes(url) ? [] : [`${url}: list it under "integrity" in a <script type="importmap"> so the browser checks its hash`];
-  });
+  const literals = scripts.flatMap((script) => [...script.body.matchAll(/['"`](https?:\/\/[^'"`\s]+)['"`]/g)].map((match) => match[1]));
+  return [
+    ...[...new Set([...importMapUrls(maps), ...literals])].flatMap((url) => moduleUrlProblems(url, hashed)),
+    ...maps.filter(({ invalid }) => invalid).map(() => 'an import map is not valid JSON'),
+  ];
 };
 
 const requestProblems = (html) => inlineScripts(html)
   .flatMap((script) => [...script.body.matchAll(/\b(fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\s*\(/g)].map((match) => match[1]))
-  .map((call) => `an inline script makes a network request (${call}); the page may only load pinned libraries`);
+  .map((call) => `an inline script makes a network request (${call}); embed the data in the page when it is built`);
 
 const networkProblems = (html) => {
   const scanned = withoutData(html);

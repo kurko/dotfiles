@@ -1,14 +1,13 @@
 ---
 name: help-me-spec-interactive
-description: Interview the user for a feature spec through an HTML questionnaire instead of chat prompts. Claude explores the codebase and writes a self-contained page of multiple-choice questions, each with a comment box and, where it helps, a diagram, chess board or other keyboard-driven example; the user answers in the browser and pastes back the answers text the page generates. Rounds repeat until the scope is clear, then Claude writes the spec. Use when the user says "/help-me-spec-interactive", "spec this with a form", "interactive spec", "give me the questions as a page", "HTML questionnaire", or wants to settle many scope questions in one sitting before Claude builds with less review.
+description: Interview the user for a feature spec through an HTML questionnaire instead of chat prompts. Claude explores the codebase and writes a self-contained page of multiple-choice questions, each with a comment box and, where it helps, a diagram, chess board or other keyboard-driven example; the user answers in the browser and pastes back the answers text the page generates. Rounds repeat until the scope is clear, then Claude writes the spec to ai-notes/specs. Manual only; the user invokes it with /help-me-spec-interactive.
 argument-hint: "[feature description, file path, or URL]"
+disable-model-invocation: true
 ---
 
 # Help Me Spec (interactive)
 
 The interview of `help-me-spec`, with each round of questions delivered as a web page instead of AskUserQuestion prompts. A page holds a whole round, 8 to 20 questions, with room for context and pictures next to each; the user answers at their own pace, and one paste brings every answer back. The spec that comes out records the direction the user chose, so Claude can build from it with less review.
-
-For one or two quick questions, AskUserQuestion is faster; use this skill when a feature has many open decisions.
 
 ## Files
 
@@ -17,7 +16,7 @@ Paths are relative to this skill's directory, `SKILL_DIR` (the base directory sh
 | File | Role |
 |---|---|
 | `form-template.html` | Page skeleton, styles and engine: renders the questions, keyboard shortcuts, the live answers text, copy buttons, and saving answers in localStorage. Never edited per round. |
-| `scripts/build-page.mjs` | Builds one self-contained HTML file from a round's parts and checks it: schema, visuals, pinned libraries, then a headless Chrome render that fails on any script error. |
+| `scripts/build-page.mjs` | Builds one self-contained HTML file from a round's parts and checks it: schema, visuals, scripts pinned by version and hash, nothing loaded from beside the page, then a headless Chrome render that fails on any script error. |
 | `authoring.md` | How to write a round: questions, data format, visuals, build. The round subagent follows it. |
 | `visuals.md`, `recipes/` | Tested recipes (Mermaid, chess boards and lines) and the rules for new interactive visuals and libraries. |
 | `examples/pins/` | A complete round using every question and visual type, for a made-up feature. |
@@ -103,7 +102,12 @@ The paste starts with `help-me-spec-interactive answers` and names the page id a
 1. If the page id is not the latest round's, say which round it belongs to and ask whether to use it.
 2. Append the paste verbatim to `transcript.md` under `## Round {N} answers`.
 3. Read `WORK_DIR/round-{N}/data.json`: an answer's meaning is in its option's description, the question's context and its visual, none of which the paste carries.
-4. Restate the decisions in a few lines, one per answered question plus the general comment, so the user can catch a misreading before the next page. An unanswered question in the "Defaults I'll use unless you object" section takes its recommended option, as that section tells the user. For any other unanswered question, say whether the next round asks again or Claude decides and records the assumption. Append the restatement to `transcript.md` under `### Claude's reading`.
+4. Restate the decisions in a few lines, one per answered question plus the general comment, so the user can catch a misreading before the next page. Then sort every question the answers did not settle:
+   - A question with no answer in the "Defaults I'll use unless you object" section takes its recommended option, as that section tells the user.
+   - Any other question with no answer, and any question answered "Other" with no comment saying what Other means, is **delegated** when the user leaves the decision to Claude, in the comment on it or in the general comment ("decide yourself", "I'm tired, make a decision"). Claude decides it and says what it chose and why. In the defaults section, an uncommented "Other" is an objection to the default, so it is never read as acceptance.
+   - Otherwise it is **open**, and Claude does not decide it. The next round asks it again with Claude's recommendation marked.
+
+   Append the restatement, with the delegated and open questions listed by name, to `transcript.md` under `### Claude's reading`.
 5. If the paste says `Next step: Stop asking and write the spec`, go to Step 4. Otherwise loop to 3a with `N + 1`, without waiting. If the user corrects the restatement while that subagent runs, append the correction to `transcript.md` and forward it to the subagent with SendMessage, so the next page is not built on the misreading.
 
 The user may answer in chat instead ("Q3 is 2, skip Q5"); handle it the same way.
@@ -111,6 +115,16 @@ The user may answer in chat instead ("Q3 is 2, skip Q5"); handle it the same way
 After round 3, ask whether to continue or write the spec. One page holds as much as five AskUserQuestion rounds, so three pages is a long interview.
 
 ## Step 4: Write the spec
+
+### 4a. Stop on a critical open question
+
+List the open questions from every round's "Claude's reading" that no later answer settled. An open question is critical when the spec cannot be written without guessing its answer, because the answer changes the architecture, the data shape, or what gets built.
+
+If any is critical, do not write the spec. Stop, and present each critical question with Claude's recommendation, the reason, and what the spec would look like under it, so the user can approve it or choose otherwise when they are back. Append the proposals to `transcript.md` under `## Proposals awaiting approval`.
+
+When the user answers, append the reply verbatim under `## Answers to proposals`, sorted as in 3c.4 (a reply leaving the decision to Claude delegates it), and continue with 4b.
+
+### 4b. Launch the spec writer
 
 Launch a final `general-purpose` subagent (model `opus`):
 
@@ -121,7 +135,10 @@ Read {WORK_DIR}/transcript.md: the starting context, every round of answers
 and Claude's reading of each. Read {WORK_DIR}/round-*/data.json alongside it:
 an answer means what its option's description and the question's context
 say. An unanswered question in a "Defaults I'll use unless you object"
-section takes its recommended option.
+section takes its recommended option. Claude's reading lists the other
+unanswered questions as delegated (the user left the decision to Claude) or
+open (the user did not); an answer under "Answers to proposals" settles the
+open question it answers. Never present an open question as decided.
 
 1. Explore the codebase to verify and enrich the interview findings: read
    the relevant files, check existing patterns, understand the domain model.
@@ -136,22 +153,22 @@ section takes its recommended option.
    - Edge cases and error handling
    - Security: auth, validation, data access
    - Migration path
-   - Decisions made without an answer: every question left unanswered or
-     answered "Other" without detail, with the decision taken and why, so
-     the user can review these instead of the whole spec
-   - Open questions
+   - Delegated decisions: each question the user left to Claude, with the
+     decision and why
+   - Proposals awaiting approval: each open question, with the recommended
+     answer and why; every part of the spec that depends on one names it
    - Out of scope
 3. Be specific: real file paths and class names, code examples where they
    clarify, and a note wherever the spec departs from an existing pattern.
    A spec is a reference document; keep it concise.
 
-Save it to ./ai-notes/specs/{SLUG}.md when ./ai-notes exists, otherwise to
-./docs/{SLUG}.md. Return the path and the full text.
+Save it to ./ai-notes/specs/{SLUG}.md, creating the directory if it does not
+exist. Return the path and the full text.
 ```
 
 ## Step 5: Present the spec
 
-Show the spec and its path, with the "Decisions made without an answer" section called out. Make small adjustments the user asks for directly, without another subagent.
+Show the spec and its path. Call out the "Delegated decisions" for review and the "Proposals awaiting approval" for approval. Nothing that depends on a proposal is built until the user approves it. Make small adjustments the user asks for directly, without another subagent.
 
 ## Usage
 

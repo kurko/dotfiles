@@ -292,21 +292,38 @@ describe('staticProblems', () => {
     assert.deepEqual(staticProblems(edited, template), ['the engine script differs from form-template.html; rebuild the page']);
   });
 
-  test('requires pinned, hash-checked libraries from the two CDNs', () => {
+  test('requires scripts from any host to use https, an exact version and a hash', () => {
     const includes = [
+      '<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-x" crossorigin="anonymous"></script>',
       '<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>',
       '<script src="https://cdn.jsdelivr.net/npm/d3/dist/d3.min.js" integrity="sha384-x" crossorigin="anonymous"></script>',
-      '<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-x" crossorigin="anonymous"></script>',
+      '<script src="http://cdn.example.com/x@1.0.0/x.js" integrity="sha384-x" crossorigin="anonymous"></script>',
+      '<script src="./helpers.js"></script>',
       '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter">',
+      '<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js">',
     ];
-    const notPinned = (url) => `${url}: not a pinned library URL (cdnjs.cloudflare.com/ajax/libs/<lib>/<x.y.z>/ or cdn.jsdelivr.net/npm/<pkg>@<x.y.z>/)`;
 
     assert.deepEqual(staticProblems(pageWith({ includes }), template), [
       'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js: add integrity="sha384-…" and crossorigin="anonymous"',
-      notPinned('https://cdn.jsdelivr.net/npm/d3/dist/d3.min.js'),
-      notPinned('https://unpkg.com/d3@7.9.0/dist/d3.min.js'),
-      notPinned('https://fonts.googleapis.com/css2?family=Inter'),
+      'https://cdn.jsdelivr.net/npm/d3/dist/d3.min.js: pin an exact version (x.y.z) in the URL',
+      'http://cdn.example.com/x@1.0.0/x.js: load it over https',
+      './helpers.js: a copied page would lose it; load it over https or inline it',
+      'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js: only stylesheets may be linked',
     ]);
+  });
+
+  test('takes the version from the package in the path, not from anything version-shaped', () => {
+    const hashed = (url) => `<script src="${url}" integrity="sha384-x" crossorigin="anonymous"></script>`;
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/a@7/dist/a.js',
+      'https://cdn.jsdelivr.net/npm/b@^1.4.0/dist/b.js',
+      'https://cdn.jsdelivr.net/npm/c@latest/dist/1.0.0/c.js',
+      'https://cdn.example.com/d/dist/d.js?deps=react@18.2.0',
+      'https://cdn.jsdelivr.net/npm/@scope/e@1.0.0+build.5/dist/e.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/f.js/2.0.1/f.min.js',
+    ];
+
+    assert.deepEqual(staticProblems(pageWith({ includes: urls.map(hashed) }), template), urls.slice(0, 4).map((url) => `${url}: pin an exact version (x.y.z) in the URL`));
   });
 
   test('reads library tags however their attributes are quoted or cased', () => {
@@ -315,46 +332,74 @@ describe('staticProblems', () => {
       '<script src=https://unpkg.com/b@1.0.0/b.js></script>',
       '<SCRIPT SRC="https://unpkg.com/c@1.0.0/c.js"></SCRIPT>',
       '<script src = "https://unpkg.com/d@1.0.0/d.js"></script>',
-      "<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Lora'>",
+      "<link rel='stylesheet' href='./local.css'>",
     ];
-    const notPinned = (url) => `${url}: not a pinned library URL (cdnjs.cloudflare.com/ajax/libs/<lib>/<x.y.z>/ or cdn.jsdelivr.net/npm/<pkg>@<x.y.z>/)`;
+    const unhashed = (url) => `${url}: add integrity="sha384-…" and crossorigin="anonymous"`;
 
     assert.deepEqual(staticProblems(pageWith({ includes }), template), [
-      notPinned('https://unpkg.com/a@1.0.0/a.js'),
-      notPinned('https://unpkg.com/b@1.0.0/b.js'),
-      notPinned('https://unpkg.com/c@1.0.0/c.js'),
-      notPinned('https://unpkg.com/d@1.0.0/d.js'),
-      notPinned('https://fonts.googleapis.com/css2?family=Lora'),
+      unhashed('https://unpkg.com/a@1.0.0/a.js'),
+      unhashed('https://unpkg.com/b@1.0.0/b.js'),
+      unhashed('https://unpkg.com/c@1.0.0/c.js'),
+      unhashed('https://unpkg.com/d@1.0.0/d.js'),
+      './local.css: a copied page would lose it; load it over https or inline it',
     ]);
   });
 
-  test('requires module imports to be listed in an import map with a hash', () => {
+  test('requires module imports to pin a version and be listed in an import map with a hash', () => {
     const url = 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js';
-    const includes = [`<script type="module">import { Chess } from '${url}';</script>`];
+    const includes = [`<script type="module">import { Chess } from '${url}'; import { x } from 'https://cdn.jsdelivr.net/npm/x/dist/x.js';</script>`];
 
     assert.deepEqual(staticProblems(pageWith({ includes }), template), [
       `${url}: list it under "integrity" in a <script type="importmap"> so the browser checks its hash`,
+      'https://cdn.jsdelivr.net/npm/x/dist/x.js: pin an exact version (x.y.z) in the URL',
     ]);
   });
 
-  test('rejects media and CSS files a copied page would lose, allowing data: URIs and #fragments', () => {
+  test('checks the URLs an import map maps names to', () => {
+    const pinned = 'https://cdn.jsdelivr.net/npm/nanoid@5.1.5/index.browser.js';
+    const includes = [
+      `<script type="importmap">{ "imports": { "nanoid": "https://cdn.jsdelivr.net/npm/nanoid/+esm" }, "scopes": { "/": { "id": "${pinned}" } } }</script>`,
+      '<script type="importmap">{ "imports": </script>',
+    ];
+
+    assert.deepEqual(staticProblems(pageWith({ includes }), template), [
+      'https://cdn.jsdelivr.net/npm/nanoid/+esm: pin an exact version (x.y.z) in the URL',
+      `${pinned}: list it under "integrity" in a <script type="importmap"> so the browser checks its hash`,
+      'an import map is not valid JSON',
+    ]);
+  });
+
+  test('rejects media and CSS files a copied page would lose, allowing https, data: URIs and #fragments', () => {
     const includes = [
       '<img src="./board.png" alt="">',
       '<img src="https://example.com/board.png" alt="">',
-      '<svg><image href="https://example.com/piece.png"/><use href="#piece"/></svg>',
+      '<svg><image href="//example.com/piece.png"/><use href="#piece"/></svg>',
+      '<iframe src="https://example.com/page.html"></iframe>',
+      '<frame src="https://example.com/frame.html">',
+      '<embed src="https://example.com/plugin.swf">',
+      '<object data="https://example.com/doc.pdf"></object>',
+      '<iframe src="data:text/html,<p>inline</p>"></iframe>',
       '<video poster="file:///tmp/poster.png"></video>',
+      '<img src="http://example.com/board.png" alt="">',
       '<img src="data:image/png;base64,AAAA" alt="">',
       '<div style="background: url(./board.png)"></div>',
+      '<style>@import url("https://fonts.googleapis.com/css2?family=Inter"); .x { background: url(https://example.com/a.png) }</style>',
       '<svg><defs><linearGradient id="g"/></defs><rect fill="url(#g)"/></svg>',
     ];
-    const media = (url) => `${url}: the page must stand alone; inline media as SVG or a data: URI`;
+    const local = (url) => `${url}: a copied page would lose it; load it over https or inline it`;
+
+    const framed = (url) => `${url}: a framed document runs its own code; embed it as a data: URI or draw it inline`;
 
     assert.deepEqual(staticProblems(pageWith({ includes }), template), [
-      media('./board.png'),
-      media('https://example.com/board.png'),
-      media('https://example.com/piece.png'),
-      media('file:///tmp/poster.png'),
-      './board.png: the page must stand alone; CSS may only use data: URIs and #fragments',
+      local('./board.png'),
+      local('//example.com/piece.png'),
+      framed('https://example.com/page.html'),
+      framed('https://example.com/frame.html'),
+      framed('https://example.com/plugin.swf'),
+      framed('https://example.com/doc.pdf'),
+      local('file:///tmp/poster.png'),
+      'http://example.com/board.png: load it over https',
+      local('./board.png'),
     ]);
   });
 
@@ -362,7 +407,7 @@ describe('staticProblems', () => {
     const includes = ['<script>fetch("/api");</script>'];
 
     assert.deepEqual(staticProblems(pageWith({ includes }), template), [
-      'an inline script makes a network request (fetch); the page may only load pinned libraries',
+      'an inline script makes a network request (fetch); embed the data in the page when it is built',
     ]);
   });
 

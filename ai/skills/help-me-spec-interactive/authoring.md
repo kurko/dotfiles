@@ -8,7 +8,7 @@ The round subagent follows this file. The user sets a feature's direction by ans
 
 - Ask about what changes what gets built: scope, data shape, where logic lives, behaviour at the edges, failure handling, what is left out. A wrong guess there takes the work far from what the user wants. Details a competent developer settles alone are not questions.
 - Make each question specific to this codebase. The context names the file, model or pattern involved and what it does today.
-- Never ask again what the transcript answers. An answer that opens a new decision is the best source of follow-ups. Ask an unanswered question again only when the spec cannot proceed without it.
+- Never ask again what the transcript answers or delegates to Claude. An answer that opens a new decision is the best source of follow-ups. Every question that Claude's reading lists as open comes back, with Claude's recommendation marked, reworded if the silence suggests it was unclear.
 - Every option is a real choice, with its trade-off in the description. With a recommendation, mark exactly one option `recommended` and give the reason in its description. Nothing is pre-selected: an unanswered question has to look unanswered.
 - Put the decisions Claude would otherwise make silently in a last section titled "Defaults I'll use unless you object", as short questions with the default recommended. An unanswered question there counts as its recommended option, so every question in it needs one. The user accepts them in seconds and catches the one that matters.
 - Round 1: 8 to 20 questions in 2 to 5 sections, the most direction-setting first. Later rounds: follow-ups only, usually 3 to 10. Needing more than 20 suggests the feature should be split; say so in the summary.
@@ -101,7 +101,7 @@ Include a recipe only when the page uses it. The build writes the page, then che
 
 - the data against the rules above, and every visual id against the templates
 - a chess or Mermaid visual without its recipe
-- files: only pinned, hash-checked libraries from the two allowed CDNs; images and CSS `url()` must be `data:` URIs or `#fragments`, so the page still works when copied elsewhere
+- files: every script pins an exact version and is checked by hash; nothing loads over plain http or from beside the page, so it still works when copied elsewhere
 - a headless Chrome render: a script error, a library that fails to load or fails its hash, a Mermaid diagram that does not parse, a malformed board or an illegal chess move each fails the build
 
 The build prints `ok` or the list of problems. Fix the parts and rebuild; never edit the built page, because `--check` rejects an engine that differs from the template.
