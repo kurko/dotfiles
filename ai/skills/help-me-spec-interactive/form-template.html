@@ -1,0 +1,574 @@
+<!doctype html>
+<!-- help-me-spec-interactive questionnaire. Built by scripts/build-page.mjs from a round's parts; edit the parts, not this output. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!-- @title --></title>
+<script>
+  // Errors and failed library loads are listed on <html data-spec-errors>, where build-page.mjs reads them.
+  (() => {
+    const errors = [];
+    window.reportSpecError = (message) => {
+      errors.push(String(message));
+      document.documentElement.setAttribute('data-spec-errors', JSON.stringify(errors));
+    };
+    window.addEventListener('error', (event) => {
+      const target = event.target;
+      if (target instanceof Element) {
+        window.reportSpecError(`failed to load ${target.getAttribute('src') || target.getAttribute('href') || `a ${target.tagName.toLowerCase()} (an import or its hash)`}`);
+      } else {
+        window.reportSpecError(event.message);
+      }
+    }, true);
+    window.addEventListener('unhandledrejection', (event) => {
+      window.reportSpecError(event.reason && event.reason.message ? event.reason.message : event.reason);
+    });
+  })();
+</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7f9;
+    --fg: #1f2328;
+    --muted: #59636e;
+    --card: #ffffff;
+    --border: #d1d9e0;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --ok: #1a7f37;
+    --badge: #9a6700;
+    --badge-soft: #fff8c5;
+    --code-bg: #eff2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #9198a1;
+      --card: #151b23;
+      --border: #3d444d;
+      --accent: #4493f8;
+      --accent-soft: #12263f;
+      --ok: #3fb950;
+      --badge: #d29922;
+      --badge-soft: #2e2a14;
+      --code-bg: #212830;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 5rem; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .page { max-width: 880px; margin: 0 auto; padding: 0 16px 5rem; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button { font: inherit; font-size: .9rem; padding: .35rem .8rem; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--fg); cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  code { font: .88em ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: .1em .3em; border-radius: 4px; }
+  pre { overflow-x: auto; white-space: pre; background: var(--code-bg); padding: .75rem .9rem; border-radius: 6px; font: .85rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  kbd { font: .8rem ui-monospace, Menlo, monospace; padding: .05rem .35rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; background: var(--card); }
+
+  .topbar { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+  .topbar-inner { max-width: 880px; margin: 0 auto; padding: .55rem 16px; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+  .progress { display: flex; align-items: center; gap: .6rem; margin-right: auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .progress progress { width: 7rem; height: .5rem; accent-color: var(--ok); }
+  .status { flex-basis: 100%; font-size: .85rem; color: var(--ok); min-height: 0; }
+  .status:empty { display: none; }
+  .shortcut-help { max-width: 880px; margin: 0 auto; padding: 0 16px .75rem; }
+  .shortcut-help dl { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; margin: 0; font-size: .9rem; }
+  .shortcut-help dt { text-align: right; }
+  .shortcut-help dd { margin: 0; color: var(--muted); }
+
+  header { margin: 2rem 0 1rem; }
+  .eyebrow { margin: 0; font-size: .8rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 1.75rem; line-height: 1.25; margin: .2rem 0 .75rem; }
+  .summary p { margin: .5rem 0; }
+  .how { font-size: .9rem; color: var(--muted); }
+  h2 { font-size: 1.3rem; margin: 2.75rem 0 .5rem; }
+  .section-intro { color: var(--muted); }
+
+  fieldset.question { margin: 1.25rem 0; padding: 1rem 1.1rem 1.1rem; border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 10px; background: var(--card); min-width: 0; }
+  fieldset.question:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  fieldset.question[data-answered] { border-left-color: var(--ok); }
+  fieldset.question legend { float: left; width: 100%; padding: 0; margin: 0 0 .4rem; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
+  fieldset.question legend + * { clear: both; }
+  .number { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: .45rem; }
+  .chip { display: inline-block; font-size: .72rem; font-weight: 600; padding: .05rem .5rem; margin-right: .45rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); vertical-align: .12em; }
+  .hint { display: block; font-size: .8rem; font-weight: 400; color: var(--muted); }
+  .context { color: var(--muted); font-size: .95rem; }
+  .context p { margin: .35rem 0; }
+  .visual { margin: .9rem 0; }
+  .visual-row { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption, .caption { margin-top: .35rem; font-size: .85rem; color: var(--muted); max-width: 22rem; }
+  .missing-visual { color: #cf222e; font-weight: 600; }
+
+  .options { display: grid; gap: .5rem; margin: .9rem 0 .75rem; }
+  .options.with-visuals { grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); align-items: start; }
+  .option { border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+  .option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .option label { display: grid; grid-template-columns: auto auto 1fr; gap: .15rem .6rem; align-items: baseline; padding: .55rem .75rem; cursor: pointer; }
+  .option input { margin: 0; translate: 0 .12em; accent-color: var(--accent); }
+  .key { font: .72rem ui-monospace, Menlo, monospace; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 .3rem; }
+  .option-label { font-weight: 600; }
+  .badge { display: inline-block; font-size: .7rem; font-weight: 600; padding: 0 .45rem; border-radius: 999px; background: var(--badge-soft); color: var(--badge); vertical-align: .1em; }
+  .option-description { grid-column: 3; font-size: .92rem; color: var(--muted); }
+  .option.other .option-label { font-weight: 500; }
+  .option-visual { padding: 0 .75rem .75rem; }
+
+  .comment { display: block; }
+  .comment > span { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
+  textarea { display: block; width: 100%; font: inherit; font-size: .95rem; padding: .5rem .6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); resize: vertical; }
+  .next-steps { margin: 1rem 0 0; padding: 0; border: 0; }
+  .next-steps legend { font-weight: 600; margin-bottom: .3rem; }
+  .next-step { display: block; padding: .15rem 0; cursor: pointer; }
+  .answers { margin-top: 3rem; padding: .25rem 1.1rem 1.1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+  .answers h2 { margin-top: 1rem; }
+  #answers-text { font: .82rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 18rem; background: var(--code-bg); }
+  .actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .75rem; }
+  .actions .status { flex-basis: auto; }
+</style>
+</head>
+<body>
+<noscript><p class="page">This page needs JavaScript to show its questions.</p></noscript>
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="progress"><span id="progress-text">0 answered</span><progress id="progress-meter" value="0" max="1" aria-hidden="true"></progress></span>
+    <button type="button" id="next-unanswered" title="Shortcut: n">Next unanswered</button>
+    <button type="button" data-copy-answers>Copy answers</button>
+    <button type="button" id="toggle-help" aria-expanded="false" aria-controls="shortcut-help" title="Shortcut: ?">Keys</button>
+    <span class="status" role="status" data-copy-status></span>
+  </div>
+  <div id="shortcut-help" class="shortcut-help" hidden>
+    <dl>
+      <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>Next or previous question</dd>
+      <dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Choose that option in the question that has the focus (toggles on multi-choice)</dd>
+      <dt><kbd>0</kbd></dt><dd>Choose Other, then explain in the comment</dd>
+      <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Space</kbd></dt><dd>Move between options and select, as in any form</dd>
+      <dt><kbd>c</kbd></dt><dd>Comment on the current question; <kbd>Esc</kbd> leaves the comment box</dd>
+      <dt><kbd>n</kbd></dt><dd>Next unanswered question</dd>
+      <dt><kbd>Tab</kbd></dt><dd>Every control, including boards and diagrams that respond to keys</dd>
+      <dt><kbd>?</kbd></dt><dd>Show or hide this list</dd>
+    </dl>
+  </div>
+</div>
+<main class="page">
+  <header>
+    <p class="eyebrow" id="page-round"></p>
+    <h1 id="page-title"></h1>
+    <div id="page-summary" class="summary"></div>
+    <p class="how">Pick an option for each question and comment where you want to. The text at the bottom updates as you go; copy it into the conversation when you are done. This browser keeps your answers if you reload. Keys: <kbd>j</kbd>/<kbd>k</kbd> move, <kbd>1</kbd>–<kbd>6</kbd> choose, <kbd>c</kbd> comment, <kbd>?</kbd> for the rest.</p>
+  </header>
+  <div id="questions"></div>
+  <section aria-labelledby="wrap-up-title">
+    <h2 id="wrap-up-title">Wrap-up</h2>
+    <label class="comment" for="general-comment"><span>Anything these questions missed: direction, constraints, what to leave out</span></label>
+    <textarea id="general-comment" rows="4"></textarea>
+    <fieldset class="next-steps" id="next-steps"><legend>After this round</legend></fieldset>
+  </section>
+  <section class="answers" aria-labelledby="answers-title">
+    <h2 id="answers-title">Your answers</h2>
+    <label for="answers-text" class="comment"><span>Copy this into the conversation.</span></label>
+    <textarea id="answers-text" readonly rows="16"></textarea>
+    <div class="actions">
+      <button type="button" class="primary" data-copy-answers>Copy answers</button>
+      <button type="button" id="clear-answers">Clear all answers</button>
+      <span class="status" role="status" data-copy-status></span>
+    </div>
+  </section>
+</main>
+
+<!-- @visuals -->
+
+<script id="spec-data" type="application/json"><!-- @data --></script>
+
+<script id="spec-engine">
+(() => {
+  'use strict';
+
+  const OTHER = 'other';
+  const STORAGE_PREFIX = 'help-me-spec-interactive:';
+  const DEFAULT_NEXT_STEP = 'follow-up';
+  const NEXT_STEPS = {
+    'follow-up': 'Ask follow-up questions if you need to',
+    'write-spec': 'Stop asking and write the spec',
+  };
+
+  // Answers text. Claude parses it, and tests/page.test.mjs pins its format.
+
+  const numberedQuestions = (data) => data.sections
+    .flatMap((section) => section.questions.map((question) => ({ question, section })))
+    .map((entry, index) => ({ ...entry, number: index + 1 }));
+
+  const emptyState = () => ({ choices: {}, comments: {}, general: '', nextStep: DEFAULT_NEXT_STEP });
+
+  const choicesFor = (state, question) => state.choices[question.id] || [];
+
+  const isAnswered = (state, question) => choicesFor(state, question).length > 0;
+
+  const choiceLabel = (question, choice) => (choice === OTHER ? 'Other' : question.options[choice].label);
+
+  const answerText = (state, question) => {
+    const choices = choicesFor(state, question);
+    return choices.length ? choices.map((choice) => choiceLabel(question, choice)).join('; ') : '(no answer)';
+  };
+
+  const indented = (text) => text.trim().split('\n').join('\n  ');
+
+  const formatQuestion = ({ question, number }, state) => {
+    const lines = [`Q${number} [${question.header}] ${question.question}`, `A: ${answerText(state, question)}`];
+    const comment = (state.comments[question.id] || '').trim();
+    return (comment ? [...lines, `Comment: ${indented(comment)}`] : lines).join('\n');
+  };
+
+  const formatHeading = (data, entries, state) => {
+    const answered = entries.filter(({ question }) => isAnswered(state, question)).length;
+    return ['help-me-spec-interactive answers', `Page: ${data.id} (round ${data.round})`, `Answered: ${answered} of ${entries.length}`].join('\n');
+  };
+
+  const formatSection = (section, entries, state) => [
+    `## ${section.title}`,
+    ...entries.filter((entry) => entry.section === section).map((entry) => formatQuestion(entry, state)),
+  ];
+
+  const formatWrapUp = (state) => {
+    const nextStep = `Next step: ${NEXT_STEPS[state.nextStep] || NEXT_STEPS[DEFAULT_NEXT_STEP]}`;
+    const general = (state.general || '').trim();
+    return ['## Wrap-up', general ? `${nextStep}\nGeneral comment: ${indented(general)}` : nextStep];
+  };
+
+  const formatAnswers = (data, state) => {
+    const entries = numberedQuestions(data);
+    const blocks = [
+      formatHeading(data, entries, state),
+      ...data.sections.flatMap((section) => formatSection(section, entries, state)),
+      ...formatWrapUp(state),
+    ];
+    return `${blocks.join('\n\n')}\n`;
+  };
+
+  // Rendering. Every piece of data text goes in through textContent.
+
+  const byId = (id) => document.getElementById(id);
+
+  const element = (tag, attributes = {}, text) => {
+    const node = document.createElement(tag);
+    Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, value));
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  const appendInline = (parent, text) => {
+    text.split('`').forEach((part, index) => {
+      if (part) parent.append(index % 2 ? element('code', {}, part) : part);
+    });
+  };
+
+  const inlineText = (tag, className, text) => {
+    const node = element(tag, { class: className });
+    appendInline(node, text);
+    return node;
+  };
+
+  const paragraphs = (className, text) => {
+    const node = element('div', { class: className });
+    text.split(/\n\s*\n/).forEach((paragraph) => node.append(inlineText('p', '', paragraph.trim())));
+    return node;
+  };
+
+  const visualBlock = (id, className) => {
+    const node = element('div', { class: className });
+    const template = byId(id);
+    if (template instanceof HTMLTemplateElement) {
+      node.append(template.content.cloneNode(true));
+    } else {
+      window.reportSpecError(`no <template id="${id}"> for a visual`);
+      node.append(element('p', { class: 'missing-visual' }, `Missing visual: ${id}`));
+    }
+    return node;
+  };
+
+  const renderChoice = (question, { value, key, label, description, recommended, visual }) => {
+    const wrapper = element('div', { class: value === OTHER ? 'option other' : 'option' });
+    const control = element('label');
+    const text = element('span', { class: 'option-text' });
+    text.append(element('span', { class: 'option-label' }, label));
+    if (recommended) text.append(' ', element('span', { class: 'badge' }, 'Recommended'));
+    const input = element('input', { type: question.multiSelect ? 'checkbox' : 'radio', name: `q-${question.id}`, value });
+    control.append(input, element('span', { class: 'key', 'aria-hidden': 'true' }, key), text);
+    if (description) control.append(inlineText('span', 'option-description', description));
+    wrapper.append(control);
+    if (visual) wrapper.append(visualBlock(visual, 'option-visual'));
+    return wrapper;
+  };
+
+  const renderOptions = (question) => {
+    const list = element('div', { class: question.options.some((option) => option.visual) ? 'options with-visuals' : 'options' });
+    question.options.forEach((option, index) => {
+      list.append(renderChoice(question, { ...option, value: String(index), key: String(index + 1) }));
+    });
+    list.append(renderChoice(question, { value: OTHER, key: '0', label: 'Other', description: 'Explain in the comment below.' }));
+    return list;
+  };
+
+  const renderLegend = (question, number) => {
+    const legend = element('legend');
+    legend.append(
+      element('span', { class: 'number' }, `Q${number}`),
+      element('span', { class: 'chip' }, question.header),
+      inlineText('span', 'question-text', question.question),
+    );
+    if (question.multiSelect) legend.append(element('span', { class: 'hint' }, 'Choose any that apply'));
+    return legend;
+  };
+
+  const renderComment = (question) => {
+    const label = element('label', { class: 'comment' });
+    label.append(
+      element('span', {}, 'Comment'),
+      element('textarea', { rows: '2', name: `comment-${question.id}`, placeholder: 'Optional: a side comment, a condition, or what "Other" means' }),
+    );
+    return label;
+  };
+
+  const renderQuestion = ({ question, number }) => {
+    const fieldset = element('fieldset', { class: 'question', id: `q-${question.id}`, 'data-question': question.id });
+    fieldset.append(renderLegend(question, number));
+    if (question.context) fieldset.append(paragraphs('context', question.context));
+    if (question.visual) fieldset.append(visualBlock(question.visual, 'visual'));
+    fieldset.append(renderOptions(question), renderComment(question));
+    return fieldset;
+  };
+
+  const renderSection = (section, entries) => {
+    const group = element('section', { class: 'group' });
+    group.append(element('h2', {}, section.title));
+    if (section.intro) group.append(paragraphs('section-intro', section.intro));
+    entries.filter((entry) => entry.section === section).forEach((entry) => group.append(renderQuestion(entry)));
+    return group;
+  };
+
+  const renderHeader = (data) => {
+    byId('page-round').textContent = `Spec questions · round ${data.round}`;
+    byId('page-title').textContent = data.title;
+    byId('page-summary').append(paragraphs('', data.summary));
+  };
+
+  const renderNextSteps = (container) => {
+    Object.entries(NEXT_STEPS).forEach(([value, label]) => {
+      const control = element('label', { class: 'next-step' });
+      control.append(element('input', { type: 'radio', name: 'next-step', value }), ' ', label);
+      container.append(control);
+    });
+  };
+
+  // State lives in the form controls; this reads and restores it.
+
+  const questionFieldset = (id) => document.querySelector(`fieldset[data-question="${id}"]`);
+
+  const choiceInputs = (fieldset) => [...fieldset.querySelectorAll(':scope > .options > .option > label > input')];
+
+  const commentBox = (fieldset) => fieldset.querySelector(':scope > .comment > textarea');
+
+  const readChoices = (fieldset) => choiceInputs(fieldset)
+    .filter((input) => input.checked)
+    .map((input) => (input.value === OTHER ? OTHER : Number(input.value)));
+
+  const readState = (entries) => ({
+    choices: Object.fromEntries(entries.map(({ question }) => [question.id, readChoices(questionFieldset(question.id))])),
+    comments: Object.fromEntries(entries.map(({ question }) => [question.id, commentBox(questionFieldset(question.id)).value])),
+    general: byId('general-comment').value,
+    nextStep: document.querySelector('input[name="next-step"]:checked')?.value || DEFAULT_NEXT_STEP,
+  });
+
+  const applyState = (entries, state) => {
+    entries.forEach(({ question }) => {
+      const fieldset = questionFieldset(question.id);
+      const chosen = choicesFor(state, question).map(String);
+      choiceInputs(fieldset).forEach((input) => { input.checked = chosen.includes(input.value); });
+      commentBox(fieldset).value = state.comments[question.id] || '';
+    });
+    byId('general-comment').value = state.general || '';
+    const nextStep = NEXT_STEPS[state.nextStep] ? state.nextStep : DEFAULT_NEXT_STEP;
+    document.querySelectorAll('input[name="next-step"]').forEach((input) => { input.checked = input.value === nextStep; });
+  };
+
+  const fingerprint = (text) => [...text]
+    .reduce((hash, char) => Math.imul(hash ^ char.charCodeAt(0), 0x01000193) >>> 0, 0x811c9dc5)
+    .toString(36);
+
+  // Choices are saved as option indexes, so a page rebuilt with different options must not read them back.
+  const storageKey = (data) => {
+    const shape = numberedQuestions(data).map(({ question }) => [question.id, question.options.map((option) => option.label)]);
+    return `${STORAGE_PREFIX}${data.id}:${fingerprint(JSON.stringify(shape))}`;
+  };
+
+  const storage = (data) => {
+    const key = storageKey(data);
+    return {
+      load: () => {
+        try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+      },
+      save: (state) => {
+        try { localStorage.setItem(key, JSON.stringify(state)); } catch { /* storage is off: answers still live in the page */ }
+      },
+    };
+  };
+
+  const refresh = (context) => {
+    const state = readState(context.entries);
+    const answered = context.entries.filter(({ question }) => isAnswered(state, question));
+    context.entries.forEach(({ question }) => {
+      questionFieldset(question.id).toggleAttribute('data-answered', answered.some((entry) => entry.question === question));
+    });
+    byId('progress-text').textContent = `${answered.length} of ${context.entries.length} answered`;
+    byId('progress-meter').value = answered.length;
+    byId('answers-text').value = formatAnswers(context.data, state);
+    context.store.save(state);
+  };
+
+  // Keyboard. Widgets that handle a key call preventDefault, and the page leaves that key alone.
+
+  const TEXT_ENTRY = 'textarea, select, [contenteditable]:not([contenteditable="false"]), input:not([type="radio"]):not([type="checkbox"])';
+
+  const scrollBehavior = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+
+  const focusFirstChoice = (fieldset) => {
+    const inputs = choiceInputs(fieldset);
+    (inputs.find((input) => input.checked) || inputs[0]).focus({ preventScroll: true });
+  };
+
+  const toggleHelp = () => {
+    const panel = byId('shortcut-help');
+    panel.hidden = !panel.hidden;
+    byId('toggle-help').setAttribute('aria-expanded', String(!panel.hidden));
+  };
+
+  const navigation = (context) => {
+    let current = -1;
+    const fieldsets = () => [...document.querySelectorAll('fieldset.question')];
+
+    const track = (event) => {
+      const fieldset = event.target.closest?.('fieldset.question');
+      if (fieldset) current = fieldsets().indexOf(fieldset);
+    };
+
+    const focusQuestion = (index) => {
+      const list = fieldsets();
+      current = Math.max(0, Math.min(index, list.length - 1));
+      focusFirstChoice(list[current]);
+      list[current].scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+    };
+
+    const focusAnswers = () => {
+      byId('answers-text').focus({ preventScroll: true });
+      byId('answers-text').scrollIntoView({ block: 'center', behavior: scrollBehavior() });
+    };
+
+    const nextUnanswered = () => {
+      const list = fieldsets();
+      const index = list.map((_, offset) => (current + 1 + offset) % list.length).find((candidate) => !list[candidate].hasAttribute('data-answered'));
+      if (index === undefined) focusAnswers();
+      else focusQuestion(index);
+    };
+
+    // Only the focused question: a digit pressed elsewhere must not change an answer off screen.
+    const chooseByKey = (key) => {
+      const fieldset = document.activeElement?.closest('fieldset.question');
+      if (!fieldset) return;
+      const inputs = choiceInputs(fieldset);
+      const input = key === '0' ? inputs.find((candidate) => candidate.value === OTHER) : inputs.filter((candidate) => candidate.value !== OTHER)[Number(key) - 1];
+      if (!input) return;
+      input.checked = input.type === 'checkbox' ? !input.checked : true;
+      input.focus({ preventScroll: true });
+      refresh(context);
+    };
+
+    const focusComment = () => {
+      current = Math.max(current, 0);
+      commentBox(fieldsets()[current]).focus();
+    };
+
+    const leaveTextEntry = (field) => {
+      const fieldset = field.closest('fieldset.question');
+      if (fieldset) focusFirstChoice(fieldset);
+      else field.blur();
+    };
+
+    const shortcuts = { j: () => focusQuestion(current + 1), k: () => focusQuestion(current - 1), n: nextUnanswered, c: focusComment, '?': toggleHelp };
+
+    const onKeydown = (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return;
+      const field = event.target.closest?.(TEXT_ENTRY);
+      if (field) {
+        if (event.key === 'Escape') leaveTextEntry(field);
+        return;
+      }
+      if (event.target.closest?.('[data-own-keys]')) return;
+      const action = /^[0-9]$/.test(event.key) ? () => chooseByKey(event.key) : shortcuts[event.key];
+      if (!action) return;
+      event.preventDefault();
+      action();
+    };
+
+    return { track, onKeydown, nextUnanswered };
+  };
+
+  const showStatus = (message) => {
+    document.querySelectorAll('[data-copy-status]').forEach((node) => { node.textContent = message; });
+  };
+
+  const copyAnswers = async () => {
+    const answers = byId('answers-text');
+    try {
+      await navigator.clipboard.writeText(answers.value);
+      showStatus('Copied. Paste it into the conversation.');
+    } catch {
+      answers.focus();
+      answers.select();
+      showStatus(document.execCommand('copy') ? 'Copied. Paste it into the conversation.' : 'Selected. Press Cmd+C (Ctrl+C) to copy.');
+    }
+  };
+
+  const clearAnswers = (context) => {
+    if (!window.confirm('Clear every answer and comment on this page?')) return;
+    applyState(context.entries, emptyState());
+    refresh(context);
+  };
+
+  const bindEvents = (context) => {
+    const nav = navigation(context);
+    ['input', 'change'].forEach((type) => document.addEventListener(type, () => refresh(context)));
+    ['focusin', 'pointerdown'].forEach((type) => document.addEventListener(type, nav.track));
+    document.addEventListener('keydown', nav.onKeydown);
+    byId('next-unanswered').addEventListener('click', nav.nextUnanswered);
+    byId('toggle-help').addEventListener('click', toggleHelp);
+    byId('clear-answers').addEventListener('click', () => clearAnswers(context));
+    document.querySelectorAll('[data-copy-answers]').forEach((button) => button.addEventListener('click', copyAnswers));
+  };
+
+  const boot = () => {
+    const data = JSON.parse(byId('spec-data').textContent);
+    const entries = numberedQuestions(data);
+    renderHeader(data);
+    byId('questions').append(...data.sections.map((section) => renderSection(section, entries)));
+    renderNextSteps(byId('next-steps'));
+    byId('progress-meter').max = entries.length;
+    const context = { data, entries, store: storage(data) };
+    const saved = context.store.load();
+    applyState(entries, saved && typeof saved === 'object' ? { ...emptyState(), ...saved } : emptyState());
+    bindEvents(context);
+    refresh(context);
+    document.documentElement.setAttribute('data-spec-form', 'ready');
+    document.documentElement.setAttribute('data-spec-questions', String(entries.length));
+  };
+
+  globalThis.SpecForm = Object.freeze({ formatAnswers, storageKey, OTHER });
+  if (typeof document !== 'undefined') boot();
+})();
+</script>
+
+<!-- @includes -->
+</body>
+</html>

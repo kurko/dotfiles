@@ -1,0 +1,86 @@
+{
+  "id": "2026-09-22-spec-pin-warnings-r1",
+  "title": "Pin warnings (example)",
+  "round": 1,
+  "summary": "An example page for the help-me-spec-interactive skill, with every question and visual type it supports: a pair of boards, a board per option, a line to step through, a Mermaid flow, a multi-choice question and a defaults section.\n\nThe feature is made up to show the format. Its questions and recommendations are illustrations, not decisions for any project.",
+  "sections": [
+    {
+      "title": "What counts as a pin",
+      "questions": [
+        {
+          "id": "pin-kind",
+          "header": "Definition",
+          "question": "Which of these knights is pinned?",
+          "context": "In both positions the bishop on b5 attacks the knight on c6, with d7 empty behind it. In A the king stands on e8, so the knight has no legal move. In B Black has castled and a rook stands on e8: the knight can move, and `Bxe8 Qxe8` then wins the exchange.",
+          "visual": "pin-pair",
+          "options": [
+            { "label": "A only", "description": "Absolute pins: only the king behind. The knight has no legal move, so the warning is never wrong." },
+            { "label": "A and B", "description": "Absolute and relative pins: any more valuable piece behind. Players call both pins.", "recommended": true }
+          ]
+        },
+        {
+          "id": "marking",
+          "header": "Marking",
+          "question": "How should the board mark a pin?",
+          "options": [
+            { "label": "The whole line", "description": "Pinning piece, pinned piece and the squares to the king.", "visual": "marking-line", "recommended": true },
+            { "label": "The pinned piece", "description": "Only c6; the text names the pinning bishop.", "visual": "marking-piece" },
+            { "label": "No marking", "description": "The warning is text only." }
+          ]
+        },
+        {
+          "id": "breakable",
+          "header": "Breakable",
+          "question": "Should a pin that one move can break still be reported?",
+          "context": "Focus the board, then step with the arrow keys: `5.d4` attacks e5, which the pinned knight cannot defend, and `5...Bd7` breaks the pin.",
+          "visual": "break-line",
+          "options": [
+            { "label": "Yes, every pin", "description": "The position is what it is; breaking the pin is the answer the player should find.", "recommended": true },
+            { "label": "Only lasting pins", "description": "Skip pins a block or a king move ends at once. Needs a one-move search." }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Where it runs",
+      "questions": [
+        {
+          "id": "detector-kind",
+          "header": "Detector",
+          "question": "Which detector should find pins?",
+          "visual": "detector-flow",
+          "options": [
+            { "label": "A derived detector", "description": "Reads an attack map that other detectors can share.", "recommended": true },
+            { "label": "A board detector", "description": "Walks the lines itself: no dependency, repeated work." }
+          ]
+        },
+        {
+          "id": "pinning-pieces",
+          "header": "Pieces",
+          "question": "Which pinning pieces should be reported?",
+          "multiSelect": true,
+          "options": [
+            { "label": "Bishop", "recommended": true },
+            { "label": "Rook", "recommended": true },
+            { "label": "Queen" }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Defaults I'll use unless you object",
+      "intro": "Small decisions I would otherwise make without asking. Choose No where you disagree.",
+      "questions": [
+        {
+          "id": "feature-name",
+          "header": "Name",
+          "question": "Call the feature `pin`?",
+          "options": [
+            { "label": "Yes", "recommended": true },
+            { "label": "No", "description": "Name another in the comment." }
+          ]
+        }
+      ]
+    }
+  ]
+}

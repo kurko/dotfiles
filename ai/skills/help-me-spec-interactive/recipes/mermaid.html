@@ -1,0 +1,16 @@
+<!-- Mermaid diagrams: a visual template holds <pre class="mermaid">…</pre>. Offline, the diagram source stays readable in its <pre>. -->
+<style>
+  pre.mermaid { background: none; padding: 0; overflow-x: auto; }
+  pre.mermaid svg { max-width: 100%; height: auto; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.15.0/mermaid.min.js"
+        integrity="sha384-yQ4mmBBT+vhTAwjFH0toJXNYJ6O4usWnt6EPIdWwrRvx2V/n5lXuDZQwQFeSFydF"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script data-recipe="mermaid">
+  (() => {
+    if (!window.mermaid) return;
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    window.mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: dark ? 'dark' : 'neutral' });
+    window.mermaid.run({ querySelector: 'pre.mermaid' }).catch((error) => window.reportSpecError(`mermaid: ${error.message}`));
+  })();
+</script>

@@ -1,0 +1,249 @@
+<!--
+  Chess boards and steppable lines; visuals.md documents the data-chess-* attributes.
+  Boards need no library. chess.js loads only when the page has a line, and plays its moves,
+  so an illegal move or position fails the build's browser check.
+-->
+<style>
+  .chess-board {
+    --light: #f0d9b5; --dark: #b58863; --mark: rgb(214 60 60 / .55); --last: rgb(155 199 0 / .5);
+    container-type: inline-size; width: var(--board-size, 17rem); max-width: 100%; aspect-ratio: 1;
+    display: grid; grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+    border-radius: 4px; overflow: hidden; box-shadow: 0 0 0 1px rgb(0 0 0 / .25); user-select: none;
+  }
+  .chess-board.invalid { box-shadow: 0 0 0 3px #cf222e; }
+  .chess-square { position: relative; display: grid; place-items: center; background: var(--light); }
+  .chess-square.dark { background: var(--dark); }
+  .chess-square.last-move::before, .chess-square.marked::before { content: ""; position: absolute; inset: 0; background: var(--last); }
+  .chess-square.marked::before { background: var(--mark); }
+  .chess-piece { position: relative; z-index: 1; font: 12.5cqw/1 "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; color: #111; }
+  .chess-piece.white::before { content: attr(data-fill); position: absolute; inset: 0; z-index: -1; color: #fff; }
+  .chess-coordinate { position: absolute; z-index: 2; font: 600 3.4cqw/1 system-ui, sans-serif; color: var(--dark); }
+  .chess-square.dark .chess-coordinate { color: var(--light); }
+  .chess-coordinate.file { right: .5cqw; bottom: .4cqw; }
+  .chess-coordinate.rank { left: .5cqw; top: .5cqw; }
+  .chess-line { display: inline-grid; gap: .5rem; width: var(--board-size, 17rem); max-width: 100%; border-radius: 6px; }
+  .chess-line .chess-board { width: 100%; }
+  .chess-line-controls { display: flex; align-items: center; gap: .4rem; }
+  .chess-line-controls button { padding: .15rem .6rem; }
+  .chess-line-controls button:disabled { opacity: .45; cursor: default; }
+  .chess-line-status { font-size: .85rem; color: var(--muted, #59636e); font-variant-numeric: tabular-nums; }
+  .chess-line-moves { display: flex; flex-wrap: wrap; gap: .1rem .35rem; margin: 0; padding: 0; list-style: none; font-size: .85rem; }
+  .chess-line-moves li { cursor: pointer; padding: 0 .2rem; border-radius: 3px; }
+  .chess-line-moves li[aria-current="step"] { background: var(--accent-soft, #ddf4ff); color: var(--accent, #0969da); font-weight: 600; }
+</style>
+<script type="importmap">
+{ "integrity": { "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js": "sha384-A9KE46F70Ao1BUdhGSxgP0+9OhPjBrpf6gsBehqG12SbeKbFWnO7bwtNT68I4xKh" } }
+</script>
+<script data-recipe="chess">
+(() => {
+  'use strict';
+
+  const CHESS_JS = 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js';
+  const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  const FILES = 'abcdefgh';
+  const TEXT_STYLE = '\uFE0E';
+  const OUTLINE = { k: '♔', q: '♕', r: '♖', b: '♗', n: '♘', p: '♙' };
+  const FILLED = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+  const FROM_DRAWING = { '♔': 'K', '♕': 'Q', '♖': 'R', '♗': 'B', '♘': 'N', '♙': 'P', '♚': 'k', '♛': 'q', '♜': 'r', '♝': 'b', '♞': 'n', '♟': 'p', _: '', '.': '' };
+
+  const element = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  const squares = (text) => (text || '').trim().split(/\s+/).filter(Boolean);
+
+  // The drawing format of the project's pictureToFen: 64 squares, black at the top, "_" for empty.
+  const drawingToPlacement = (drawing) => {
+    const tokens = squares(drawing.replace(/\uFE0E/g, ''));
+    if (tokens.length !== 64) throw new Error(`a board drawing needs 64 squares, has ${tokens.length}`);
+    const unknown = tokens.find((token) => !(token in FROM_DRAWING));
+    if (unknown) throw new Error(`"${unknown}" is not a piece or "_" in a board drawing`);
+    return Array.from({ length: 8 }, (_, rank) => tokens.slice(rank * 8, rank * 8 + 8)
+      .map((token) => FROM_DRAWING[token] || '1').join('')
+      .replace(/1+/g, (run) => String(run.length))).join('/');
+  };
+
+  const toFen = (position, turn) => {
+    const text = (position || '').trim();
+    if (!text) return START;
+    if (!text.includes('/')) return `${drawingToPlacement(text)} ${turn} - - 0 1`;
+    return text.includes(' ') ? text : `${text} ${turn} - - 0 1`;
+  };
+
+  const placementGrid = (fen) => {
+    const placement = fen.split(' ')[0];
+    const rows = placement.split('/');
+    if (rows.length !== 8) throw new Error(`"${placement}" does not have 8 ranks`);
+    return rows.map((row) => {
+      const cells = [...row].flatMap((char) => (/[1-8]/.test(char) ? Array(Number(char)).fill('') : [char]));
+      if (cells.length !== 8 || cells.some((cell) => cell && !/^[kqrbnp]$/i.test(cell))) throw new Error(`rank "${row}" in "${placement}" is not 8 squares of pieces`);
+      return cells;
+    });
+  };
+
+  const pieceElement = (piece) => {
+    const type = piece.toLowerCase();
+    const white = piece !== type;
+    const node = element('span', `chess-piece ${white ? 'white' : 'black'}`, (white ? OUTLINE[type] : FILLED[type]) + TEXT_STYLE);
+    if (white) node.dataset.fill = FILLED[type] + TEXT_STYLE;
+    return node;
+  };
+
+  const squareElement = (grid, row, column, marks) => {
+    const name = `${FILES[column]}${8 - row}`;
+    const square = element('div', `chess-square ${(row + column) % 2 ? 'dark' : 'light'}`);
+    square.dataset.square = name;
+    if (marks.marked.includes(name)) square.classList.add('marked');
+    if (marks.lastMove.includes(name)) square.classList.add('last-move');
+    if (grid[row][column]) square.append(pieceElement(grid[row][column]));
+    if (row === (marks.flipped ? 0 : 7)) square.append(element('span', 'chess-coordinate file', FILES[column]));
+    if (column === (marks.flipped ? 7 : 0)) square.append(element('span', 'chess-coordinate rank', String(8 - row)));
+    return square;
+  };
+
+  const drawBoard = (board, fen, marks) => {
+    const grid = placementGrid(fen);
+    const order = Array.from({ length: 64 }, (_, index) => (marks.flipped ? 63 - index : index));
+    board.replaceChildren(...order.map((index) => squareElement(grid, Math.floor(index / 8), index % 8, marks)));
+  };
+
+  const optionsOf = (node) => ({
+    turn: node.dataset.turn === 'black' ? 'b' : 'w',
+    marked: squares(node.dataset.highlight),
+    flipped: node.dataset.orientation === 'black',
+    lastMove: [],
+  });
+
+  const describe = (node, fen) => node.getAttribute('aria-label') || `Chess position ${fen.split(' ')[0]}${node.dataset.highlight ? `, marked: ${node.dataset.highlight}` : ''}`;
+
+  const fail = (node, what, error) => {
+    node.classList.add('invalid');
+    window.reportSpecError(`${what}: ${error.message}`);
+  };
+
+  const setUpBoard = (node) => {
+    const label = (node.dataset.chessBoard || 'start').trim().replace(/\s+/g, ' ');
+    try {
+      const marks = optionsOf(node);
+      const fen = toFen(node.dataset.chessBoard, marks.turn);
+      node.classList.add('chess-board');
+      node.setAttribute('role', 'img');
+      node.setAttribute('aria-label', describe(node, fen));
+      drawBoard(node, fen, marks);
+    } catch (error) {
+      fail(node, `chess board "${label}"`, error);
+    }
+  };
+
+  // Lines: the start position shows at once; stepping waits for chess.js to play the moves.
+
+  const moveLabel = (ply) => (ply.color === 'w' ? `${ply.number}. ${ply.san}` : `${ply.number}… ${ply.san}`);
+
+  const playLine = (Chess, fen, moves) => {
+    const game = new Chess(fen);
+    return moves.map((san) => {
+      const number = game.moveNumber();
+      const move = game.move(san);
+      return { san: move.san, color: move.color, number, from: move.from, to: move.to, fen: game.fen() };
+    });
+  };
+
+  const lineParts = (node) => {
+    const board = element('div', 'chess-board');
+    board.setAttribute('aria-hidden', 'true');
+    const controls = element('div', 'chess-line-controls');
+    const back = element('button', '', '◀');
+    const forward = element('button', '', '▶');
+    const status = element('span', 'chess-line-status');
+    status.setAttribute('aria-live', 'polite');
+    [back, forward].forEach((button, index) => {
+      button.type = 'button';
+      button.disabled = true;
+      button.setAttribute('aria-label', index ? 'Next move' : 'Previous move');
+    });
+    controls.append(back, forward, status);
+    const list = element('ol', 'chess-line-moves');
+    node.replaceChildren(board, controls, list);
+    return { board, back, forward, status, list };
+  };
+
+  const showPly = (line, index) => {
+    line.index = Math.max(0, Math.min(index, line.plies.length));
+    const ply = line.plies[line.index - 1];
+    drawBoard(line.parts.board, ply ? ply.fen : line.fen, { ...line.marks, lastMove: ply ? [ply.from, ply.to] : [] });
+    line.parts.back.disabled = line.index === 0;
+    line.parts.forward.disabled = line.index === line.plies.length;
+    line.parts.status.textContent = ply ? `${moveLabel(ply)} (${line.index}/${line.plies.length})` : `Start (0/${line.plies.length})`;
+    [...line.parts.list.children].forEach((item, position) => {
+      if (position === line.index - 1) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+  };
+
+  const LINE_KEYS = { ArrowRight: (line) => line.index + 1, ArrowLeft: (line) => line.index - 1, Home: () => 0, End: (line) => line.plies.length };
+
+  const enableLine = (line, Chess) => {
+    line.plies = playLine(Chess, line.fen, line.moves);
+    line.parts.list.replaceChildren(...line.plies.map((ply, index) => {
+      const item = element('li', '', moveLabel(ply));
+      item.addEventListener('click', () => showPly(line, index + 1));
+      return item;
+    }));
+    line.parts.back.addEventListener('click', () => showPly(line, line.index - 1));
+    line.parts.forward.addEventListener('click', () => showPly(line, line.index + 1));
+    line.node.addEventListener('keydown', (event) => {
+      const target = LINE_KEYS[event.key];
+      if (!target || event.metaKey || event.ctrlKey || event.altKey) return;
+      event.preventDefault();
+      showPly(line, target(line));
+    });
+    showPly(line, Number(line.node.dataset.ply) || 0);
+  };
+
+  const setUpLine = (node) => {
+    const moves = squares(node.dataset.moves);
+    const line = { node, moves, label: moves.join(' ') || 'no moves', index: 0, plies: [] };
+    try {
+      line.marks = optionsOf(node);
+      line.fen = toFen(node.dataset.chessLine, line.marks.turn);
+      line.parts = lineParts(node);
+      node.classList.add('chess-line');
+      node.tabIndex = 0;
+      node.setAttribute('role', 'group');
+      node.setAttribute('aria-label', node.getAttribute('aria-label') || `Line ${line.label}. Left and right arrow keys step through it.`);
+      drawBoard(line.parts.board, line.fen, line.marks);
+      line.parts.status.textContent = 'Loading moves…';
+      return line;
+    } catch (error) {
+      fail(node, `chess line "${line.label}"`, error);
+      return null;
+    }
+  };
+
+  const loadLines = async (lines) => {
+    if (!lines.length) return;
+    let Chess;
+    try {
+      ({ Chess } = await import(CHESS_JS));
+    } catch (error) {
+      lines.forEach((line) => { line.parts.status.textContent = 'chess.js did not load, so this line cannot step.'; });
+      window.reportSpecError(`chess.js did not load: ${error.message}`);
+      return;
+    }
+    lines.forEach((line) => {
+      try {
+        enableLine(line, Chess);
+      } catch (error) {
+        line.parts.status.textContent = `Cannot play this line: ${error.message}`;
+        fail(line.node, `chess line "${line.label}"`, error);
+      }
+    });
+  };
+
+  document.querySelectorAll('[data-chess-board]').forEach(setUpBoard);
+  loadLines([...document.querySelectorAll('[data-chess-line]')].map(setUpLine).filter(Boolean));
+})();
+</script>
