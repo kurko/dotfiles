@@ -424,7 +424,9 @@
     });
     byId('progress-text').textContent = `${answered.length} of ${context.entries.length} answered`;
     byId('progress-meter').value = answered.length;
-    byId('answers-text').value = formatAnswers(context.data, state);
+    const text = formatAnswers(context.data, state);
+    byId('answers-text').value = text;
+    context.clipboard.follow(text);
     context.store.save(state);
   };
 
@@ -519,16 +521,37 @@
     document.querySelectorAll('[data-copy-status]').forEach((node) => { node.textContent = message; });
   };
 
-  const copyAnswers = async () => {
-    const answers = byId('answers-text');
+  const COPIED = 'Copied. Paste it into the conversation.';
+  const COPY_OUTDATED = 'Changed since you copied. Copy again.';
+  const SELECTED = 'Selected. Press Cmd+C (Ctrl+C) to copy.';
+  const SELECTION_OUTDATED = 'Changed since it was selected. Copy again.';
+
+  const writeClipboard = async (text) => {
     try {
-      await navigator.clipboard.writeText(answers.value);
-      showStatus('Copied. Paste it into the conversation.');
+      await navigator.clipboard.writeText(text);
+      return true;
     } catch {
-      answers.focus();
-      answers.select();
-      showStatus(document.execCommand('copy') ? 'Copied. Paste it into the conversation.' : 'Selected. Press Cmd+C (Ctrl+C) to copy.');
+      byId('answers-text').focus();
+      byId('answers-text').select();
+      return document.execCommand('copy');
     }
+  };
+
+  // A selection the reader was asked to copy does not come back when the text changes back; a copy does.
+  const answersClipboard = () => {
+    let offered = null;
+    return {
+      copyAnswers: async () => {
+        const text = byId('answers-text').value;
+        const copied = await writeClipboard(text);
+        offered = { text, copied };
+        showStatus(copied ? COPIED : SELECTED);
+      },
+      follow: (text) => {
+        if (offered?.copied) showStatus(text === offered.text ? COPIED : COPY_OUTDATED);
+        else if (offered && text !== offered.text) showStatus(SELECTION_OUTDATED);
+      },
+    };
   };
 
   const clearAnswers = (context) => {
@@ -545,7 +568,7 @@
     byId('next-unanswered').addEventListener('click', nav.nextUnanswered);
     byId('toggle-help').addEventListener('click', toggleHelp);
     byId('clear-answers').addEventListener('click', () => clearAnswers(context));
-    document.querySelectorAll('[data-copy-answers]').forEach((button) => button.addEventListener('click', copyAnswers));
+    document.querySelectorAll('[data-copy-answers]').forEach((button) => button.addEventListener('click', context.clipboard.copyAnswers));
   };
 
   const boot = () => {
@@ -555,7 +578,7 @@
     byId('questions').append(...data.sections.map((section) => renderSection(section, entries)));
     renderNextSteps(byId('next-steps'));
     byId('progress-meter').max = entries.length;
-    const context = { data, entries, store: storage(data) };
+    const context = { data, entries, store: storage(data), clipboard: answersClipboard() };
     const saved = context.store.load();
     applyState(entries, saved && typeof saved === 'object' ? { ...emptyState(), ...saved } : emptyState());
     bindEvents(context);

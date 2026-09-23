@@ -1,13 +1,16 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   SKILL_DIR,
   TEMPLATE_PATH,
   assemblePage,
+  browserProblems,
   checkPage,
   dataProblems,
   engineSource,
@@ -15,6 +18,7 @@ import {
   findChrome,
   staticProblems,
 } from '../scripts/page.mjs';
+import { assertThrowawayProfile, pause, processesLeftIn, writeStubbornChrome } from './support/stubborn-chrome.mjs';
 
 const template = readFileSync(TEMPLATE_PATH, 'utf8');
 const readSkillFile = (relative) => readFileSync(path.join(SKILL_DIR, relative), 'utf8');
@@ -217,6 +221,19 @@ describe('dataProblems', () => {
     data.sections[1].title = "Defaults I'll use unless you object";
 
     assert.deepEqual(dataProblems(data), ['question "naming": sits under "Defaults…", so it needs a recommended option for silence to accept']);
+  });
+
+  test('rejects line breaks in a header, a question and an option label, which the answers text prints on one line', () => {
+    const data = sampleData();
+    data.sections[0].questions[0].header = 'Sto\nrage';
+    data.sections[0].questions[0].question = 'Where do\nfeatures live?';
+    data.sections[0].questions[0].options[0].label = 'Col\r\numn';
+
+    assert.deepEqual(dataProblems(data), [
+      'question "storage": "header" must be one line',
+      'question "storage": the question must be one line; put the rest in "context"',
+      'question "storage" option 1: the label must be one line; put the rest in "description"',
+    ]);
   });
 
   test('rejects an Other option written by hand', () => {
@@ -435,74 +452,129 @@ describe('staticProblems', () => {
   });
 });
 
+describe('build-page.mjs', () => {
+  [['SIGINT', 'Ctrl-C'], ['SIGTERM', 'SIGTERM']].forEach(([signal, name]) => {
+    test(`leaves no Chrome and no Chrome profile behind when stopped with ${name}`, { timeout: 30_000 }, async () => {
+      const dir = mkdtempSync(path.join(tmpdir(), 'hmsi-stubborn-'));
+      const stubborn = writeStubbornChrome(dir, 'touch "$0.ready"');
+      const page = writeTemp('page.html', assemblePage(template, { data: sampleData() }));
+      const build = spawn(process.execPath, [path.join(SKILL_DIR, 'scripts/build-page.mjs'), '--check', page], {
+        env: { ...process.env, CHROME_BIN: stubborn },
+        stdio: 'ignore',
+      });
+      while (!existsSync(`${stubborn}.ready`)) await pause(20);
+
+      build.kill(signal);
+      await once(build, 'exit');
+
+      assert.deepEqual(await processesLeftIn(dir), []);
+      assertThrowawayProfile(stubborn);
+    });
+  });
+});
+
+describe('browserProblems', () => {
+  test('renders in a throwaway profile, and returns once Chrome has printed the page even when Chrome and its helpers never exit', { timeout: 30_000 }, async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'hmsi-stubborn-'));
+    const stubborn = writeStubbornChrome(dir, `printf '%s\\n' '<html lang="en" data-spec-form="ready" data-spec-questions="3"><head></head><body></body></html>'`);
+    const started = Date.now();
+
+    const report = await browserProblems(writeTemp('page.html', ''), 3, stubborn);
+
+    assert.deepEqual(report, { problems: [] });
+    assert.ok(Date.now() - started < 15_000, `took ${Date.now() - started} ms`);
+    assert.deepEqual(await processesLeftIn(dir), []);
+    assertThrowawayProfile(stubborn);
+  });
+
+  test('removes the throwaway profile when Chrome never prints the page', { timeout: 30_000 }, async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'hmsi-stubborn-'));
+    const stubborn = writeStubbornChrome(dir);
+
+    await assert.rejects(browserProblems(writeTemp('page.html', ''), 3, stubborn, { printTimeoutMs: 1_000 }), /did not print the page within 1 s/);
+
+    assert.deepEqual(await processesLeftIn(dir), []);
+    assertThrowawayProfile(stubborn);
+  });
+});
+
 describe('checkPage in a browser', { skip: findChrome() ? false : 'no Chrome found' }, () => {
-  test('renders the example with both recipes and no errors', () => {
-    const report = checkPage(writeTemp('example.html', buildExample()));
+  test('renders the example with both recipes and no errors, and every answer reaches the answers text', async () => {
+    const report = await checkPage(writeTemp('example.html', buildExample()));
 
     assert.deepEqual(report.problems, []);
     assert.equal(report.browserChecked, true);
   });
 
-  test('reports an error thrown by an include', () => {
+  test('runs the round trip, failing a page where something covers an option', async () => {
+    const cover = '<style>.options { position: relative; } .options::after { content: ""; position: absolute; inset: 0; }</style>';
+    const html = assemblePage(template, { data: sampleData(), includes: [cover] });
+
+    const { problems } = await checkPage(writeTemp('covered.html', html));
+
+    assert.deepEqual(problems, [1, 2, 3].map((number) => `round trip by mouse: div.options covers option 1 of Q${number}, so a click there misses it`));
+  });
+
+  test('reports an error thrown by an include', async () => {
     const html = assemblePage(template, { data: sampleData(), includes: ['<script>throw new Error("visual broke");</script>'] });
 
-    const report = checkPage(writeTemp('throws.html', html));
+    const report = await checkPage(writeTemp('throws.html', html));
 
     assert.deepEqual(report.problems, ['browser: Uncaught Error: visual broke']);
   });
 
-  test('reports an illegal move in a chess line', () => {
+  test('reports an illegal move in a chess line', async () => {
     const data = sampleData();
     data.sections[0].questions[0].visual = 'line';
     const visuals = '<template id="line"><div data-chess-line="" data-moves="e4 e5 Ke3"></div></template>';
     const html = assemblePage(template, { data, visuals, includes: [readSkillFile('recipes/chess.html')] });
 
-    const [problem, ...rest] = checkPage(writeTemp('illegal.html', html)).problems;
+    const [problem, ...rest] = (await checkPage(writeTemp('illegal.html', html))).problems;
 
     assert.match(problem, /^browser: chess line "e4 e5 Ke3": .*Ke3/);
     assert.deepEqual(rest, []);
   });
 
-  test('reports a malformed board', () => {
+  test('reports a malformed board', async () => {
     const data = sampleData();
     data.sections[0].questions[0].visual = 'board';
     const visuals = '<template id="board"><div data-chess-board="8/8/8/8/8/8/8"></div></template>';
     const html = assemblePage(template, { data, visuals, includes: [readSkillFile('recipes/chess.html')] });
 
-    assert.deepEqual(checkPage(writeTemp('malformed.html', html)).problems, [
+    assert.deepEqual((await checkPage(writeTemp('malformed.html', html))).problems, [
       'browser: chess board "8/8/8/8/8/8/8": "8/8/8/8/8/8/8" does not have 8 ranks',
     ]);
   });
 
-  test('reports a Mermaid diagram that does not parse', () => {
+  test('reports a Mermaid diagram that does not parse', async () => {
     const data = sampleData();
     data.sections[0].questions[0].visual = 'flow';
     const visuals = '<template id="flow"><pre class="mermaid">flowchart LR\n  a[unclosed --> b</pre></template>';
     const html = assemblePage(template, { data, visuals, includes: [readSkillFile('recipes/mermaid.html')] });
 
-    const [problem, ...rest] = checkPage(writeTemp('mermaid-parse.html', html)).problems;
+    const [problem, ...rest] = (await checkPage(writeTemp('mermaid-parse.html', html))).problems;
 
     assert.match(problem, /^browser: mermaid: Parse error/);
     assert.deepEqual(rest, []);
   });
 
-  test('reports a Mermaid script that fails its hash', () => {
+  test('reports a Mermaid script that fails its hash', async () => {
     const recipe = readSkillFile('recipes/mermaid.html').replace('sha384-yQ4', 'sha384-xQ4');
     const html = assemblePage(template, { data: sampleData(), includes: [recipe] });
 
-    assert.deepEqual(checkPage(writeTemp('mermaid-hash.html', html)).problems, [
+    assert.deepEqual((await checkPage(writeTemp('mermaid-hash.html', html))).problems, [
       'browser: failed to load https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.15.0/mermaid.min.js',
     ]);
   });
 
-  test('reports chess.js failing its hash when a line needs it', () => {
+  test('reports chess.js failing its hash when a line needs it', async () => {
     const data = sampleData();
     data.sections[0].questions[0].visual = 'line';
     const visuals = '<template id="line"><div data-chess-line="" data-moves="e4 e5"></div></template>';
     const recipe = readSkillFile('recipes/chess.html').replace('sha384-A9K', 'sha384-B9K');
     const html = assemblePage(template, { data, visuals, includes: [recipe] });
 
-    const [problem, ...rest] = checkPage(writeTemp('chess-hash.html', html)).problems;
+    const [problem, ...rest] = (await checkPage(writeTemp('chess-hash.html', html))).problems;
 
     assert.match(problem, /^browser: chess\.js did not load: /);
     assert.deepEqual(rest, []);

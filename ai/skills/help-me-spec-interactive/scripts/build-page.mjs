@@ -35,11 +35,13 @@ const report = (file, { problems, questions, browserChecked, skipped }) => {
     problems.forEach((problem) => console.log(`  - ${problem}`));
     return;
   }
-  const browser = browserChecked ? 'rendered in headless Chrome without errors' : `browser check skipped${skipped ? ` (${skipped})` : ''}`;
+  const browser = browserChecked
+    ? 'rendered in headless Chrome without errors, and every answer, comment and wrap-up choice reached the answers text by mouse and by keyboard'
+    : `browser check skipped${skipped ? ` (${skipped})` : ''}`;
   console.log(`build-page: ok, ${questions} questions, ${browser}`);
 };
 
-const main = () => {
+const main = async () => {
   const { values } = parseArgs({
     options: {
       data: { type: 'string' },
@@ -51,13 +53,18 @@ const main = () => {
     },
   });
   const file = values.check ?? build(values);
-  const result = checkPage(file, { browser: !values['no-browser'] });
+  const result = await checkPage(file, { browser: !values['no-browser'] });
   report(file, result);
   process.exitCode = result.problems.length ? 1 : 0;
 };
 
+// Chrome runs in a process group of its own, out of reach of Ctrl-C or a timeout's SIGTERM; exiting runs chrome.mjs's
+// cleanup instead, which stops Chrome and removes its profile.
+process.once('SIGINT', () => process.exit(130));
+process.once('SIGTERM', () => process.exit(143));
+
 try {
-  main();
+  await main();
 } catch (error) {
   console.error(`build-page: ${error.message}`);
   process.exitCode = 1;

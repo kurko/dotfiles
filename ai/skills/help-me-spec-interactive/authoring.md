@@ -60,14 +60,14 @@ The build checks these rules, apart from the word counts, and rejects unknown ke
 | `summary` | Required: what the exploration found and what this round decides. |
 | `sections[].questions` | At least one per section. |
 | question `id` | Kebab-case, unique on the page. |
-| question `header` | A short label, 1 to 3 words. It appears as a chip and in the answers text. |
-| `question` | Ends with `?`. |
+| question `header` | A short label, 1 to 3 words, on one line. It appears as a chip and in the answers text. |
+| `question` | One line, ending with `?`; the rest goes in `context`. |
 | `options` | 2 to 6. Never add "Other": the page adds it, with key `0`, to every question. |
 | `recommended` | At most one option per single-choice question. |
 | `multiSelect` | `true` renders checkboxes: "choose any that apply". |
 | `visual` | The id of a `<template>` in `visuals.html`, on a question or an option. Every template must be used. |
 
-Text fields are plain text, set with `textContent`, so HTML shows literally. Backticks mark `code`; a blank line starts a paragraph in `summary`, `intro` and `context`. Option labels are 1 to 5 words; the description carries the rest.
+Text fields are plain text, set with `textContent`, so HTML shows literally. Backticks mark `code`; a blank line starts a paragraph in `summary`, `intro` and `context`. Option labels are 1 to 5 words on one line; the description carries the rest.
 
 ## Visuals
 
@@ -103,6 +103,7 @@ Include a recipe only when the page uses it. The build writes the page, then che
 - a chess or Mermaid visual without its recipe
 - files: every script pins an exact version and is checked by hash; nothing loads over plain http or from beside the page, so it still works when copied elsewhere
 - a headless Chrome render: a script error, a library that fails to load or fails its hash, a Mermaid diagram that does not parse, a malformed board or an illegal chess move each fails the build
+- the answer round trip: the build answers every question by mouse and by keyboard and fails when an answer, comment or wrap-up choice does not reach the answers text, or when a visual covers an option or moves it when pressed, so a click misses it
 
 The build prints `ok` or the list of problems. Fix the parts and rebuild; never edit the built page, because `--check` rejects an engine that differs from the template.
 

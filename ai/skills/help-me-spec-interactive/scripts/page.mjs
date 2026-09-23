@@ -1,8 +1,11 @@
 // Assembles help-me-spec-interactive pages and checks them. build-page.mjs is the command line; the tests import this.
-import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { dumpDom, findChrome } from './chrome.mjs';
+import { roundTripProblems } from './round-trip.mjs';
+
+export { findChrome };
 
 export const SKILL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TEMPLATE_PATH = path.join(SKILL_DIR, 'form-template.html');
@@ -15,13 +18,6 @@ const QUESTION_KEYS = ['id', 'header', 'question', 'context', 'visual', 'multiSe
 const OPTION_KEYS = ['label', 'description', 'recommended', 'visual'];
 const EXACT_VERSION = /^v?\d+\.\d+\.\d+(?:[-+][0-9a-z.]+)?$/i;
 const FRAME_TAGS = ['iframe', 'frame', 'embed', 'object'];
-const CHROME_CANDIDATES = [
-  process.env.CHROME_BIN,
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/Applications/Chromium.app/Contents/MacOS/Chromium',
-  '/usr/bin/google-chrome',
-  '/usr/bin/chromium',
-];
 
 const marker = (name) => `<!-- @${name} -->`;
 
@@ -52,6 +48,9 @@ export const engineSource = (html) => scriptById(html, 'spec-engine') ?? '';
 
 const isText = (value) => typeof value === 'string' && value.trim() !== '';
 
+// The answers text gives each of these one line, which Claude and the round trip read line by line.
+const oneLine = (value, problem) => (typeof value === 'string' && /[\r\n]/.test(value) ? [problem] : []);
+
 const unknownKeys = (object, allowed, where) => Object.keys(object)
   .filter((key) => !allowed.includes(key))
   .map((key) => `${where}: unknown key "${key}"`);
@@ -67,6 +66,7 @@ const optionProblems = (question, where) => {
     ...options.flatMap((option, index) => [
       ...unknownKeys(option, OPTION_KEYS, `${where} option ${index + 1}`),
       ...(isText(option.label) ? [] : [`${where} option ${index + 1}: needs a label`]),
+      ...oneLine(option.label, `${where} option ${index + 1}: the label must be one line; put the rest in "description"`),
     ]),
   ];
 };
@@ -80,7 +80,9 @@ const questionProblems = (question, seenIds) => {
     ...(typeof question.id === 'string' && KEBAB.test(question.id) ? [] : [`${where}: "id" must be kebab-case`]),
     ...(duplicate ? [`${where}: the id is used twice`] : []),
     ...(isText(question.header) ? [] : [`${where}: needs a "header"`]),
+    ...oneLine(question.header, `${where}: "header" must be one line`),
     ...(isText(question.question) && question.question.trim().endsWith('?') ? [] : [`${where}: the question should end with "?"`]),
+    ...oneLine(question.question, `${where}: the question must be one line; put the rest in "context"`),
     ...optionProblems(question, where),
   ];
 };
@@ -304,15 +306,8 @@ export const staticProblems = (html, template) => {
 
 // Browser: headless Chrome runs the page and reads what the page recorded on <html>
 
-export const findChrome = () => CHROME_CANDIDATES.find((candidate) => candidate && existsSync(candidate));
-
 const decodeEntities = (text) => text
   .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-
-// No --user-data-dir: headless already uses a throwaway profile, and a fresh one kept Chrome alive for a minute after the dump.
-const renderedDom = (chrome, file) => execFileSync(chrome, [
-  '--headless', '--disable-gpu', '--no-first-run', '--virtual-time-budget=15000', '--dump-dom', pathToFileURL(file).href,
-], { encoding: 'utf8', timeout: 60_000, maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
 
 const renderedState = (dom) => {
   const tag = dom.match(/<html\b[^>]*>/)?.[0] ?? '';
@@ -323,22 +318,25 @@ const renderedState = (dom) => {
   return { ready: read('data-spec-form') === 'ready', questions: Number(read('data-spec-questions')), errors: JSON.parse(read('data-spec-errors') ?? '[]') };
 };
 
-export const browserProblems = (file, expectedQuestions) => {
-  const chrome = findChrome();
+export const browserProblems = async (file, expectedQuestions, chrome = findChrome(), options = {}) => {
   if (!chrome) return { problems: [], skipped: 'no Chrome found; set CHROME_BIN to run the browser check' };
-  const state = renderedState(renderedDom(chrome, file));
+  const state = renderedState(await dumpDom(chrome, pathToFileURL(file).href, options));
   const problems = state.errors.map((message) => `browser: ${message}`);
   if (!state.ready) problems.push('browser: the form never finished rendering');
   else if (state.questions !== expectedQuestions) problems.push(`browser: rendered ${state.questions} questions, the data has ${expectedQuestions}`);
   return { problems };
 };
 
-export const checkPage = (file, { browser = true } = {}) => {
+export const checkPage = async (file, { browser = true } = {}) => {
   const html = readFileSync(file, 'utf8');
   const problems = staticProblems(html, readFileSync(TEMPLATE_PATH, 'utf8'));
   if (problems.length) return { problems, browserChecked: false };
-  const questions = questionsOf(extractData(html)).length;
+  const data = extractData(html);
+  const questions = questionsOf(data).length;
   if (!browser) return { problems, questions, browserChecked: false };
-  const rendered = browserProblems(file, questions);
-  return { problems: rendered.problems, questions, browserChecked: !rendered.skipped, skipped: rendered.skipped };
+  const rendered = await browserProblems(file, questions);
+  if (rendered.skipped || rendered.problems.length) {
+    return { problems: rendered.problems, questions, browserChecked: !rendered.skipped, skipped: rendered.skipped };
+  }
+  return { problems: await roundTripProblems(file, data), questions, browserChecked: true };
 };

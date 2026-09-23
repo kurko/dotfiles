@@ -214,6 +214,35 @@ describe('in a browser', { skip: agentBrowserMissing() }, () => {
     assert.equal(evaluate("document.querySelector('.actions [data-copy-status]').textContent"), 'Copied. Paste it into the conversation.');
   });
 
+  test('Copy answers withdraws "Copied" once an answer changes, since the clipboard then holds the old text', () => {
+    press('j', '1');
+    browser('click', '.answers [data-copy-answers]');
+    browser('wait', '--fn', "document.querySelector('.actions [data-copy-status]').textContent !== ''");
+
+    press('j', '2');
+
+    assert.deepEqual(evaluate("[...document.querySelectorAll('[data-copy-status]')].map((node) => node.textContent)"), [
+      'Changed since you copied. Copy again.',
+      'Changed since you copied. Copy again.',
+    ]);
+  });
+
+  test('when copying is refused, "Selected" gives way once an answer changes, since the new text is not selected', () => {
+    evaluate("(navigator.clipboard.writeText = () => Promise.reject(new Error('denied')), document.execCommand = () => false, true)");
+    press('j', '1');
+    browser('click', '.answers [data-copy-answers]');
+    browser('wait', '--fn', "document.querySelector('.actions [data-copy-status]').textContent !== ''");
+    assert.equal(evaluate("document.querySelector('.actions [data-copy-status]').textContent"), 'Selected. Press Cmd+C (Ctrl+C) to copy.');
+
+    press('Escape', 'j', '2');
+    assert.deepEqual(checked('marking'), ['1']);
+
+    assert.deepEqual(evaluate("[...document.querySelectorAll('[data-copy-status]')].map((node) => node.textContent)"), [
+      'Changed since it was selected. Copy again.',
+      'Changed since it was selected. Copy again.',
+    ]);
+  });
+
   test('Clear all answers keeps them when dismissed and empties the form when accepted', () => {
     press('j', '1', 'c');
     browser('keyboard', 'type', 'gone soon');

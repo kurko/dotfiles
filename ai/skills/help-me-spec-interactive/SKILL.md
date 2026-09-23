@@ -16,7 +16,7 @@ Paths are relative to this skill's directory, `SKILL_DIR` (the base directory sh
 | File | Role |
 |---|---|
 | `form-template.html` | Page skeleton, styles and engine: renders the questions, keyboard shortcuts, the live answers text, copy buttons, and saving answers in localStorage. Never edited per round. |
-| `scripts/build-page.mjs` | Builds one self-contained HTML file from a round's parts and checks it: schema, visuals, scripts pinned by version and hash, nothing loaded from beside the page, then a headless Chrome render that fails on any script error. |
+| `scripts/build-page.mjs` | Builds one self-contained HTML file from a round's parts and checks it: schema, visuals, scripts pinned by version and hash, nothing loaded from beside the page, then a headless Chrome render that fails on any script error, and the answer round trip (3b). |
 | `authoring.md` | How to write a round: questions, data format, visuals, build. The round subagent follows it. |
 | `visuals.md`, `recipes/` | Tested recipes (Mermaid, chess boards and lines) and the rules for new interactive visuals and libraries. |
 | `examples/pins/` | A complete round using every question and visual type, for a made-up feature. |
@@ -86,6 +86,8 @@ Output only this JSON, no fencing:
 Parse the JSON. If `interview_complete` is true, go to Step 4.
 
 Otherwise re-run `node {SKILL_DIR}/scripts/build-page.mjs --check {PAGE}` rather than trusting the subagent's report. If it prints problems, send them to the subagent with SendMessage and check again.
+
+The check covers the answer round trip: in headless Chrome it answers every question by mouse and again by keyboard, with an option, a comment, several choices where allowed, the general comment and "Stop asking and write the spec", and fails unless each reaches the answers text within two seconds of being entered and is still there after a reload.
 
 Open the page in the default browser (`open` on macOS, `xdg-open` on Linux). Tell the user, briefly:
 
