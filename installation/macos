@@ -59,11 +59,6 @@ function brew_cask_install_if_absent() {
 function install_macos() {
   echo "> Installing applications..."
 
-  # Homebrew 6.0+ refuses to install formulae/casks from third-party taps
-  # (nodenv/nodenv, epk/epk, timrogers/tap below) unless they're trusted.
-  # These are taps we deliberately use, so opt out of the prompt.
-  export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
-
   printf "> rbenv: "
   rbenv --version &> /dev/null
   if [[ $? -eq 0 ]]
@@ -171,6 +166,10 @@ function install_macos() {
   # Some projects don't use universal files, like .node-version. This pluging
   # makes .nvmrc files work with nodenv.
   brew tap nodenv/nodenv
+  # Homebrew 6.0+ refuses to load formulae/casks from third-party taps until
+  # they're trusted. Trust each entry we install, not the whole tap. This
+  # replaces HOMEBREW_NO_REQUIRE_TAP_TRUST, which Homebrew says it will remove.
+  brew trust --formula nodenv/nodenv/nodenv-nvmrc
   brew_install_if_absent nodenv-nvmrc
 
   brew_install_if_absent yarn
@@ -192,9 +191,9 @@ function install_macos() {
   brew tap homebrew/cask-fonts
   brew tap homebrew/cask-versions
   brew tap epk/epk # sf-mono-nerd-font tap
+  brew trust --cask epk/epk/font-sf-mono-nerd-font
 
   # Litra glow (CLI tool — a formula, not a cask)
-  brew tap timrogers/tap
   brew_install_if_absent litra
 
   brew_cask_install_if_absent font-sf-pro
