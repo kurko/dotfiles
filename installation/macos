@@ -209,6 +209,8 @@ function install_macos() {
   brew_install_if_absent terminal-notifier
   brew_cask_install_if_absent firefox@developer-edition
   brew_cask_install_if_absent google-chrome
+  # Default browser that sends links to other browsers (config: finicky/)
+  brew_cask_install_if_absent finicky
   brew_cask_install_if_absent sync
 
   # To hide items in the menubar

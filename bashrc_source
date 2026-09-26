@@ -140,6 +140,10 @@ function update_symlinks(){
   mkdir -p ~/.config/ghostty/
   ln -nfs ~/.dotfiles/ghostty/config ~/.config/ghostty/config
 
+  # Finicky follows this symlink to the file in the repo. A Finicky that was
+  # started before the link existed keeps its fallback config until it restarts.
+  ln -nfs ~/.dotfiles/finicky/finicky.js ~/.finicky.js
+
   # We don't use this directive anymore. We leave blank, which will default
   # to $HOME/.config/git/ignore.
   #
