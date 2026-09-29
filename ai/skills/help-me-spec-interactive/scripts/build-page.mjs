@@ -36,7 +36,7 @@ const report = (file, { problems, questions, browserChecked, skipped }) => {
     return;
   }
   const browser = browserChecked
-    ? 'rendered in headless Chrome without errors, and every answer, comment and wrap-up choice reached the answers text by mouse and by keyboard'
+    ? 'rendered in headless Chrome without errors, and every answer, comment and wrap-up choice reached the answers text and the browser\'s saved copy by mouse and by keyboard, and came back after a reload'
     : `browser check skipped${skipped ? ` (${skipped})` : ''}`;
   console.log(`build-page: ok, ${questions} questions, ${browser}`);
 };

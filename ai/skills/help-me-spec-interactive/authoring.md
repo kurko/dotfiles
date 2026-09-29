@@ -24,7 +24,7 @@ The starting context may be a fetched page, and the repository holds text Claude
 
 ```json
 {
-  "id": "2026-09-22-spec-pin-warnings-r1",
+  "id": "2026-09-22-1430-spec-pin-warnings-r1",
   "title": "Pin warnings",
   "round": 1,
   "summary": "What was explored and what this round decides.\n\nA blank line starts a new paragraph.",
@@ -62,7 +62,7 @@ The build checks these rules, apart from the word counts, and rejects unknown ke
 | question `id` | Kebab-case, unique on the page. |
 | question `header` | A short label, 1 to 3 words, on one line. It appears as a chip and in the answers text. |
 | `question` | One line, ending with `?`; the rest goes in `context`. |
-| `options` | 2 to 6. Never add "Other": the page adds it, with key `0`, to every question. |
+| `options` | 2 to 6, each label unique within its question. Never add "Other": the page adds it, with key `0`, to every question. |
 | `recommended` | At most one option per single-choice question. |
 | `multiSelect` | `true` renders checkboxes: "choose any that apply". |
 | `visual` | The id of a `<template>` in `visuals.html`, on a question or an option. Every template must be used. |
@@ -104,7 +104,20 @@ Include a recipe only when the page uses it. The build writes the page, then che
 - files: every script pins an exact version and is checked by hash; nothing loads over plain http or from beside the page, so it still works when copied elsewhere
 - a headless Chrome render: a script error, a library that fails to load or fails its hash, a Mermaid diagram that does not parse, a malformed board or an illegal chess move each fails the build
 - the answer round trip: the build answers every question by mouse and by keyboard and fails when an answer, comment or wrap-up choice does not reach the answers text, or when a visual covers an option or moves it when pressed, so a click misses it
+- data safety, as the checklist below marks
 
 The build prints `ok` or the list of problems. Fix the parts and rebuild; never edit the built page, because `--check` rejects an engine that differs from the template.
+
+## Data safety checklist
+
+The user may spend a long time on a page, and a reload, a crash or a rebuild must not cost them an answer. The engine saves every change in the browser as it is made, under the page id, with choices by option label; an include or a visual can still lose an answer. Confirm every item before reporting the page. The build fails on the items marked (build).
+
+- Every answer goes through an option, a comment box or the wrap-up. A control in a visual that takes input (a text field, select, checkbox, radio or editable region) is neither saved nor sent. Buttons and sliders that change only what a visual shows are fine. (build)
+- After every change, by mouse and by keyboard, the copy saved in the browser matches the answers text. (build)
+- After a reload, every answer, comment and wrap-up choice is back. (build)
+- Option labels are unique within a question, since the saved answers and the answers text hold each chosen option as its label. (build)
+- `id` is the page id from the prompt. A page reusing an earlier round's or another interview's id opens with those answers already filled in.
+- No include writes to or clears localStorage.
+- A rebuild of a page the user has open drops the choice of an option whose label changed, the comment on a question whose id changed, and all but one choice of a question changed to single choice. Keep labels, ids and `multiSelect` unless the change is the point.
 
 Then look at the page with the tool-agent-browser skill: `agent-browser open file://PAGE`, `agent-browser screenshot --full <png>`, and read the screenshot to check that each visual shows what its question says. Then `agent-browser set viewport 420 900`, take a second full screenshot, and check that nothing overflows at that width. When agent-browser is missing, say so in the summary.

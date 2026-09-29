@@ -55,6 +55,18 @@ const unknownKeys = (object, allowed, where) => Object.keys(object)
   .filter((key) => !allowed.includes(key))
   .map((key) => `${where}: unknown key "${key}"`);
 
+const positionsList = (positions) => (positions.length === 2
+  ? positions.join(' and ')
+  : `${positions.slice(0, -1).join(', ')} and ${positions.at(-1)}`);
+
+const duplicateLabelProblems = (options, where) => {
+  const labels = options.map((option) => option.label);
+  return [...new Set(labels.filter(isText))]
+    .map((label) => ({ label, positions: labels.flatMap((other, index) => (other === label ? [index + 1] : [])) }))
+    .filter(({ positions }) => positions.length > 1)
+    .map(({ label, positions }) => `${where}: options ${positionsList(positions)} share the label ${JSON.stringify(label)}; the answers text and the saved answers hold each chosen option as its label`);
+};
+
 const optionProblems = (question, where) => {
   const options = Array.isArray(question.options) ? question.options : [];
   const count = options.length;
@@ -63,6 +75,7 @@ const optionProblems = (question, where) => {
     ...(count < 2 || count > 6 ? [`${where}: needs 2 to 6 options (the page adds "Other" itself), has ${count}`] : []),
     ...(options.some((option) => /^other\b/i.test(option.label ?? '')) ? [`${where}: drop the "Other" option; the page adds one to every question`] : []),
     ...(!question.multiSelect && recommended > 1 ? [`${where}: recommends ${recommended} options but takes one answer`] : []),
+    ...duplicateLabelProblems(options, where),
     ...options.flatMap((option, index) => [
       ...unknownKeys(option, OPTION_KEYS, `${where} option ${index + 1}`),
       ...(isText(option.label) ? [] : [`${where} option ${index + 1}: needs a label`]),

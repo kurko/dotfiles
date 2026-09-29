@@ -75,6 +75,8 @@
   .progress progress { width: 7rem; height: .5rem; accent-color: var(--ok); }
   .status { flex-basis: 100%; font-size: .85rem; color: var(--ok); min-height: 0; }
   .status:empty { display: none; }
+  .storage-warning { max-width: 880px; margin: 0 auto; padding: .4rem 16px; font-size: .9rem; font-weight: 600; color: var(--badge); background: var(--badge-soft); }
+  .storage-warning[hidden] { display: none; }
   .shortcut-help { max-width: 880px; margin: 0 auto; padding: 0 16px .75rem; }
   .shortcut-help dl { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; margin: 0; font-size: .9rem; }
   .shortcut-help dt { text-align: right; }
@@ -140,6 +142,7 @@
     <button type="button" id="toggle-help" aria-expanded="false" aria-controls="shortcut-help" title="Shortcut: ?">Keys</button>
     <span class="status" role="status" data-copy-status></span>
   </div>
+  <p id="storage-warning" class="storage-warning" role="alert" hidden>This browser is not saving your answers, so a reload would lose them. Copy them before you leave the page.</p>
   <div id="shortcut-help" class="shortcut-help" hidden>
     <dl>
       <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd>Next or previous question</dd>
@@ -193,6 +196,7 @@
   const NEXT_STEPS = {
     'follow-up': 'Ask follow-up questions if you need to',
     'write-spec': 'Stop asking and write the spec',
+    build: 'Stop asking and start building',
   };
 
   // Answers text. Claude parses it, and tests/page.test.mjs pins its format.
@@ -394,14 +398,44 @@
     document.querySelectorAll('input[name="next-step"]').forEach((input) => { input.checked = input.value === nextStep; });
   };
 
-  const fingerprint = (text) => [...text]
-    .reduce((hash, char) => Math.imul(hash ^ char.charCodeAt(0), 0x01000193) >>> 0, 0x811c9dc5)
-    .toString(36);
+  // Choices are saved by option label, so a page rebuilt with another option list still reads them back.
+  const storageKey = (data) => `${STORAGE_PREFIX}${data.id}`;
 
-  // Choices are saved as option indexes, so a page rebuilt with different options must not read them back.
-  const storageKey = (data) => {
-    const shape = numberedQuestions(data).map(({ question }) => [question.id, question.options.map((option) => option.label)]);
-    return `${STORAGE_PREFIX}${data.id}:${fingerprint(JSON.stringify(shape))}`;
+  const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+  const labelOfChoice = (question, choice) => (choice === OTHER ? OTHER : question.options[choice].label);
+
+  const stateForStorage = (data, state) => ({
+    choices: Object.fromEntries(numberedQuestions(data)
+      .filter(({ question }) => isAnswered(state, question))
+      .map(({ question }) => [question.id, choicesFor(state, question).map((choice) => labelOfChoice(question, choice))])),
+    comments: state.comments,
+    general: state.general,
+    nextStep: state.nextStep,
+  });
+
+  const choiceOfLabel = (question, label) => (label === OTHER ? OTHER : question.options.findIndex((option) => option.label === label));
+
+  const choicesFromStorage = (question, labels) => (Array.isArray(labels) ? labels : [])
+    .map((label) => choiceOfLabel(question, label))
+    .filter((choice) => choice !== -1);
+
+  const commentsFromStorage = (entries, comments) => Object.fromEntries(entries
+    .filter(({ question }) => isRecord(comments) && typeof comments[question.id] === 'string')
+    .map(({ question }) => [question.id, comments[question.id]]));
+
+  const stateFromStorage = (data, stored) => {
+    if (!isRecord(stored)) return emptyState();
+    const entries = numberedQuestions(data);
+    const choices = isRecord(stored.choices) ? stored.choices : {};
+    return {
+      choices: Object.fromEntries(entries
+        .filter(({ question }) => question.id in choices)
+        .map(({ question }) => [question.id, choicesFromStorage(question, choices[question.id])])),
+      comments: commentsFromStorage(entries, stored.comments),
+      general: typeof stored.general === 'string' ? stored.general : '',
+      nextStep: NEXT_STEPS[stored.nextStep] ? stored.nextStep : DEFAULT_NEXT_STEP,
+    };
   };
 
   const storage = (data) => {
@@ -411,13 +445,29 @@
         try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
       },
       save: (state) => {
-        try { localStorage.setItem(key, JSON.stringify(state)); } catch { /* storage is off: answers still live in the page */ }
+        try {
+          localStorage.setItem(key, JSON.stringify(stateForStorage(data, state)));
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      works: () => {
+        try {
+          const probe = `${key}:probe`;
+          localStorage.setItem(probe, '1');
+          localStorage.removeItem(probe);
+          return true;
+        } catch {
+          return false;
+        }
       },
     };
   };
 
-  const refresh = (context) => {
-    const state = readState(context.entries);
+  const showStorageWarning = (saved) => { byId('storage-warning').hidden = saved; };
+
+  const render = (context, state) => {
     const answered = context.entries.filter(({ question }) => isAnswered(state, question));
     context.entries.forEach(({ question }) => {
       questionFieldset(question.id).toggleAttribute('data-answered', answered.some((entry) => entry.question === question));
@@ -427,7 +477,13 @@
     const text = formatAnswers(context.data, state);
     byId('answers-text').value = text;
     context.clipboard.follow(text);
-    context.store.save(state);
+  };
+
+  // Saves before rendering, so a page whose rendering throws still keeps the answer.
+  const record = (context) => {
+    const state = readState(context.entries);
+    showStorageWarning(context.store.save(state));
+    render(context, state);
   };
 
   // Keyboard. Widgets that handle a key call preventDefault, and the page leaves that key alone.
@@ -484,7 +540,7 @@
       if (!input) return;
       input.checked = input.type === 'checkbox' ? !input.checked : true;
       input.focus({ preventScroll: true });
-      refresh(context);
+      record(context);
     };
 
     const focusComment = () => {
@@ -557,12 +613,12 @@
   const clearAnswers = (context) => {
     if (!window.confirm('Clear every answer and comment on this page?')) return;
     applyState(context.entries, emptyState());
-    refresh(context);
+    record(context);
   };
 
   const bindEvents = (context) => {
     const nav = navigation(context);
-    ['input', 'change'].forEach((type) => document.addEventListener(type, () => refresh(context)));
+    ['input', 'change'].forEach((type) => document.addEventListener(type, () => record(context)));
     ['focusin', 'pointerdown'].forEach((type) => document.addEventListener(type, nav.track));
     document.addEventListener('keydown', nav.onKeydown);
     byId('next-unanswered').addEventListener('click', nav.nextUnanswered);
@@ -580,14 +636,16 @@
     byId('progress-meter').max = entries.length;
     const context = { data, entries, store: storage(data), clipboard: answersClipboard() };
     const saved = context.store.load();
-    applyState(entries, saved && typeof saved === 'object' ? { ...emptyState(), ...saved } : emptyState());
+    const restored = stateFromStorage(data, saved);
+    applyState(entries, restored);
+    showStorageWarning(context.store.works());
     bindEvents(context);
-    refresh(context);
+    render(context, readState(entries));
     document.documentElement.setAttribute('data-spec-form', 'ready');
     document.documentElement.setAttribute('data-spec-questions', String(entries.length));
   };
 
-  globalThis.SpecForm = Object.freeze({ formatAnswers, storageKey, OTHER });
+  globalThis.SpecForm = Object.freeze({ formatAnswers, storageKey, stateForStorage, stateFromStorage, OTHER });
   if (typeof document !== 'undefined') boot();
 })();
 </script>

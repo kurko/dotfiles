@@ -1,5 +1,5 @@
 {
-  "id": "2026-09-22-spec-pin-warnings-r1",
+  "id": "2026-09-22-1430-spec-pin-warnings-r1",
   "title": "Pin warnings (example)",
   "round": 1,
   "summary": "An example page for the help-me-spec-interactive skill, with every question and visual type it supports: a pair of boards, a board per option, a line to step through, a Mermaid flow, a multi-choice question and a defaults section.\n\nThe feature is made up to show the format. Its questions and recommendations are illustrations, not decisions for any project.",

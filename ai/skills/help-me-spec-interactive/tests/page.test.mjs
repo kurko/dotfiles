@@ -160,22 +160,80 @@ describe('answers text', () => {
   });
 });
 
-describe('storageKey', () => {
-  test('stays the same when only wording outside the options changes', () => {
-    const data = sampleData();
-    const edited = { ...sampleData(), summary: 'Reworded.' };
-    edited.sections[0].questions[0].context = 'Added context.';
+describe('answers text next step', () => {
+  test('prints the build choice', () => {
+    const text = loadEngine().formatAnswers(sampleData(), { ...emptyState(), nextStep: 'build' });
 
-    assert.equal(loadEngine().storageKey(edited), loadEngine().storageKey(data));
+    assert.match(text, /^Next step: Stop asking and start building$/m);
   });
+});
 
-  test('changes when options move, so saved indexes never land on another option', () => {
-    const data = sampleData();
+describe('storageKey', () => {
+  test('is the prefix and the page id, whatever the options are', () => {
     const reordered = sampleData();
     reordered.sections[0].questions[0].options.reverse();
 
-    assert.match(loadEngine().storageKey(data), /^help-me-spec-interactive:demo-r1:[0-9a-z]+$/);
-    assert.notEqual(loadEngine().storageKey(reordered), loadEngine().storageKey(data));
+    assert.equal(loadEngine().storageKey(sampleData()), 'help-me-spec-interactive:demo-r1');
+    assert.equal(loadEngine().storageKey(reordered), loadEngine().storageKey(sampleData()));
+  });
+});
+
+describe('saved answers', () => {
+  const answered = () => ({
+    choices: { storage: [1], sides: [0, 'other'] },
+    comments: { storage: 'Keep it small', sides: 'also none' },
+    general: 'Ship it',
+    nextStep: 'build',
+  });
+
+  test('are stored by option label', () => {
+    assert.deepEqual(JSON.parse(JSON.stringify(loadEngine().stateForStorage(sampleData(), answered()))), {
+      choices: { storage: ['Jsonb'], sides: ['White', 'other'] },
+      comments: { storage: 'Keep it small', sides: 'also none' },
+      general: 'Ship it',
+      nextStep: 'build',
+    });
+  });
+
+  test('come back as the same state', () => {
+    const { stateForStorage, stateFromStorage } = loadEngine();
+    const stored = JSON.parse(JSON.stringify(stateForStorage(sampleData(), answered())));
+
+    assert.deepEqual(JSON.parse(JSON.stringify(stateFromStorage(sampleData(), stored))), answered());
+  });
+
+  test('keep a choice when an option is inserted before it', () => {
+    const { stateForStorage, stateFromStorage } = loadEngine();
+    const stored = stateForStorage(sampleData(), answered());
+    const rebuilt = sampleData();
+    rebuilt.sections[0].questions[0].options.unshift({ label: 'File' });
+
+    assert.deepEqual([...stateFromStorage(rebuilt, stored).choices.storage], [2]);
+  });
+
+  test('drop a choice whose label is gone, and a question the page no longer has', () => {
+    const { stateFromStorage } = loadEngine();
+    const stored = { choices: { storage: ['Removed', 'Column'], gone: ['Yes'] }, comments: { gone: 'x' }, general: '', nextStep: 'follow-up' };
+
+    const state = stateFromStorage(sampleData(), stored);
+
+    assert.deepEqual([...state.choices.storage], [0]);
+    assert.equal('gone' in state.choices, false);
+    assert.equal('gone' in state.comments, false);
+  });
+
+  test('fall back to the default next step when the saved one is unknown', () => {
+    const state = loadEngine().stateFromStorage(sampleData(), { choices: {}, nextStep: 'ship' });
+
+    assert.equal(state.nextStep, 'follow-up');
+  });
+
+  test('are an empty state when what was saved is not an object', () => {
+    const { stateFromStorage } = loadEngine();
+
+    [null, undefined, 'text', 4, ['a']].forEach((stored) => {
+      assert.deepEqual(JSON.parse(JSON.stringify(stateFromStorage(sampleData(), stored))), emptyState());
+    });
   });
 });
 
@@ -233,6 +291,34 @@ describe('dataProblems', () => {
       'question "storage": "header" must be one line',
       'question "storage": the question must be one line; put the rest in "context"',
       'question "storage" option 1: the label must be one line; put the rest in "description"',
+    ]);
+  });
+
+  test('rejects two options with one label in a question, since the saved answers tell options apart by label', () => {
+    const data = sampleData();
+    data.sections[1].questions[0].options[1].label = 'Yes';
+
+    assert.deepEqual(dataProblems(data), [
+      'question "naming": options 1 and 2 share the label "Yes"; the answers text and the saved answers hold each chosen option as its label',
+    ]);
+  });
+
+  test('names every position of a label three options share', () => {
+    const data = sampleData();
+    data.sections[0].questions[1].options = [{ label: 'A' }, { label: 'A' }, { label: 'B' }, { label: 'A' }];
+
+    assert.deepEqual(dataProblems(data), [
+      'question "sides": options 1, 2 and 4 share the label "A"; the answers text and the saved answers hold each chosen option as its label',
+    ]);
+  });
+
+  test('leaves options without a label to their own problem', () => {
+    const data = sampleData();
+    data.sections[1].questions[0].options = [{ description: 'x' }, { description: 'y' }];
+
+    assert.deepEqual(dataProblems(data), [
+      'question "naming" option 1: needs a label',
+      'question "naming" option 2: needs a label',
     ]);
   });
 

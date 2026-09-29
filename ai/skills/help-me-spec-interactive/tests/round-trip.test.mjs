@@ -37,6 +37,9 @@ const writePage = (parts, engine = (source) => source) => {
 const missed = (pass, step, field, actual, expected) =>
   `round trip by ${pass}: after ${step}, ${field} is ${JSON.stringify(actual)} in the answers text, expected ${JSON.stringify(expected)}`;
 
+const unsaved = (pass, step) =>
+  `round trip by ${pass}: after ${step}, nothing is saved in the browser, so a reload then would lose every answer`;
+
 // Serves one script, held back the way a CDN answering slowly under load holds it.
 const serveLateScript = async (body, heldMs) => {
   const server = createServer((request, response) => setTimeout(() => {
@@ -119,11 +122,11 @@ describe('roundTripProblems', { skip: findChrome() ? false : 'no Chrome found' }
       `nextStep: document.querySelector('input[name="next-step"]:checked')?.value || DEFAULT_NEXT_STEP,`,
       'nextStep: DEFAULT_NEXT_STEP,',
     ));
-    const [actual, expected] = ['Next step: Ask follow-up questions if you need to', 'Next step: Stop asking and write the spec'];
+    const actual = 'Next step: Ask follow-up questions if you need to';
 
     assert.deepEqual(await roundTripProblems(file, sampleData()), [
-      missed('mouse', 'choosing "Stop asking and write the spec"', 'the next step', actual, expected),
-      missed('keyboard', 'pressing Tab and ArrowDown on "After this round"', 'the next step', actual, expected),
+      missed('mouse', 'choosing "Stop asking and start building"', 'the next step', actual, 'Next step: Stop asking and start building'),
+      missed('keyboard', 'pressing Tab and ArrowDown on "After this round"', 'the next step', actual, 'Next step: Stop asking and write the spec'),
     ]);
   });
 
@@ -166,12 +169,14 @@ describe('roundTripProblems', { skip: findChrome() ? false : 'no Chrome found' }
     assert.deepEqual(await roundTripProblems(file, sampleData()), ['round trip: the page reported "Uncaught Error: pointer broke"']);
   });
 
-  test('reports keyboard answers that a reload loses', async () => {
+  test('reports answers that the browser loses as they are typed, and keyboard answers that a reload loses', async () => {
     const forget = "<script>addEventListener('keyup', () => localStorage.clear());</script>";
     const file = writePage({ data: sampleData(), includes: [forget] });
     const lost = (field, actual, expected) => missed('keyboard', 'reloading the page', field, actual, expected);
 
     assert.deepEqual(await roundTripProblems(file, sampleData()), [
+      unsaved('mouse', 'typing a comment in Q1'),
+      unsaved('keyboard', 'pressing Escape, j, 2 in Q1'),
       lost("Q1's answer", 'A: (no answer)', 'A: Jsonb'),
       lost('the answered count', 'Answered: 0 of 2', 'Answered: 2 of 2'),
       lost("Q1's comment", '(no comment)', 'Comment: keyboard comment 1'),
@@ -180,6 +185,39 @@ describe('roundTripProblems', { skip: findChrome() ? false : 'no Chrome found' }
       lost('the general comment', '(missing)', 'General comment: keyboard general comment'),
       lost('the next step', 'Next step: Ask follow-up questions if you need to', 'Next step: Stop asking and write the spec'),
     ]);
+  });
+
+  test('reports an engine that saves late, since a crash before then loses the answer', async () => {
+    const file = writePage({ data: sampleData() }, (source) => source.replace(
+      'showStorageWarning(context.store.save(state));',
+      'setTimeout(() => context.store.save(state), 3000);',
+    ));
+
+    const problems = await roundTripProblems(file, sampleData());
+
+    assert.equal(problems[0], unsaved('mouse', 'choosing "Column" in Q1'));
+    assert.ok(problems.some((problem) => problem.startsWith('round trip by keyboard: after ')), problems.join('\n'));
+  });
+
+  test('reports a text input, a select and a contenteditable in a visual, which the page neither saves nor sends', async () => {
+    const data = sampleData();
+    data.sections[0].questions[0].visual = 'controls';
+    const visuals = `<template id="controls">
+      <input type="text"><select><option>a</option></select><div contenteditable="true"></div>
+    </template>`;
+
+    const problems = await roundTripProblems(writePage({ data, visuals }), data);
+
+    const ignored = (control) => `round trip: the page has ${control} in Q1's visual, which takes input the page neither saves nor sends; ask through the options or the comment box instead`;
+    assert.deepEqual(problems, [ignored('input[type=text]'), ignored('select'), ignored('div[contenteditable]')]);
+  });
+
+  test('accepts buttons and range sliders in a visual, which change only what the visual shows', async () => {
+    const data = sampleData();
+    data.sections[0].questions[0].visual = 'controls';
+    const visuals = '<template id="controls"><button type="button">Next</button><input type="range"></template>';
+
+    assert.deepEqual(await roundTripProblems(writePage({ data, visuals }), data), []);
   });
 });
 

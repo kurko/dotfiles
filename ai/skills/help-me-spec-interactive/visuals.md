@@ -5,6 +5,7 @@
 - A visual is a `<template id="kebab-id">` in `visuals.html`. When the page loads, the engine copies its content into the question or option that names it, so one template can appear more than once: use classes and data attributes inside it, never ids.
 - A script that brings a visual to life goes in an include, which runs after the engine has placed the templates. It finds its elements by data attribute (`document.querySelectorAll('[data-my-widget]')`). Give the include's main `<script>` a `data-recipe="<name>"` when its visuals are unusable without it; the build then reports a visual whose recipe is missing, for the two recipes here.
 - The page's CSS provides `.visual-row` (items side by side, wrapping on narrow screens), `figure` and `figcaption`, `pre` and `code`, and colour variables that follow light and dark mode: `--fg`, `--muted`, `--bg`, `--card`, `--border`, `--accent`, `--accent-soft`.
+- Answers go through the options and comment boxes, never through a visual. Buttons and sliders that change what a visual shows are fine. A text field, select, checkbox, radio or editable region in a visual holds input the page neither saves nor sends, and the build fails on it.
 - A diagram with edges says what an edge means, in a caption or a legend.
 - Report a failure with `window.reportSpecError(message)`. The build fails on it, so a broken example never reaches the user.
 

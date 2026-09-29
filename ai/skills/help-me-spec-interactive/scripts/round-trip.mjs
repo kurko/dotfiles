@@ -1,5 +1,7 @@
-// Answers every question of a built page in headless Chrome, once by mouse and once by keyboard, and reads the
-// answers text after each step, so an answer that never reaches the text, or reaches it only later, fails the check.
+// Answers every question of a built page in headless Chrome, once by mouse and once by keyboard. After each step it
+// reads the answers text and the answers saved in the browser, so an answer that reaches either late, or never, fails
+// the check, and a reload at the end of each pass proves every answer, comment and wrap-up choice comes back. It also
+// reports form controls the page neither saves nor sends.
 import { pathToFileURL } from 'node:url';
 import { findChrome, launchChrome } from './chrome.mjs';
 
@@ -10,6 +12,8 @@ const STILL_FRAMES = 3;
 const MAX_AIM_FRAMES = 120;
 const CLICK_ATTEMPTS = 5;
 const WRITE_SPEC = 'Stop asking and write the spec';
+const BUILD = 'Stop asking and start building';
+const FOLLOW_UP = 'Ask follow-up questions if you need to';
 
 const entriesOf = (data) => data.sections
   .flatMap((section) => section.questions)
@@ -154,7 +158,13 @@ const pressEach = async (page, keys) => {
 
 // Steps. Each acts, then names the answers-text fields it should have changed.
 
-const nextStepExpected = { 'the next step': `Next step: ${WRITE_SPEC}` };
+const nextStepExpected = (label) => ({ 'the next step': `Next step: ${label}` });
+
+const nextStepClick = (value, label) => ({
+  describe: `choosing "${label}"`,
+  act: (page) => clickOn(page, { selector: `input[name="next-step"][value="${value}"]`, what: `"${label}"` }),
+  expect: nextStepExpected(label),
+});
 
 const reloadStep = {
   describe: 'reloading the page',
@@ -188,11 +198,9 @@ const mouseSteps = (entries) => [
     act: (page) => clickThenType(page, { selector: '#general-comment', what: 'the general comment box' }, 'mouse general comment'),
     expect: { 'the general comment': 'General comment: mouse general comment' },
   },
-  {
-    describe: `choosing "${WRITE_SPEC}"`,
-    act: (page) => clickOn(page, { selector: 'input[name="next-step"][value="write-spec"]', what: `"${WRITE_SPEC}"` }),
-    expect: nextStepExpected,
-  },
+  nextStepClick('build', BUILD),
+  nextStepClick('follow-up', FOLLOW_UP),
+  nextStepClick('write-spec', WRITE_SPEC),
   reloadStep,
 ];
 
@@ -223,8 +231,13 @@ const keyboardSteps = (entries) => [
   {
     describe: 'pressing Tab and ArrowDown on "After this round"',
     act: (page) => pressEach(page, ['Tab', 'ArrowDown']),
-    expect: nextStepExpected,
+    expect: nextStepExpected(WRITE_SPEC),
   },
+  ...[BUILD, FOLLOW_UP, WRITE_SPEC].map((label) => ({
+    describe: `pressing ArrowDown again on "After this round", to reach "${label}"`,
+    act: (page) => pressEach(page, ['ArrowDown']),
+    expect: nextStepExpected(label),
+  })),
   reloadStep,
 ];
 
@@ -238,12 +251,33 @@ const readFields = async (page, entries, expected, deadline = Date.now() + READ_
   return readFields(page, entries, expected, deadline);
 };
 
+// What a reload would bring back: the saved copy read as the page reads it, printed as the page prints it. A page
+// nothing has been entered on saves nothing, and that is right.
+const SAVED_COPY = `(() => {
+  const data = JSON.parse(document.getElementById('spec-data').textContent);
+  const shown = document.getElementById('answers-text').value;
+  const raw = localStorage.getItem(SpecForm.storageKey(data));
+  const untouched = SpecForm.formatAnswers(data, SpecForm.stateFromStorage(data, null)) === shown;
+  if (raw === null) return untouched ? 'same' : 'nothing';
+  try {
+    return SpecForm.formatAnswers(data, SpecForm.stateFromStorage(data, JSON.parse(raw))) === shown ? 'same' : 'different';
+  } catch {
+    return 'different';
+  }
+})()`;
+
+const SAVED_COPY_PROBLEMS = {
+  nothing: 'nothing is saved in the browser, so a reload then would lose every answer',
+  different: 'the answers saved in the browser differ from the answers text, so a reload then would lose the difference',
+};
+
 // Each field is reported once, at the first step after which the text disagrees with it. A blocked step may have
 // landed part of its clicks, so the fields it touches are left unchecked for the rest of the pass.
 const runPass = async (page, pass, steps, entries, errors) => {
   const problems = [];
   const reported = new Set();
   let expected = {};
+  let savedCopyReported = false;
   for (const step of steps) {
     const blocked = await step.act(page, errors);
     problems.push(...blocked.map((problem) => `round trip by ${pass}: ${problem}`));
@@ -255,21 +289,53 @@ const runPass = async (page, pass, steps, entries, errors) => {
       reported.add(field);
       problems.push(`round trip by ${pass}: after ${step.describe}, ${field} is ${JSON.stringify(actual[field])} in the answers text, expected ${JSON.stringify(line)}`);
     });
+    const savedCopy = await page.evaluate(SAVED_COPY);
+    if (savedCopy !== 'same' && !savedCopyReported) {
+      savedCopyReported = true;
+      problems.push(`round trip by ${pass}: after ${step.describe}, ${SAVED_COPY_PROBLEMS[savedCopy]}`);
+    }
   }
   return problems;
 };
+
+const ENGINE_OWNED = [
+  'fieldset.question > .options > .option > label > input',
+  'fieldset.question > .comment > textarea',
+  '#general-comment',
+  'input[name="next-step"]',
+  '#answers-text',
+].join(', ');
+
+const EDITABLE = '[contenteditable]:not([contenteditable="false"])';
+
+const CONTROLS = `input:not([type=button]):not([type=submit]):not([type=reset]):not([type=range]):not([type=hidden]), select, textarea, ${EDITABLE}`;
+
+const UNOWNED_CONTROLS = `(() => {
+  const label = (node) => {
+    if (node.matches(${JSON.stringify(EDITABLE)})) return node.tagName.toLowerCase() + '[contenteditable]';
+    return node instanceof HTMLInputElement ? 'input[type=' + node.type + ']' : node.tagName.toLowerCase();
+  };
+  const questions = [...document.querySelectorAll('fieldset.question')];
+  return [...document.querySelectorAll(${JSON.stringify(CONTROLS)})]
+    .filter((node) => !node.matches(${JSON.stringify(ENGINE_OWNED)}))
+    .map((node) => ({ control: label(node), question: questions.indexOf(node.closest('fieldset.question')) + 1 }));
+})()`;
+
+const unownedControlProblems = async (page) => (await page.evaluate(UNOWNED_CONTROLS)).map(({ control, question }) =>
+  `round trip: the page has ${control} ${question ? `in Q${question}'s visual` : 'outside the questions'}, which takes input the page neither saves nor sends; ask through the options or the comment box instead`);
 
 const roundTrip = async (browser, file, data) => {
   const entries = entriesOf(data);
   const errors = [];
   const page = await browser.openPage(pathToFileURL(file).href, { initScript: CLICK_GUARD });
   await waitForPage(page);
+  const unowned = await unownedControlProblems(page);
   const byMouse = await runPass(page, 'mouse', mouseSteps(entries), entries, errors);
   await page.evaluate('localStorage.clear()');
   await reloadPage(page, errors);
   const byKeyboard = await runPass(page, 'keyboard', keyboardSteps(entries), entries, errors);
   errors.push(...await pageErrors(page));
-  return [...byMouse, ...byKeyboard, ...[...new Set(errors)].map((message) => `round trip: the page reported "${message}"`)];
+  return [...unowned, ...byMouse, ...byKeyboard, ...[...new Set(errors)].map((message) => `round trip: the page reported "${message}"`)];
 };
 
 export const roundTripProblems = async (file, data) => {

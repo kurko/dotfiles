@@ -1,6 +1,6 @@
 ---
 name: help-me-spec-interactive
-description: Interview the user for a feature spec through an HTML questionnaire instead of chat prompts. Claude explores the codebase and writes a self-contained page of multiple-choice questions, each with a comment box and, where it helps, a diagram, chess board or other keyboard-driven example; the user answers in the browser and pastes back the answers text the page generates. Rounds repeat until the scope is clear, then Claude writes the spec to ai-notes/specs. Manual only; the user invokes it with /help-me-spec-interactive.
+description: Interview the user for a feature spec through an HTML questionnaire instead of chat prompts. Claude explores the codebase and writes a self-contained page of multiple-choice questions, each with a comment box and, where it helps, a diagram, chess board or other keyboard-driven example; the user answers in the browser and pastes back the answers text the page generates. Rounds repeat until the scope is clear, then Claude writes the spec to ai-notes/specs, and builds from it right away when the user chooses to. Manual only; the user invokes it with /help-me-spec-interactive.
 argument-hint: "[feature description, file path, or URL]"
 disable-model-invocation: true
 ---
@@ -15,8 +15,8 @@ Paths are relative to this skill's directory, `SKILL_DIR` (the base directory sh
 
 | File | Role |
 |---|---|
-| `form-template.html` | Page skeleton, styles and engine: renders the questions, keyboard shortcuts, the live answers text, copy buttons, and saving answers in localStorage. Never edited per round. |
-| `scripts/build-page.mjs` | Builds one self-contained HTML file from a round's parts and checks it: schema, visuals, scripts pinned by version and hash, nothing loaded from beside the page, then a headless Chrome render that fails on any script error, and the answer round trip (3b). |
+| `form-template.html` | Page skeleton, styles and engine: renders the questions, keyboard shortcuts, the live answers text, copy buttons, and saves every change in localStorage as it is made. Never edited per round. |
+| `scripts/build-page.mjs` | Builds one self-contained HTML file from a round's parts and checks it: schema, visuals, scripts pinned by version and hash, nothing loaded from beside the page, then a headless Chrome render that fails on any script error, and the answer round trip with its data-safety checks (3b). |
 | `authoring.md` | How to write a round: questions, data format, visuals, build. The round subagent follows it. |
 | `visuals.md`, `recipes/` | Tested recipes (Mermaid, chess boards and lines) and the rules for new interactive visuals and libraries. |
 | `examples/pins/` | A complete round using every question and visual type, for a made-up feature. |
@@ -35,13 +35,13 @@ The result is `STARTING_CONTEXT`.
 
 ## Step 2: Work directory
 
-Pick a kebab-case `SLUG` for the feature and create `WORK_DIR`: `$CLAUDE_JOB_DIR/tmp/spec-<SLUG>` when `CLAUDE_JOB_DIR` is set, since parallel jobs share `/tmp`; otherwise `/tmp/<YYYY-MM-DD>-spec-<SLUG>`. Outside the repository, the pages never reach git.
+Pick a kebab-case `SLUG` for the feature, note the interview's start as `STARTED` (`<YYYY-MM-DD>-<HHMM>`), and create `WORK_DIR`: `$CLAUDE_JOB_DIR/tmp/spec-<SLUG>` when `CLAUDE_JOB_DIR` is set, since parallel jobs share `/tmp`; otherwise `/tmp/<YYYY-MM-DD>-spec-<SLUG>`. Outside the repository, the pages never reach git.
 
 Write `WORK_DIR/transcript.md` with `STARTING_CONTEXT` under `# Starting context`. Every round's answers are appended to it, so the interview survives context compaction and each subagent reads it instead of receiving it inline.
 
 ## Step 3: Round loop
 
-For round `N` = 1, 2, …, with `PAGE_ID` = `<YYYY-MM-DD>-spec-<SLUG>-r<N>` and `PAGE` = `WORK_DIR/<YYYY-MM-DD>-spec-<SLUG>-round-<N>.html`. The date sorts copies, and the name identifies a copy moved elsewhere.
+For round `N` = 1, 2, …, with `PAGE_ID` = `<STARTED>-spec-<SLUG>-r<N>` and `PAGE` = `WORK_DIR/<YYYY-MM-DD>-spec-<SLUG>-round-<N>.html`. The date sorts copies, and the name identifies a copy moved elsewhere. The browser keeps a page's answers under its id; with the start time in the id, a second interview on the same feature does not open with the first one's answers or overwrite them.
 
 ### 3a. Launch the round subagent
 
@@ -87,7 +87,9 @@ Parse the JSON. If `interview_complete` is true, go to Step 4.
 
 Otherwise re-run `node {SKILL_DIR}/scripts/build-page.mjs --check {PAGE}` rather than trusting the subagent's report. If it prints problems, send them to the subagent with SendMessage and check again.
 
-The check covers the answer round trip: in headless Chrome it answers every question by mouse and again by keyboard, with an option, a comment, several choices where allowed, the general comment and "Stop asking and write the spec", and fails unless each reaches the answers text within two seconds of being entered and is still there after a reload.
+The check covers the answer round trip: in headless Chrome it answers every question by mouse and again by keyboard, with an option, a comment, several choices where allowed, the general comment and each "After this round" choice. It fails unless each reaches the answers text within two seconds of being entered, the copy saved in the browser matches the answers text after every step, and everything is still there after a reload. It also fails on a control in a visual that takes input, since the page neither saves nor sends what is entered there.
+
+When the user asks for a change to the open page, rebuild it under the same page id and tell them to reload. The browser keeps answers by question id and option label, so every answer comes back except a choice whose option label changed, and each comment comes back while its question id stays. A question changed from several choices to one keeps only one of its saved choices.
 
 Open the page in the default browser (`open` on macOS, `xdg-open` on Linux). Tell the user, briefly:
 
@@ -110,11 +112,14 @@ The paste starts with `help-me-spec-interactive answers` and names the page id a
    - Otherwise it is **open**, and Claude does not decide it. The next round asks it again with Claude's recommendation marked.
 
    Append the restatement, with the delegated and open questions listed by name, to `transcript.md` under `### Claude's reading`.
-5. If the paste says `Next step: Stop asking and write the spec`, go to Step 4. Otherwise loop to 3a with `N + 1`, without waiting. If the user corrects the restatement while that subagent runs, append the correction to `transcript.md` and forward it to the subagent with SendMessage, so the next page is not built on the misreading.
+5. Continue without waiting, according to the paste's `Next step:` line:
+   - `Ask follow-up questions if you need to`: loop to 3a with `N + 1`. If the user corrects the restatement while that subagent runs, append the correction to `transcript.md` and forward it to the subagent with SendMessage, so the next page is not built on the misreading.
+   - `Stop asking and write the spec`: go to Step 4, and end at Step 5.
+   - `Stop asking and start building`: go to Step 4, then Step 6.
 
 The user may answer in chat instead ("Q3 is 2, skip Q5"); handle it the same way.
 
-After round 3, ask whether to continue or write the spec. One page holds as much as five AskUserQuestion rounds, so three pages is a long interview.
+After round 3, ask whether to continue, write the spec, or write it and start building. One page holds as much as five AskUserQuestion rounds, so three pages is a long interview.
 
 ## Step 4: Write the spec
 
@@ -122,9 +127,9 @@ After round 3, ask whether to continue or write the spec. One page holds as much
 
 List the open questions from every round's "Claude's reading" that no later answer settled. An open question is critical when the spec cannot be written without guessing its answer, because the answer changes the architecture, the data shape, or what gets built.
 
-If any is critical, do not write the spec. Stop, and present each critical question with Claude's recommendation, the reason, and what the spec would look like under it, so the user can approve it or choose otherwise when they are back. Append the proposals to `transcript.md` under `## Proposals awaiting approval`.
+If any is critical, do not write the spec. Stop, and present each critical question with Claude's recommendation, the reason, and what the spec would look like under it, so the user can approve it or choose otherwise when they are back. Append the proposals to `transcript.md` under `## Proposals awaiting approval`. This holds when the user chose to start building: building would mean guessing the same answer.
 
-When the user answers, append the reply verbatim under `## Answers to proposals`, sorted as in 3c.4 (a reply leaving the decision to Claude delegates it), and continue with 4b.
+When the user answers, append the reply verbatim under `## Answers to proposals`, sorted as in 3c.4 (a reply leaving the decision to Claude delegates it), and continue with 4b, then Step 6 if the user chose to start building.
 
 ### 4b. Launch the spec writer
 
@@ -171,6 +176,17 @@ exist. Return the path and the full text.
 ## Step 5: Present the spec
 
 Show the spec and its path. Call out the "Delegated decisions" for review and the "Proposals awaiting approval" for approval. Nothing that depends on a proposal is built until the user approves it. Make small adjustments the user asks for directly, without another subagent.
+
+When the user chose to start building, show only the path, the delegated decisions and the proposals, in a few lines, and go on to Step 6 without waiting.
+
+## Step 6: Build
+
+Only when the user chose "Stop asking and start building". By choosing it, the user approves the spec as the plan, interfaces included, so Claude does not stop for approval before building.
+
+1. Build from `./ai-notes/specs/{SLUG}.md`, following the workflow in the CLAUDE.md files in context, the user's and the project's, with its stops: where it asks for a commit to be presented for approval, Claude presents it.
+2. Leave out every part that depends on a proposal awaiting approval.
+3. A question that comes up while building and changes what gets built is sorted as in 3c.4: decide it when the user delegated it, and record why in the spec; otherwise build what does not depend on it and add a proposal to the spec.
+4. End with the report the project asks for, plus the spec's path, the delegated decisions, and each part left out with the proposal it waits on.
 
 ## Usage
 
