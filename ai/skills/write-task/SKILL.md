@@ -5,11 +5,26 @@ description: Skill on how to write a task. Use when user asks you to write a tas
 
 # Write a task
 
+## What makes for a good task?
+
+Good tasks are easy to understand. They provide a why, what needs to be done, a sense of
+size, how to accomplish it, and what questions are is still open.
+
+A good task has a clear, problem-oriented Why, helping the reader judge what
+problem exists, how it affects us, and what happens if we don't act on it (cost
+of inaction). It allows us to decide whether it's worth doing it at all.
+
+## How to write a task
+
 Write a task using with the following sections:
 
-- "Background": something the reader should know
+- "Background" or "Context": something the reader should know
 - "Why is it important?": reasoning behind the work and the cost of inaction
 - "Proposed changes": what needs to happen.
+- [optional] "Additional details": for things that are secondary and could help
+  during investigation or implementation, but don't fit in other sections.
+- [optional] "Technical details": for core constraints that would be useful for
+  the implementer to know about. Separate each aspect/factor with bullet points.
 
 If a Slack thread is passed in, use that as context for making it richer.
 
@@ -17,7 +32,7 @@ If a Slack thread is passed in, use that as context for making it richer.
 
 - Avoid fancy words, like: stems, delve.
 - Avoid em-dashes (—). Use commas or split into separate sentences instead.
-- Don't use bullet points a lot.
+- Don't overuse bullet points.
 - Keep proposed changes at the level of detail provided in the request. If
   detailed implementation guidance is given, include it. Otherwise, keep it
   high-level and let engineers determine the approach.
@@ -30,57 +45,33 @@ If a Slack thread is passed in, use that as context for making it richer.
   when the impact is the reason the task exists, write it as the established
   reality it is.
 
-## Choosing the Right Template
-
-Use the **short template** (Background + Proposed changes) for:
-- Bug fixes with obvious impact
-- Typo corrections and link updates
-- Simple configuration changes
-- Sentry exceptions that need silencing
-- Straightforward tasks where the importance is self-evident
-
-Use the **full template** (Background + Why is it important? + Proposed changes) for:
-- New features
-- Tasks involving non-engineering stakeholders
-- Work requiring prioritization decisions
-- Systematic problems that need deeper analysis
-- Complex tasks that might sit in the backlog for months and need context
-  preservation (so future readers understand why this mattered)
-
-When in doubt, use the full template. The "Why is it important?" section helps
-teams remember context when revisiting old tasks.
-
 ## Writing Task Titles
 
 A good task title should be specific enough to distinguish from similar tasks
 and scannable in a list of 50+ items.
 
-**Solution-focused titles** start with a verb (Fix, Add, Update, Remove). Use
-when the approach is known:
+### Solution-focused titles
+
+Use when the approach is known and has been decided prior to the task being
+written.
+
+Always start with a verb (Fix, Add, Update, Remove, Create, Generate). Examples:
+
 - "Add webhook delivery audit log"
 - "Update payment retry logic to 3 attempts"
 
-**Problem-focused titles** describe the issue without prescribing a solution.
-Use when you want engineers to determine the approach:
+### Problem-focused titles
+
+Use when you want engineers and/or owners to determine the approach, or when
+there are multiple alternative solutions.
+
+The title should describe the issue without prescribing a solution.
+
 - "Cart times out with 50+ items"
 - "Users confused by generic error message on login"
 
 Avoid vague titles like "Checkout issues" or "Webhooks" that don't distinguish
 the task from others.
-
-## Anti-patterns to Avoid
-
-**Don't bury the action in vague language**
-Bad: "We should probably consider maybe looking into potentially improving..."
-Good: "Update the payment processor to retry failed transactions"
-
-**Don't use corporate speak**
-Bad: "Leverage synergies to optimize the data pipeline infrastructure"
-Good: "Fix the slow database queries in the reporting system"
-
-**Don't make tasks too abstract**
-Bad: "Improve user experience in the checkout flow"
-Good: "The checkout flow times out when users have more than 50 items in their cart"
 
 ## Writing the Background Section
 
@@ -96,7 +87,68 @@ The Background section should progress from high-level to detailed:
 This progressive structure ensures anyone can understand the basics before
 encountering technical specifics.
 
-## Template
+## Writing the importance of the task
+
+## Writing the importance of the task
+
+Use problem-oriented language. Prefer explaining what happens if we _don't_ do the task over describing the benefits of doing it. The cost of inaction makes the priority clearer and prevents solutions in search of a problem.
+
+For example, prefer:
+
+> Without this change, support will continue to investigate these failures manually.
+
+over:
+
+> This change will improve support efficiency.
+
+Include only the aspects that materially help explain the importance of the task:
+
+- **Qualify the problem:** Where and under what conditions does it happen? Is it
+  specific to a platform, customer segment, workflow, or behavior?
+- **Quantify the problem:** How many users, requests, transactions, or incidents
+  are affected? How large is that relative to the relevant population?
+- **Frequency:** Is this a rare edge case, something that happens every week, or
+  part of every request?
+- **Severity:** What actually happens when the problem occurs? Distinguish minor
+  friction from failed operations, incorrect data, lost revenue, or other
+  material consequences.
+- **Customer impact:** Has the problem been observed by customers? What are they
+  unable to do, or what additional work does it create for them?
+- **Operational cost:** Does leaving the problem unresolved create recurring
+  work for engineering, support, operations, or other teams?
+- **Workarounds:** Is there a workaround? If so, what does continuing to rely on
+  it cost?
+- **Trajectory:** Is the problem stable, getting worse as usage grows, or likely
+  to affect more cases in the future?
+- **Evidence:** Prefer observed data, incidents, customer reports, or
+  measurements over hypothetical impact. Clearly distinguish established
+  consequences from speculative risks.
+
+Do not include every aspect just because the information is available. Include
+enough to establish why the problem matters and what continues to happen if we
+leave it unresolved.
+
+Keep this section proportional to the task. For ordinary tasks, one or two
+sentences is often enough. More complex problems may need one or two paragraphs.
+Longer explanations are appropriate when the importance depends on substantial
+evidence, such as market research or analysis of multiple data points. Err on
+the side of conciseness.
+
+## Anti-patterns to Avoid
+
+**Don't bury the action in vague language**
+Bad: "We should probably consider maybe looking into potentially improving..."
+Good: "Update the payment processor to retry failed transactions"
+
+**Don't use corporate speak**
+Bad: "Leverage synergies to optimize the data pipeline infrastructure"
+Good: "Fix the slow database queries in the reporting system"
+
+**Don't make tasks too abstract**
+Bad: "Improve user experience in the checkout flow"
+Good: "The checkout flow times out when users have more than 50 items in their cart"
+
+## Templates
 
 Here's one template you can use:
 
@@ -160,6 +212,26 @@ engineers determine implementation details and testing approaches.
 - Criterion 2
 ```
 
+### Choosing the Right Template
+
+Use the **short template** (Background + Proposed changes) for:
+- Bug fixes with obvious impact
+- Typo corrections and link updates
+- Simple configuration changes
+- Sentry exceptions that need silencing
+- Straightforward tasks where the importance is self-evident
+
+Use the **full template** (Background + Why is it important? + Proposed changes) for:
+- New features
+- Tasks involving non-engineering stakeholders
+- Work requiring prioritization decisions
+- Systematic problems that need deeper analysis
+- Complex tasks that might sit in the backlog for months and need context
+  preservation (so future readers understand why this mattered)
+
+When in doubt, use the full template. The "Why is it important?" section helps
+teams remember context when revisiting old tasks.
+
 ## Examples
 
 ### Short Template Example
@@ -193,10 +265,10 @@ consuming and often impossible if the issue happened more than a week ago.
 
 ## Why is it important?
 
-We have spent considerable engineering time investigating webhook issues due
-to lack of proper records, effort which could be spent on new features or
-improving reliability. Support tickets about webhooks take hours to investigate
-without proper records, leading to frustrated customers.
+We spent considerable time investigating webhook issues due to lack of proper
+records, effort which could be spent on new features or improving reliability.
+Support tickets about webhooks take hours to investigate without proper records,
+leading to frustrated customers.
 
 Customers rely on our webhook delivery for their integrations, yet we can't
 prove whether an issue was on our side or the customer's endpoint when they
@@ -295,7 +367,7 @@ references while requesting a task:
 This investigation should be done **before** writing the task to ensure accuracy
 and completeness.
 
-## Output
+## Output to the user
 
 After creating the task:
 
@@ -342,7 +414,11 @@ After creating the task:
    EOF
    ```
 
-## Creating Tasks in Asana
+## Project Management Software Specifics
+
+Below are specific quirks about different task platforms.
+
+### Creating Tasks in Asana
 
 When creating tasks directly in Asana via the MCP tool, use the `html_notes`
 parameter. Key formatting rules:
