@@ -204,6 +204,22 @@ print_post_install_checklist() {
       ;;
   esac
 
+  # Network name ("<name>.local") still Apple's default, like
+  # "Alexs-MacBook-Air"? Renaming needs sudo, and an auth prompt from a script
+  # looks suspicious, so it stays a manual step.
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    local network_name
+    network_name="$(scutil --get LocalHostName 2>/dev/null)"
+    case "$network_name" in
+      *MacBook*|*iMac*|*Mac-mini*|*Mac-Studio*|*Mac-Pro*)
+        n=$((n + 1))
+        echo ""
+        echo "${n}. Give this Mac a short network name (it's ${network_name}.local now):"
+        echo "     sudo scutil --set LocalHostName <name>"
+        ;;
+    esac
+  fi
+
   # Mac App Store apps (need you signed into the App Store).
   if [[ "$OSTYPE" == "darwin"* ]]; then
     mas_ids=""

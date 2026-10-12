@@ -46,8 +46,8 @@ That one command does everything else:
 
 The installer is idempotent, so you can re-run this command any time to fix or
 finish a partial install. A post-install checklist prints the few manual steps
-that remain (App Store apps, etc.). It also installs 1Password; download it
-manually if that step fails.
+that remain (App Store apps, the Mac's network name, etc.). It also installs
+1Password; download it manually if that step fails.
 
 ### Running the installer manually
 
