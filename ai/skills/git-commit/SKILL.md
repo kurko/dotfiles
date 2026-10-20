@@ -170,22 +170,22 @@ a PR, pushing a worktree branch):
 ```bash
 # Example: single-commit branch, task link known
 gh pr create --draft \
-  --title "Add Looking Glass resource for vendor_incidents" \
+  --title "Add status filter to shipments API" \
   --body "$(cat <<'EOF'
-The vendor_incidents table tracks catalog outages synced to the Instatus
-status page, but there was no way to query it through Looking Glass.
-Investigating stale incidents required either a Rails console session
-or a new tool.
+The shipments endpoint returned every shipment for an account, and
+clients filtered the list on their side. Large accounts got slow
+responses, and support had to page through results to find delayed
+shipments.
 
-This commit adds a VendorIncidentResource exposing all non-sensitive
-columns plus three association-derived attributes. It includes custom
-filters for product_id and product_public_token and declares
-serialization_preloads to avoid N+1 queries on list requests.
+This commit adds a status query parameter to the shipments endpoint
+and an index on (account_id, status) to keep the filtered query fast.
+It also preloads the carrier association to avoid N+1 queries on list
+requests.
 
-A richer resource could expose the vendor_error_metrics table as well.
-That can be a separate resource if the need arises.
+A full search endpoint could filter by date range and carrier as well.
+That can be a separate change if the need arises.
 
-https://app.asana.com/0/1201647585774820/1218502568297202
+https://app.asana.com/0/<project_id>/<task_id>
 EOF
 )"
 ```
