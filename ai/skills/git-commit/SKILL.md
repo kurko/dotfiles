@@ -6,8 +6,8 @@ description: Stage and commit git changes, and open PRs. Use when committing, pu
 # Git Commit and PR Workflow
 
 Stage all relevant changes, create a conventional commit following patterns below.
-When the workflow also calls for a PR, open one using the commit message as the
-description (see the "Pull Requests" section).
+When the workflow also calls for a PR, open one with a short description
+condensed from the commit messages (see the "Pull Requests" section).
 
 ## When to Use
 
@@ -160,35 +160,37 @@ a PR, pushing a worktree branch):
 
 1. Push the branch with `git push -u origin <branch>`.
 2. Open the PR with `gh pr create`. Use `--draft` unless told otherwise.
-3. **The PR description is the commit message body, plus a task link.** Nothing
-   else. No bullet-point summaries, no "## Summary" sections, no test plan
-   checklists, no reformatting. Copy the commit body paragraphs verbatim.
-4. If there is an Asana task, Linear issue, or similar link, append it after the
-   commit body as a plain line (e.g. `https://app.asana.com/...`).
-5. The PR title is the commit summary line.
+3. **The PR description is short: why, then what changed.** Condense it from
+   the commit messages; don't copy them. The commits keep the full reasoning.
+   - First paragraph: the problem and its impact, in one to three sentences.
+   - Second paragraph: what the branch changes, in one to three sentences.
+     Name a file or setting only when it tells the reviewer where to look.
+   - Keep it under about 100 words when the branch has one concern. Add a
+     sentence only for a second concern, or for a limitation the reviewer
+     must weigh before merging.
+   - Leave out what the diff shows (method names, library calls), how it was
+     tested, and the commit's "ideal solution" paragraph.
+   - No bullet-point summaries, no "## Summary" sections, no test plan
+     checklists.
+4. On a multi-commit branch, describe the branch's end state. Leave out
+   anything a later commit replaced or reversed.
+5. If there is an Asana task, Linear issue, or similar link, append it as a
+   plain last line (e.g. `https://app.asana.com/...`).
+6. The PR title is the commit summary line. For several commits, write one
+   summary line in the same style.
 
 ```bash
 # Example: single-commit branch, task link known
 gh pr create --draft \
   --title "Add status filter to shipments API" \
   --body "$(cat <<'EOF'
-The shipments endpoint returned every shipment for an account, and
-clients filtered the list on their side. Large accounts got slow
-responses, and support had to page through results to find delayed
-shipments.
+The shipments endpoint returned every shipment for an account and left
+filtering to clients, so large accounts got slow responses.
 
-This commit adds a status query parameter to the shipments endpoint
-and an index on (account_id, status) to keep the filtered query fast.
-It also preloads the carrier association to avoid N+1 queries on list
-requests.
-
-A full search endpoint could filter by date range and carrier as well.
-That can be a separate change if the need arises.
+This adds a status query parameter to the endpoint and an index on
+(account_id, status) to keep the filtered query fast.
 
 https://app.asana.com/0/<project_id>/<task_id>
 EOF
 )"
 ```
-
-For multi-commit branches, use the full `git log --format` body of all commits
-on the branch (not just the latest), separated by blank lines.
