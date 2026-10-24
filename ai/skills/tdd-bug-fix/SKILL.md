@@ -90,8 +90,26 @@ Do NOT require test changes for:
 - **Dependency versions** - Gemfile.lock, package-lock.json updates
 - **Data fixes** - Database seeds, fixtures, migrations that fix data
 - **No test suite** - Codebase has no tests (common during prototyping)
+- **Mockup HTML pages** - design mockups and HTML prototypes, such as
+  `design/<name>/mockup.html` from the `mockup` skill. Smoke test them instead
+  (see below).
 
 If there's no `spec/`, `test/`, or `__tests__/` directory, skip the TDD workflow.
+
+### Mockup HTML pages: smoke test, no test code
+
+Mockups are visual and short-lived: they exist to choose a design, and the real
+implementation replaces them. Test code for a mockup costs more than the page is
+worth. Keep the order (see the bug, fix it, see it fixed) with a smoke test:
+
+1. Reproduce the bug by looking: open the page, render it headless and look at
+   the screenshot, run a one-off check in the browser, or ask the user to check
+   on their device. Confirm you see the broken behavior.
+2. Fix the page.
+3. Repeat the same smoke test and confirm the behavior is right.
+
+Don't commit test code or test harnesses for mockups. Report what the smoke test
+showed before and after the fix.
 
 ## Examples
 

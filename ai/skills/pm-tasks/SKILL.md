@@ -42,6 +42,9 @@ On activation, before picking new tasks, read both PID files:
    top-level task flow.
    - If the fetched task is already completed, verify completion in the PM
      tool, clear `tmp/current-task.pid`, and proceed to "Pick Next Task".
+   - If the fetched task is in the PM tool's review state (e.g., Linear
+     "In Review"), it was handed off. Clear both PID files and proceed to
+     "Pick Next Task", unless the user asked to address review feedback on it.
    - If the current task is in this agent's "blocked/needs input" section on
      the agent board, announce the blocked state and stop for user input.
    - Before doing parent-level implementation work, fetch the task's direct
@@ -238,6 +241,9 @@ Do ALL of these steps in order:
 4. **Write `tmp/current-task.pid` with the parent task id** and delete any stale
    `tmp/current-parent-task.pid`. At this point the parent is visibly claimed
    on the board, so later subtask PID changes cannot create an invisible race.
+   Write it in the checkout where the work will happen. If the work moves to
+   a worktree after claiming, delete the PID files from the checkout left
+   behind, or the next session there resumes work that lives elsewhere.
 
 **PHASE 2: UNDERSTAND THE TASK (only after Phase 1 is complete)**
 
@@ -281,6 +287,15 @@ When the user says "update task", "add note", "blocked":
   - Do not pick an unrelated top-level task unless the user explicitly
     redirects the session.
 - **Progress note**: add a comment summarizing what was done so far.
+
+### 4a. Hand Off for Review
+
+When the work is in a pull request and the task moves to the PM tool's review
+state, post the pull request link on the task, then delete
+`tmp/current-task.pid` and `tmp/current-parent-task.pid`. A task in review is
+not this agent's active work, and a PID left behind makes the next session in
+the same checkout resume finished work. Review feedback is picked up when the
+user asks for it, not by resuming.
 
 ### 5. Create a New Task
 
